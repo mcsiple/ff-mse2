@@ -1,5 +1,7 @@
+# The "Delayed Detection" estimator. This function acts like there is a prior on the estimated B, based on the B last year. So it does not "expect" big interannual changes in biomass. 
 # Tim's brilliant plan for mimicking obervation errors using something that seems like a Bayesian stock assessment
-source("/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Code/Estimators/ObsErrorFns_v2.R")
+# 
+# source("/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Code/Estimators/ObsErrorFns_v2.R")
 
 
 tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
