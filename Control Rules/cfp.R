@@ -18,15 +18,29 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax){
   if(possible.catch >= prevCatch * 1.15) {newcatch <- prevCatch*1.15 }
   if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch } # This used to say Bt
   else(newcatch <- possible.catch)
-  if(newcatch > Bt) (newcatch = Bt) # This step shouldn't be necessary, so I have to figure out why it's happening!
+  #if(newcatch > Bt) (newcatch = Bt) # This step shouldn't be necessary, so I have to figure out why it's happening!
   f <- newcatch / Bt
   return(f)
 }
 
 
-
-
 # Test
 # calc.F.cfp(prevCatch = 39.6, Bt = 95.8,Btarget = 21,Blim = 100,Fmax = 0.6)
-# 
 # calc.F.cfp(prevCatch = 35.3, Bt = 117.7,Btarget = 21,Blim = 100,Fmax = 0.6)
+
+test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
+                         Btarget = 2000,
+                         Blim = 100,
+                         Fmax = 0.6,
+                         prevCatch = seq(0,1000,by=50),
+                         calc.f = NA)
+
+for(i in 1:nrow(test.frame)){
+  test.frame$calc.f[i] <- calc.F.cfp(prevCatch = test.frame$prevCatch[i],
+                                     Bt = test.frame$Bcurr[i],
+                                     Btarget = test.frame$Btarget[i],
+                                     Blim = test.frame$Blim[i],
+                                     Fmax = test.frame$Fmax[i])
+}
+plot(test.frame$prevCatch,test.frame$calc.f,type='l')
+plot(test.frame$Bcurr,test.frame$calc.f*test.frame$Bcurr, type='l')
