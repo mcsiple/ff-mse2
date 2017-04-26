@@ -5,3 +5,4 @@ init.B <- init.prop*200000 # Biomass at age -- 110.54 is the B0 when R0 = 1000
 init.test <- init.B / lh.test$w.at.age # These are all the numbers at age (spawning and non-spawning biomass)
 F0.test <- 0.3 # This is arbitrary
 cr.test <- list(Blim = 100, Btarget = 200, Fmax = 0.6) 
+# Testing whether I can use this w Git
