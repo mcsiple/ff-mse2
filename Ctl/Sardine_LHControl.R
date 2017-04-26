@@ -14,5 +14,5 @@ lh.test <- list(M = 0.4,   #from sardine assessment (Hurtado-Ferro & Punt 2014)
                 l.at.age = seq(4,28,length.out=nages.test), # Lengths are in mm...? Doesn't actually matter because lengths aren't used in the most basic model
                 w.at.age = seq(0.014,0.180,length.out=nages.test)*0.001, #weights at age are in kg; multiplying by 0.001 gives mt
                 maturity = c(0,0.4,0.85,0.99,rep(1,times=12)), # Roughly based on maturity ogives from Silva et al. 2006 ICES JMS.
-                R0=1e9) # R0 is flexible, and can be changed. I kind of made it up.
+                R0=5e9) # R0 is flexible, and can be changed. It was estimated in Hill et al. to be approx. 4.8 billion fish (https://swfsc.noaa.gov/uploadedFiles/Events/Meetings/Meeting_2014/H1b_2014_FULL_Electric_PacificSardine_StockAssmnt_APR2014BB.pdf)
 
