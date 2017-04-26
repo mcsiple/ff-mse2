@@ -29,19 +29,19 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax){
 # calc.F.cfp(prevCatch = 39.6, Bt = 95.8,Btarget = 21,Blim = 100,Fmax = 0.6)
 # calc.F.cfp(prevCatch = 35.3, Bt = 117.7,Btarget = 21,Blim = 100,Fmax = 0.6)
 
-test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
-                         Btarget = 2000,
-                         Blim = 100,
-                         Fmax = 0.6,
-                         prevCatch = seq(0,1000,by=50),
-                         calc.f = NA)
-
-for(i in 1:nrow(test.frame)){
-  test.frame$calc.f[i] <- calc.F.cfp(prevCatch = test.frame$prevCatch[i],
-                                     Bt = test.frame$Bcurr[i],
-                                     Btarget = test.frame$Btarget[i],
-                                     Blim = test.frame$Blim[i],
-                                     Fmax = test.frame$Fmax[i])
-}
-plot(test.frame$prevCatch,test.frame$calc.f,type='l')
-plot(test.frame$Bcurr,test.frame$calc.f*test.frame$Bcurr, type='l')
+# test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
+#                          Btarget = 2000,
+#                          Blim = 100,
+#                          Fmax = 0.6,
+#                          prevCatch = seq(0,1000,by=50),
+#                          calc.f = NA)
+# 
+# for(i in 1:nrow(test.frame)){
+#   test.frame$calc.f[i] <- calc.F.cfp(prevCatch = test.frame$prevCatch[i],
+#                                      Bt = test.frame$Bcurr[i],
+#                                      Btarget = test.frame$Btarget[i],
+#                                      Blim = test.frame$Blim[i],
+#                                      Fmax = test.frame$Fmax[i])
+# }
+# plot(test.frame$prevCatch,test.frame$calc.f,type='l')
+# plot(test.frame$Bcurr,test.frame$calc.f*test.frame$Bcurr, type='l')
