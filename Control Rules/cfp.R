@@ -1,3 +1,4 @@
+# Testing to see whether move to Dropbox worked.
 #' @title "stability-favoring" harvest control rule. Uses catch in the previous year, as well as traditional "hockey-stick" HCR parameters, to determine what the fishing rate will be in the following year.
 #' \code{calc.F.cfp} returns the fishing rate, given biomass and catch in the previous year.
 #' This function is essentially the same as other "hockey-stick" rules but does not allow the catch to change by more than 15%. It is a rule intended to stabilize catches.
