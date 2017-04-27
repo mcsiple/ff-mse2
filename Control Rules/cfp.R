@@ -13,13 +13,13 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax){
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
   adj.constant <- Btarget/Fmax        # scales y axis to max fishing mortality
   if (Bt <= Blim) {f = 0}
-  if (Bt > Blim & Bt <= Btarget) {f <- slope * (Bt-Blim) / adj.constant}
+  if (Bt > Blim & Bt <= Btarget) {f <- slope * (Bt-Blim) / adj.constant} 
+                                      # adj.constant scales so the CR is linear btwn Blim and Btarget
   if (Bt > Btarget) {f = Fmax }
   possible.catch <- f*Bt
   if(possible.catch >= prevCatch * 1.15) {newcatch <- prevCatch*1.15 }
   if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch } # This used to say Bt
   else(newcatch <- possible.catch)
-  #if(newcatch > Bt) (newcatch = Bt) # This step shouldn't be necessary, so I have to figure out why it's happening!
   f <- newcatch / Bt
   return(f)
 }
