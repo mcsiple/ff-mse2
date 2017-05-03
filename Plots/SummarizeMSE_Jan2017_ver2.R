@@ -54,7 +54,7 @@ n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows a
 # set.seed(1); x <- sample(c(T, F), 100, replace = T); sum(RcppRoll::roll_sum(x, 3) == 3)
 
 # Set path to wherever the simulation results are, load them into a giant dataframe
-path <- "/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Results/Anchovy/"
+path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Anchovy/"
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text summary
   files <- files[-rm]
@@ -265,12 +265,6 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 pdf("Anchovy_May2.pdf",width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
 scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
-
-
-# Performance metrics
-colnames(tradeoff.plot)[-(1:6)]
-
-
 # Compare each of the CRs together? It would be like pairs()
 
 
