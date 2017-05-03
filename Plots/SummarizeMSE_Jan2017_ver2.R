@@ -9,8 +9,8 @@ library(extrafont)
 library(RColorBrewer)
 library(reshape2)
 library(ggplot2)
-source("/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Code/ff-mse2/Plots/Megsieggradar.R")
-
+source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
+#Testing
 # Functions for calculating performance measures ---------------------------
 
 nzeroes <- function(x){ # How many years with zero catch
