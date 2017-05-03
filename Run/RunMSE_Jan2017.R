@@ -1,6 +1,6 @@
 # Set directories
-basedir <- "/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Code/ff-mse2"
-resultsdir <- "/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Results"
+basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
+resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
 subDir <- "Anchovy" # Name of ff type
 
 
@@ -8,7 +8,7 @@ subDir <- "Anchovy" # Name of ff type
 # Load rev devs generating fxn, MSE main model, estimator fxns
 toplot=FALSE
 source(file.path(basedir,"Recruitment/GenerateDevs.R")) # Don't plot examples of rec trajectories
-source(file.path("/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Code/HCR_Trajectory.R"))
+source(file.path("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/HCR_Trajectory.R"))
 source(file.path(basedir,"Estimators/Estimators.R"))
 
 # Load control files
