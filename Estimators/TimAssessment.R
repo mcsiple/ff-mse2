@@ -80,3 +80,28 @@ tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
                           legend("topleft",lty=c(1,1,1),col=c("black",obs.color,est.color),lwd=c(2,2,2),legend = c("True B","Obs B","Est'd B"),pch=c(1,NA,1))
                   }}
 dev.off()
+
+
+# Another section to look at how close the survey is to the true b --------
+# also using sigtau.vec
+try.ts <- testie$oneplus.biomass
+sig.tau.vec <- seq(1,20,by=1)
+
+# 
+    sig_tau_ratio = sigtau.vec[st]
+    sigma = 1.2
+    tau0 <- sigma / sig_tau_ratio
+    est.ts <- obs.ts <- eps.ts <-  vector()
+    est.ts[1] <- obs.ts[1] <- try.ts[1] #Perfect obs in first year
+    eps.ts[1] <- 1 # No change in first year
+    # 
+    for(i in 2:nyears){
+      observation <- add.wied.error(biomass.true = try.ts[i],epsilon.prev = eps.ts[i-1],sig.s = sig.s, rho = rho)
+      obs.ts[i] <- observation$biomass.est
+      eps.ts[i] <- observation$epsilon.curr
+      est.ts[i] <- tim.assessment(Bprev=obs.ts[i-1],Bcurr=obs.ts[i],tau0=tau0,sigma = sigma)
+    }
+    # 
+    count.huge.peaks <- length(which(est.ts > 5*try.ts))
+
+    
