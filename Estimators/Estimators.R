@@ -70,10 +70,10 @@ add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho){
   #' @param biomass.true - the true biomass in year y
   #' @param epsilon.prev - observation error in previous year
   #' @param sig.s - sd of observation errors 
-  #' @param rho - autocorrelation in obs error
+  #' @param rho - degree of autocorrelation in obs error
   #' @return list: "observed" biomass, and epsilon (observation error) in the current year
-  curly.phi <- rnorm(1,0,sig.s) # the degree of autocorrelation in the estimates
-  epsilon.curr <- rho * epsilon.prev + sqrt(1-(rho^2)) * curly.phi # epsilon values are the error
+  curly.phi <- rnorm(1,0,sig.s) # random deviations on top of the autocorrelation
+  epsilon.curr <- rho * epsilon.prev + sqrt(1-(rho^2)) * curly.phi # error in the current year
   biomass.est <- biomass.true*exp(epsilon.curr-(0.5*sig.s^2))
   return(list(biomass.est=biomass.est,epsilon.curr=epsilon.curr))
 }
@@ -127,7 +127,7 @@ tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
 ###########################################################################
 # This code only runs if you set plot.examples==TRUE
 if(plot.examples==TRUE){
-                setwd("/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Figures")
+                setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
               
               # simulate a time series to test ----------------------------
               nyears <- 40
