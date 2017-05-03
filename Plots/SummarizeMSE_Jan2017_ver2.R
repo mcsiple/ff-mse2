@@ -246,7 +246,7 @@ all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
                                                     'lenfest' = 'C2',
                                                     'oceana' = 'C1',
                                                     'trend' = "Trend-based"))
-all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
+all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 # Change labels of things in the table! --------------------------
 scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type, 
                                                         'Tim'='Delayed change detection',
