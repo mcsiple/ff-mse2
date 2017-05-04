@@ -122,3 +122,5 @@ plot(sig.tau.vec,count.huge.peaks,type='l',pch=20,#ylim=c(0,40),
      xlab = "Ratio of Sigma/Tau0",ylab="Nyears when estimate is >5x actual 1+ Biomass")
 abline(h=10,lty=2)
 dev.off()
+
+save(outputs.mat, file = "SensOutputMatrix.RData") #Mondo grid of the number of peaks at different values of tau0 and sigma2
