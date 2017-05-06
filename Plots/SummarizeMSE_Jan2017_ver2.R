@@ -274,6 +274,13 @@ mat <- matrix(1:4,nrow=2,byrow = TRUE)
 plotnames <- list()
 steepnesses <- unique(scen.table$h)
 obs.error.types <- unique(scen.table$obs.error.type)
+nice.pms <- data.frame(original = colnames(scen.table[-(1:6)]),
+                       polished = c("LT mean catch","LT mean nonzero catch",
+                                    "SD(Catch)","Number of \n 5-yr closures",
+                                    "Number of \n 10-yr closures","Number of yrs \n w/ zero catch",
+                                    "LT mean biomass","Number of yrs \n above pred threshold",
+                                    "SD(Biomass)","Prob. biomass falls \n below pred threshold",
+                                    "Mean depletion"))
 
 for(steep in 1:2){
   for(obs in 1:2){
@@ -293,7 +300,9 @@ for(steep in 1:2){
       final.tab <- final.tab[,-which(test.nas)]
     }
     legend.presence <- ifelse(mat[steep,obs] != 1,FALSE,TRUE)
-    plotnames[[mat[steep,obs]]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=4,axis.label.size=4,plot.legend=legend.presence,palette.vec = hcr.colors)
+    plotnames[[mat[steep,obs]]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=4,axis.label.size=4,
+                                           axis.labels = nice.pms$polished,
+                                           plot.legend=legend.presence,palette.vec = hcr.colors)
   }}
 
 grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]], plotnames[[4]])
