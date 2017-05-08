@@ -350,13 +350,15 @@ ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=sce
   facet_wrap(~variable)
 
 # Plot comparing biomass, catch, etc for one run each scenario ------------
+attributes <- c("Biomass","Catches","Recruitment","Depletion (B/B0)")
+att.ind <- c(1,2,4,5)
 
 # Plot first run for each scenario
 for (scenario.index in 1:4){
   par(mfrow=c(2,2),mar=c(5,4,3,2)+0.1)
   for(i in 1:length(att.ind)){
     which.metric <- att.ind[i]
-    plot(results[[scenario.index]][[which.metric]][1,calc.ind],col=hcr.colors.lines[1],
+    plot(results[[scenario.index]][[which.metric]][1,calc.ind],col=hcr.colors[1],
          ylab = attributes[i], type="l", lwd=2,xlab="Year",
          ylim = range(results[[scenario.index]][[which.metric]][,calc.ind]))
     lines(results[[scenario.index+4]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[2]) 
@@ -371,8 +373,7 @@ for (scenario.index in 1:4){
 
 
 # Medians and 95% intervals for biomass, catch, etc ------------------
-attributes <- c("Biomass","Catches","Recruitment","Depletion (B/B0)")
-att.ind <- c(1,2,4,5)
+
 
 for (scenario in 1:length(results)){
   par(mfrow=c(2,2),mar=c(5,4,3,2)+0.1)
