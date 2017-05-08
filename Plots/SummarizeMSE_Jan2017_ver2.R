@@ -54,7 +54,7 @@ n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows a
 # set.seed(1); x <- sample(c(T, F), 100, replace = T); sum(RcppRoll::roll_sum(x, 3) == 3)
 
 # Set path to wherever the simulation results are, load them into a giant dataframe
-path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Anchovy/"
+path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sardine/"
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text summary
   files <- files[-rm]
@@ -127,7 +127,7 @@ for (s in 1:nscenarios){
     raw.table[s,performance.measures[11]] <- median(rowMeans(result.to.use$depl[,calc.ind])) 
 }
 
-write.csv(raw.table, file="Anchovy_outputs.csv")
+write.csv(raw.table, file="Sardine_outputs.csv")
 
 
 ############################################################################
@@ -262,7 +262,7 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 ###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
 ######################################################################
 
-pdf("Anchovy_May2.pdf",width = 10,height = 9,onefile = TRUE)
+pdf("Anchovy_May8.pdf",width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
 scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
 # Compare each of the CRs together? It would be like pairs()
@@ -300,7 +300,8 @@ for(steep in 1:2){
       final.tab <- final.tab[,-which(test.nas)]
     }
     legend.presence <- ifelse(mat[steep,obs] != 1,FALSE,TRUE)
-    plotnames[[mat[steep,obs]]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=4,axis.label.size=4,
+    plotnames[[mat[steep,obs]]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=2.5,
+                                           legend.text.size = 2.5,
                                            axis.labels = nice.pms$polished,
                                            plot.legend=legend.presence,palette.vec = hcr.colors)
   }}
@@ -360,7 +361,12 @@ for (scenario.index in 1:4){
     which.metric <- att.ind[i]
     plot(results[[scenario.index]][[which.metric]][1,calc.ind],col=hcr.colors[1],
          ylab = attributes[i], type="l", lwd=2,xlab="Year",
-         ylim = range(results[[scenario.index]][[which.metric]][,calc.ind]))
+         ylim = range(c(results[[scenario.index]][[which.metric]][1,calc.ind],
+                        results[[scenario.index+4]][[which.metric]][1,calc.ind],
+                        results[[scenario.index+8]][[which.metric]][1,calc.ind],
+                        results[[scenario.index+12]][[which.metric]][1,calc.ind],
+                        results[[scenario.index+16]][[which.metric]][1,calc.ind])))
+                        # The above is so messy but it's just to get the correct range for all the lines. 
     lines(results[[scenario.index+4]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[2]) 
     lines(results[[scenario.index+8]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[3]) 
     lines(results[[scenario.index+12]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[4])
