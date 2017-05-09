@@ -91,7 +91,9 @@ for (s in 1:nscenarios){
   scen.table[s,performance.measures[1]] <- raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind])) #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
   nonzero.catch <- result.to.use$total.catch[,calc.ind]
   nonzero.catch <- ifelse(nonzero.catch<0.1,NA,nonzero.catch)
-  scen.table[s,performance.measures[2]] <- raw.table[s,performance.measures[2]] <- median(rowMeans(nonzero.catch,na.rm=TRUE)) #"LTnonzeromeancatch"
+  mnz.catches <- rowMeans(nonzero.catch,na.rm=TRUE)
+  #mnz.catches[ is.na(mnz.catches) ] <- NA
+  scen.table[s,performance.measures[2]] <- raw.table[s,performance.measures[2]] <- median(mnz.catches,na.rm = TRUE) #"LTnonzeromeancatch"
   
   scen.table[s,performance.measures[3]] <- 1 / median(apply(X = result.to.use$total.catch[,calc.ind],FUN = sd,MARGIN = 1)) #"SDcatch" **N**
   raw.table[s,performance.measures[3]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = sd,MARGIN = 1)) 
@@ -175,7 +177,7 @@ plotintervals <- function(result.mat,ylab){ #result.mat is a matrix (e.g., bioma
   polygon(zz,bb,col=adjustcolor( "black", alpha.f = 0.2),border="NA")
 }
 
-#Function to get summary metrics so you can make Key plots (or whatever you want)
+#Function to get summary metrics so you can make Zeh plots (or whatever you want)
 summ.tab <- function(result.list){ #result.list is one of the results (=1 harvest rule, 1000 time series of biomass, catch, fishing, rec, depl)
   for(i in 1:length(result.list)){
     result.list[[i]] <- result.list[[i]][,calc.ind]
@@ -364,7 +366,7 @@ for (scenario.index in 1:4){
   par(mfrow=c(2,2),mar=c(5,4,3,2)+0.1)
   for(i in 1:length(att.ind)){
     which.metric <- att.ind[i]
-    plot(results[[scenario.index]][[which.metric]][1,calc.ind],col=hcr.colors[1],
+    plot(results[[scenario.index]][[which.metric]][1,calc.ind],col=hcr.colors[4],
          ylab = attributes[i], type="l", lwd=2,xlab="Year",
          ylim = range(c(results[[scenario.index]][[which.metric]][1,calc.ind],
                         results[[scenario.index+4]][[which.metric]][1,calc.ind],
@@ -372,9 +374,9 @@ for (scenario.index in 1:4){
                         results[[scenario.index+12]][[which.metric]][1,calc.ind],
                         results[[scenario.index+16]][[which.metric]][1,calc.ind])))
                         # The above is so messy but it's just to get the correct range for all the lines. 
-    lines(results[[scenario.index+4]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[2]) 
-    lines(results[[scenario.index+8]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[3]) 
-    lines(results[[scenario.index+12]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[4])
+    lines(results[[scenario.index+4]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[3]) 
+    lines(results[[scenario.index+8]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[1]) 
+    lines(results[[scenario.index+12]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[2])
     lines(results[[scenario.index+16]][[which.metric]][1,calc.ind],lwd=2,col=hcr.colors[5])
   }
   
