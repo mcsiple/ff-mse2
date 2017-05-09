@@ -262,7 +262,7 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 ###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
 ######################################################################
 
-pdf("Anchovy_May8.pdf",width = 10,height = 9,onefile = TRUE)
+pdf("Sardine_May8.pdf",width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
 scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
 # Compare each of the CRs together? It would be like pairs()
@@ -295,14 +295,19 @@ for(steep in 1:2){
     colnames(final.tab)[1] <- "group"
     test.nas <- apply(X = final.tab,FUN = anyNA,MARGIN = 2)
     na.metrics <- names(which(test.nas))
+    axis.labels <- nice.pms[,'polished']
+    
     if(length(na.metrics>0)){
       print(paste("The following performance metrics had NAs and was removed from the figure: ",na.metrics))
       final.tab <- final.tab[,-which(test.nas)]
+      rm.metrics <- which(nice.pms$original == na.metrics)
+      axis.labels <- nice.pms[-rm.metrics,'polished']
     }
+    
     legend.presence <- ifelse(mat[steep,obs] != 1,FALSE,TRUE)
     plotnames[[mat[steep,obs]]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=2.5,
                                            legend.text.size = 2.5,
-                                           axis.labels = nice.pms$polished,
+                                           axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors)
   }}
 
