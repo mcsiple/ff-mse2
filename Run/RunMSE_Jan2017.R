@@ -62,7 +62,7 @@ scenarios$scenario <- 1:nscenarios #Label them so it's easier to find/index em l
 #nyrs.to.use = 150
 years.test = 250
 nsims = 1000
-tim.params = list(sigma = 1.2,tau0=1.2)
+tim.params = list(sigma = 1.2,tau0=1.2/5) # The value for tau comes from the "sensitivity tests" for the error function-- this sig/tau ratio ensures that there won't be too many giant peaks (>5 x the max biomass)
 const.f.rate = 0.6
 R0.sens = NA #NO DYNAMIC R0 in these cases!!
 
@@ -94,7 +94,7 @@ for(s in 1:nscenarios){
         rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
         expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params)
         
-    CFP[["biomass"]][sim,] <- expt.cfp$biomass
+    CFP[["biomass"]][sim,] <- expt.cfp$oneplus.biomass
     CFP[["total.catch"]][sim,] <- expt.cfp$total.catch
     CFP[["fishing"]][sim,] <- expt.cfp$fishing
     CFP[["rec"]][sim,] <- expt.cfp$rec
@@ -109,7 +109,7 @@ for(s in 1:nscenarios){
           rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
           expt.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params)
         
-    constF[["biomass"]][sim,] <- expt.constF$biomass
+    constF[["biomass"]][sim,] <- expt.constF$oneplus.biomass
     constF[["total.catch"]][sim,] <- expt.constF$total.catch
     constF[["fishing"]][sim,] <- expt.constF$fishing
     constF[["rec"]][sim,] <- expt.constF$rec
@@ -124,7 +124,7 @@ for(s in 1:nscenarios){
         rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
         expt.oceana <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "oceana",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params)
        
-    oceana[["biomass"]][sim,] <- expt.oceana$biomass
+    oceana[["biomass"]][sim,] <- expt.oceana$oneplus.biomass
     oceana[["total.catch"]][sim,] <- expt.oceana$total.catch
     oceana[["fishing"]][sim,] <- expt.oceana$fishing
     oceana[["rec"]][sim,] <- expt.oceana$rec
@@ -139,7 +139,7 @@ for(s in 1:nscenarios){
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.lenfest <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "lenfest",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params)
       
-      lenfest[["biomass"]][sim,] <- expt.lenfest$biomass
+      lenfest[["biomass"]][sim,] <- expt.lenfest$oneplus.biomass
       lenfest[["total.catch"]][sim,] <- expt.lenfest$total.catch
       lenfest[["fishing"]][sim,] <- expt.lenfest$fishing
       lenfest[["rec"]][sim,] <- expt.lenfest$rec
@@ -154,7 +154,7 @@ for(s in 1:nscenarios){
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.trend <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "trend",const.f.rate = 0.6,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params)
       
-      trend[["biomass"]][sim,] <- expt.trend$biomass
+      trend[["biomass"]][sim,] <- expt.trend$oneplus.biomass
       trend[["total.catch"]][sim,] <- expt.trend$total.catch
       trend[["fishing"]][sim,] <- expt.trend$fishing
       trend[["rec"]][sim,] <- expt.trend$rec
