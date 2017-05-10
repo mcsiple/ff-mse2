@@ -97,7 +97,7 @@ for(st in 1:length(sig.tau.vec)){
 sig_tau_ratio = sig.tau.vec[st]
 # for(s in 1:length(sig.vec)){
 #   for(t in 1:length(tau.vec)){
-     sigma = 1.2
+     sigma = 0.7
      tau0 <- sigma / sig_tau_ratio
     # sigma <- sig.vec[s]
     # tau0 <- tau.vec[t]
@@ -124,4 +124,5 @@ plot(sig.tau.vec,count.huge.peaks,type='l',pch=20,#ylim=c(0,40),
 abline(h=10,lty=2)
 dev.off()
 
+tim.params <- list(sigma=1.2,tau0=1.2/5)
 #save(outputs.mat, file = "SensOutputMatrix.RData") #Mondo grid of the number of peaks at different values of tau0 and sigma2
