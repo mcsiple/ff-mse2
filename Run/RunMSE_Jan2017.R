@@ -1,7 +1,7 @@
 # Set directories
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
-subDir <- "Menhaden" # Name of ff type
+subDir <- "Sardine" # Name of ff type
 
 
 
@@ -92,7 +92,7 @@ for(s in 1:nscenarios){
   set.seed(123) # IMPORTANT! Start each round of sims at the same random seed
   for (sim in 1:nsims){
         rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-        expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params)
+        expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params)
         
     CFP[["biomass"]][sim,] <- expt.cfp$oneplus.biomass
     CFP[["total.catch"]][sim,] <- expt.cfp$total.catch
