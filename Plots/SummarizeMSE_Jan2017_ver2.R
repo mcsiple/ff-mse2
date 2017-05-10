@@ -54,7 +54,7 @@ n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows a
 # set.seed(1); x <- sample(c(T, F), 100, replace = T); sum(RcppRoll::roll_sum(x, 3) == 3)
 
 # Set path to wherever the simulation results are, load them into a giant dataframe
-path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Anchovy/"
+path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sardine/"
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text summary
   files <- files[-rm]
@@ -129,7 +129,7 @@ for (s in 1:nscenarios){
     raw.table[s,performance.measures[11]] <- median(rowMeans(result.to.use$depl[,calc.ind])) 
 }
 
-write.csv(raw.table, file="Anchovy_outputs.csv")
+write.csv(raw.table, file="Sardine_outputs.csv")
 
 
 ############################################################################
@@ -264,7 +264,7 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 ###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
 ######################################################################
 
-pdf("Anchovy_May8.pdf",width = 10,height = 9,onefile = TRUE)
+pdf("Sardine_May10.pdf",width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
 scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
 # Compare each of the CRs together? It would be like pairs()
