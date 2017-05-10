@@ -124,5 +124,5 @@ plot(sig.tau.vec,count.huge.peaks,type='l',pch=20,#ylim=c(0,40),
 abline(h=10,lty=2)
 dev.off()
 
-tim.params <- list(sigma=1.2,tau0=1.2/5)
+
 #save(outputs.mat, file = "SensOutputMatrix.RData") #Mondo grid of the number of peaks at different values of tau0 and sigma2
