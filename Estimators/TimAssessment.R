@@ -92,14 +92,15 @@ outputs.mat <- matrix(nrow = 1000, ncol=1000)
 
 nyears = 250
 count.huge.peaks <- vector(length = length(sig.tau.vec))
-#for(st in 1:length(sig.tau.vec)){
-    #sig_tau_ratio = sig.tau.vec[st]
-for(s in 1:length(sig.vec)){
-  for(t in 1:length(tau.vec)){
-    # sigma = 1.2
-    # tau0 <- sigma / sig_tau_ratio
-    sigma <- sig.vec[s]
-    tau0 <- tau.vec[t]
+
+for(st in 1:length(sig.tau.vec)){
+sig_tau_ratio = sig.tau.vec[st]
+# for(s in 1:length(sig.vec)){
+#   for(t in 1:length(tau.vec)){
+     sigma = 1.2
+     tau0 <- sigma / sig_tau_ratio
+    # sigma <- sig.vec[s]
+    # tau0 <- tau.vec[t]
     est.ts <- obs.ts <- eps.ts <-  vector()
     est.ts[1] <- obs.ts[1] <- try.ts[1] #Perfect obs in first year
     eps.ts[1] <- 1 # No change in first year
@@ -111,10 +112,10 @@ for(s in 1:length(sig.vec)){
       est.ts[i] <- tim.assessment(Bprev=obs.ts[i-1],Bcurr=obs.ts[i],tau0=tau0,sigma = sigma)
     }
     # 
-    #count.huge.peaks[st] <- length(which(est.ts > 5*try.ts))
-    outputs.mat[s,t] <- length(which(est.ts > 5*try.ts))
+    count.huge.peaks[st] <- length(which(est.ts > 5*try.ts))
+    #outputs.mat[s,t] <- length(which(est.ts > 5*try.ts))
   }
-}
+
 
 pdf("SigTauSensitivity.pdf",width = 7, height = 6)
 par(mfrow=c(1,1))
@@ -123,4 +124,4 @@ plot(sig.tau.vec,count.huge.peaks,type='l',pch=20,#ylim=c(0,40),
 abline(h=10,lty=2)
 dev.off()
 
-save(outputs.mat, file = "SensOutputMatrix.RData") #Mondo grid of the number of peaks at different values of tau0 and sigma2
+#save(outputs.mat, file = "SensOutputMatrix.RData") #Mondo grid of the number of peaks at different values of tau0 and sigma2
