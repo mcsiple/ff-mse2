@@ -1,10 +1,11 @@
 # Set directories
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
-subDir <- "Anchovy" # Name of ff type
+subDir <- "Sardine" # Name of ff type
 
 # Load reshape2 and ggplot2 for plotting examples
-
+library(reshape2)
+library(ggplot2)
 # Load rev devs generating fxn, MSE main model, estimator fxns
 toplot=FALSE
 source(file.path(basedir,"Recruitment/GenerateDevs.R")) # Don't plot examples of rec trajectories
@@ -77,18 +78,18 @@ CFP <- oceana <- constF <- lenfest <- trend <-
 
 
 # Test params and runs to make sure they look good ------------------------
-        # steepness = scenarios$h[1]
-        # obs.type <- scenarios$obs.error.type[1]
-        # HCR <- scenarios$HCR[1]
-        # recruit.sd = .6 #scenarios$recruit.sd[1]
-        # recruit.rho = .9 #scenarios$recruit.rho[1]
-        # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) 
-        # rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-        # test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params)
-        # nofish <- melt(test.constF[-c(1,4,9,10)])
-        # nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
-        # #colnames(nofish) <- c("age","year","value","variable")
-        # ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") + xlim(c(150,250))
+        steepness = scenarios$h[1]
+        obs.type <- scenarios$obs.error.type[1]
+        HCR <- scenarios$HCR[1]
+        recruit.sd = .6 #scenarios$recruit.sd[1]
+        recruit.rho = .9 #scenarios$recruit.rho[1]
+        equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
+        rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
+        test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params)
+        nofish <- melt(test.constF[-c(1,4,9,10)])
+        nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
+        #colnames(nofish) <- c("age","year","value","variable")
+        ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") + xlim(c(150,250))
 
 
 # --- ---------------------------------------------------------------------
