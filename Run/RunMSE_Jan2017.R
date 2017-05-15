@@ -1,7 +1,7 @@
 # Set directories
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
-subDir <- "Sardine" # Name of ff type
+subDir <- "Menhaden" # Name of ff type
 
 # Load reshape2 and ggplot2 for plotting examples
 library(reshape2)
@@ -64,6 +64,7 @@ scenarios$scenario <- 1:nscenarios #Label them so it's easier to find/index em l
 years.test = 250
 nsims = 1000
 tim.params = list(sigma = 1.2,tau0=1.2/5) # The value for tau comes from the "sensitivity tests" for the error function-- this sig/tau ratio ensures that there won't be too many giant peaks (>5 x the max biomass)
+                                      # sigma = 1.2 and tau0 = 2 means this is the "high-tau" scenario. If tau 
 const.f.rate = 0.6
 R0.sens = NA #NO DYNAMIC R0 in these cases!!
 
