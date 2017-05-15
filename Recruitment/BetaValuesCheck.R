@@ -46,7 +46,8 @@ calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median de
 if(Type == "Anchovy"){B.data.mat <- read.csv("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Datasets/AnchHerring_Rec_Spectra.csv")}
 if(Type == "Sardine"){B.data.mat <- read.csv("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Datasets/Sardine_Rec_Spectra.csv")}
 if(Type == "Menhaden"){B.data.mat <- read.csv("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Datasets/Menhaden_Rec_Spectra.csv")}
-# Here is the spectral properties of the rec time series we have:
+
+# Here is the spectral properties of the recruitment estimates we have:
 s <- B.data.mat[,c("X","Rec.Length","SD.R","Beta.r","lowerCI","upperCI","beta.SE")]
 nstocks <- nrow(s)
 empty.mat <- matrix(NA,nrow=20,ncol=ncol(s)) #This is the number of "scenarios" there are in the MSE. *** this may change
@@ -55,7 +56,7 @@ s <- rbind(s,empty.mat)
 levels(s$X) <- c(levels(s$X),"Simulated")
 s[(nstocks+1):nrow(s),"X"] <- "Simulated"
 
-# First, plot estimated betas of the stocks that we have time series for:
+# Plot estimated betas of the stocks that we have time series for:
 par(mfrow=c(1,1))
 plot(1:nrow(s),s[,'Beta.r'],pch=19,xaxt="n", 
      xlab="Stock",ylab="Estimated Beta",
