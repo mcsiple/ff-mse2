@@ -267,7 +267,7 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 ###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
 ######################################################################
 
-pdf(paste(Type,"_May10.pdf",sep=""),width = 10,height = 9,onefile = TRUE)
+pdf(paste(Type,"_May15.pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
 scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
 # Compare each of the CRs together? It would be like pairs()
