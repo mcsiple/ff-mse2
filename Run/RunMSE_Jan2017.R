@@ -80,7 +80,7 @@ CFP <- oceana <- constF <- lenfest <- trend <-
 
 # Test params and runs to make sure they look good ------------------------
         steepness = scenarios$h[1]
-        obs.type <- scenarios$obs.error.type[1]
+        obs.type <- scenarios$obs.error.type[2]
         HCR <- scenarios$HCR[1]
         recruit.sd = .6 #scenarios$recruit.sd[1]
         recruit.rho = .9 #scenarios$recruit.rho[1]
@@ -92,7 +92,7 @@ CFP <- oceana <- constF <- lenfest <- trend <-
         #colnames(nofish) <- c("age","year","value","variable")
         ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") + xlim(c(150,250))
 
-
+plot(test.constF$biomass,test.constF$oneplus.biomass)
 # --- ---------------------------------------------------------------------
 
 
