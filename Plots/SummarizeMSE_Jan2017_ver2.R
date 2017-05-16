@@ -58,6 +58,7 @@ n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows a
 
 # Set path to wherever the simulation results are, load them into a giant dataframe
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+#path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Menhaden_SavedOutputs/Tau_06"
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text summary
   files <- files[-rm]
@@ -267,7 +268,7 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 ###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
 ######################################################################
 
-pdf(paste(Type,"_May15.pdf",sep=""),width = 10,height = 9,onefile = TRUE)
+pdf(paste(Type,"_May16.pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
 scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
 # Compare each of the CRs together? It would be like pairs()
