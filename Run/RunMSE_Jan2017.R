@@ -1,7 +1,7 @@
 # Set directories
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
-subDir <- "Menhaden" # Name of ff type
+subDir <- "Sardine" # Name of ff type
 
 # Load reshape2 and ggplot2 for plotting examples
 library(reshape2)
@@ -75,7 +75,8 @@ CFP <- oceana <- constF <- lenfest <- trend <-
             total.catch=matrix(nrow = nsims,ncol = years.test),
             fishing= matrix(nrow = nsims,ncol = years.test),
             rec= matrix(nrow = nsims,ncol = years.test),
-            depl= matrix(nrow = nsims,ncol = years.test))
+            depl= matrix(nrow = nsims,ncol = years.test),
+            obs.biomass = matrix(nrow = nsims,ncol = years.test))
 
 
 # Test params and runs to make sure they look good ------------------------
@@ -92,7 +93,7 @@ CFP <- oceana <- constF <- lenfest <- trend <-
         #colnames(nofish) <- c("age","year","value","variable")
         ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") + xlim(c(150,250))
 
-plot(test.constF$biomass,test.constF$oneplus.biomass)
+        #plot(test.constF$biomass,test.constF$oneplus.biomass)
 # --- ---------------------------------------------------------------------
 
 
@@ -117,6 +118,7 @@ for(s in 1:nscenarios){
     CFP[["fishing"]][sim,] <- expt.cfp$fishing
     CFP[["rec"]][sim,] <- expt.cfp$rec
     CFP[["depl"]][sim,] <- expt.cfp$depl
+    CFP[["obs.biomass"]][sim,] <- expt.cfp$biomass
   }
     save(CFP,file=paste("All",s,"CFP",".RData",sep="_"))
     }
@@ -132,6 +134,7 @@ for(s in 1:nscenarios){
     constF[["fishing"]][sim,] <- expt.constF$fishing
     constF[["rec"]][sim,] <- expt.constF$rec
     constF[["depl"]][sim,] <- expt.constF$depl
+    constF[["obs.biomass"]][sim,] <- expt.constF$biomass
     }
     save(constF,file=paste("All",s,"constF",".RData",sep="_"))
     }
@@ -147,6 +150,7 @@ for(s in 1:nscenarios){
     oceana[["fishing"]][sim,] <- expt.oceana$fishing
     oceana[["rec"]][sim,] <- expt.oceana$rec
     oceana[["depl"]][sim,] <- expt.oceana$depl
+    oceana[["obs.biomass"]][sim,] <- expt.oceana$biomass
     }
     save(oceana,file=paste("All",s,"oceana",".RData",sep="_")) 
   }
@@ -162,6 +166,7 @@ for(s in 1:nscenarios){
       lenfest[["fishing"]][sim,] <- expt.lenfest$fishing
       lenfest[["rec"]][sim,] <- expt.lenfest$rec
       lenfest[["depl"]][sim,] <- expt.lenfest$depl
+      lenfest[["obs.biomass"]][sim,] <- expt.lenfest$biomass
     }
     save(lenfest,file=paste("All",s,"lenfest",".RData",sep="_")) 
   }
@@ -177,6 +182,7 @@ for(s in 1:nscenarios){
       trend[["fishing"]][sim,] <- expt.trend$fishing
       trend[["rec"]][sim,] <- expt.trend$rec
       trend[["depl"]][sim,] <- expt.trend$depl
+      trend[["obs.biomass"]][sim,] <- expt.trend$biomass # Observed one-plus biomass
     }
     save(trend,file=paste("All",s,"trend",".RData",sep="_")) 
   }
