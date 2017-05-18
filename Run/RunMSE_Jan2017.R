@@ -76,7 +76,8 @@ CFP <- oceana <- constF <- lenfest <- trend <-
             fishing= matrix(nrow = nsims,ncol = years.test),
             rec= matrix(nrow = nsims,ncol = years.test),
             depl= matrix(nrow = nsims,ncol = years.test),
-            obs.biomass = matrix(nrow = nsims,ncol = years.test))
+            obs.biomass = matrix(nrow = nsims,ncol = years.test),
+            total.true.biomass = matrix(nrow = nsims,ncol = years.test))
 
 
 # Test params and runs to make sure they look good ------------------------
@@ -119,6 +120,7 @@ for(s in 1:nscenarios){
     CFP[["rec"]][sim,] <- expt.cfp$rec
     CFP[["depl"]][sim,] <- expt.cfp$depl
     CFP[["obs.biomass"]][sim,] <- expt.cfp$biomass
+    CFP[["total.true.biomass"]][sim,] <- expt.cfp$biomass.true
   }
     save(CFP,file=paste("All",s,"CFP",".RData",sep="_"))
     }
@@ -135,6 +137,7 @@ for(s in 1:nscenarios){
     constF[["rec"]][sim,] <- expt.constF$rec
     constF[["depl"]][sim,] <- expt.constF$depl
     constF[["obs.biomass"]][sim,] <- expt.constF$biomass
+    constF[["total.true.biomass"]][sim,] <- expt.constF$biomass.true
     }
     save(constF,file=paste("All",s,"constF",".RData",sep="_"))
     }
@@ -151,6 +154,7 @@ for(s in 1:nscenarios){
     oceana[["rec"]][sim,] <- expt.oceana$rec
     oceana[["depl"]][sim,] <- expt.oceana$depl
     oceana[["obs.biomass"]][sim,] <- expt.oceana$biomass
+    oceana[["total.true.biomass"]][sim,] <- expt.oceana$biomass.true
     }
     save(oceana,file=paste("All",s,"oceana",".RData",sep="_")) 
   }
@@ -167,6 +171,7 @@ for(s in 1:nscenarios){
       lenfest[["rec"]][sim,] <- expt.lenfest$rec
       lenfest[["depl"]][sim,] <- expt.lenfest$depl
       lenfest[["obs.biomass"]][sim,] <- expt.lenfest$biomass
+      lenfest[["total.true.biomass"]][sim,] <- expt.lenfest$biomass.true
     }
     save(lenfest,file=paste("All",s,"lenfest",".RData",sep="_")) 
   }
@@ -183,6 +188,7 @@ for(s in 1:nscenarios){
       trend[["rec"]][sim,] <- expt.trend$rec
       trend[["depl"]][sim,] <- expt.trend$depl
       trend[["obs.biomass"]][sim,] <- expt.trend$biomass # Observed one-plus biomass
+      trend[["total.true.biomass"]][sim,] <- expt.trend$biomass.true
     }
     save(trend,file=paste("All",s,"trend",".RData",sep="_")) 
   }
