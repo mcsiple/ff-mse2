@@ -104,16 +104,23 @@ for(s in 1:nscenarios){
   HCR <- scenarios$HCR[s]
   recruit.sd = scenarios$recruit.sd[s]
   recruit.rho = scenarios$recruit.rho[s]
-  # results.cfp <- results.constF <- results.oceana <- list()
-  # Still need to fix recruitment deviations function -- ???? is this still true??
+
   equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
-  
+          no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
+          set.seed(123) # IMPORTANT! Start each round of sims at same random seed
+          for (sim in 1:nsims){
+                rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
+                F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params)$biomass.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
+                no.fishing[sim,] <- F0.Type
+                  }
+        
+        
   if(HCR=="cfp"){    
-  set.seed(123) # IMPORTANT! Start each round of sims at the same random seed
+  set.seed(123) # IMPORTANT! Start each round of sims at same random seed
   for (sim in 1:nsims){
         rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
         expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params)
-        
+      
     CFP[["biomass"]][sim,] <- expt.cfp$oneplus.biomass
     CFP[["total.catch"]][sim,] <- expt.cfp$total.catch
     CFP[["fishing"]][sim,] <- expt.cfp$fishing
@@ -121,6 +128,7 @@ for(s in 1:nscenarios){
     CFP[["depl"]][sim,] <- expt.cfp$depl
     CFP[["obs.biomass"]][sim,] <- expt.cfp$biomass
     CFP[["total.true.biomass"]][sim,] <- expt.cfp$biomass.true
+    CFP[["no.fishing.tb"]] <- no.fishing
   }
     save(CFP,file=paste("All",s,"CFP",".RData",sep="_"))
     }
@@ -130,7 +138,7 @@ for(s in 1:nscenarios){
     for (sim in 1:nsims){
           rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
           expt.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params)
-        
+          # F0.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params)$biomass.true
     constF[["biomass"]][sim,] <- expt.constF$oneplus.biomass
     constF[["total.catch"]][sim,] <- expt.constF$total.catch
     constF[["fishing"]][sim,] <- expt.constF$fishing
@@ -138,6 +146,7 @@ for(s in 1:nscenarios){
     constF[["depl"]][sim,] <- expt.constF$depl
     constF[["obs.biomass"]][sim,] <- expt.constF$biomass
     constF[["total.true.biomass"]][sim,] <- expt.constF$biomass.true
+    constF[["no.fishing.tb"]] <- no.fishing
     }
     save(constF,file=paste("All",s,"constF",".RData",sep="_"))
     }
@@ -155,6 +164,7 @@ for(s in 1:nscenarios){
     oceana[["depl"]][sim,] <- expt.oceana$depl
     oceana[["obs.biomass"]][sim,] <- expt.oceana$biomass
     oceana[["total.true.biomass"]][sim,] <- expt.oceana$biomass.true
+    oceana[["no.fishing.tb"]] <- no.fishing
     }
     save(oceana,file=paste("All",s,"oceana",".RData",sep="_")) 
   }
@@ -172,6 +182,7 @@ for(s in 1:nscenarios){
       lenfest[["depl"]][sim,] <- expt.lenfest$depl
       lenfest[["obs.biomass"]][sim,] <- expt.lenfest$biomass
       lenfest[["total.true.biomass"]][sim,] <- expt.lenfest$biomass.true
+      lenfest[["no.fishing.tb"]] <- no.fishing
     }
     save(lenfest,file=paste("All",s,"lenfest",".RData",sep="_")) 
   }
@@ -189,6 +200,7 @@ for(s in 1:nscenarios){
       trend[["depl"]][sim,] <- expt.trend$depl
       trend[["obs.biomass"]][sim,] <- expt.trend$biomass # Observed one-plus biomass
       trend[["total.true.biomass"]][sim,] <- expt.trend$biomass.true
+      trend[["no.fishing.tb"]] <- no.fishing
     }
     save(trend,file=paste("All",s,"trend",".RData",sep="_")) 
   }
