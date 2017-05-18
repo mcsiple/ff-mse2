@@ -53,12 +53,13 @@ for(t in 1:3){
     years.test <- 250
     obs.type <- "AC"
     steepness  <- 0.6
+    tim.params <- list(sigma = 1.2, tau0 = 0.06)
     set.seed(123)
     rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
     (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
     testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
     
-    plot(testie$oneplus.biomass[100:250],type='l',#ylim=c(0,2e6),
+    plot(testie$oneplus.biomass[150:250],type='l',#ylim=c(0,2e6),
          col="darkblue",lwd=1.8,
          xlab="Year",
          ylab="Biomass or B_est",
@@ -71,13 +72,17 @@ for(t in 1:3){
     rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
     (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
     testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
-    plot(testie$oneplus.biomass[100:250],type='l',#ylim=c(0,2e6),
+    plot(testie$oneplus.biomass[150:250],type='l',#ylim=c(0,2e6),
          col="darkblue",lwd=1.8,
          xlab="Year",
          ylab="Biomass or B_est",
          main=paste(obs.type))
     lines(testie$biomass[100:250],col='lightblue',lwd=1.8)
 }
+
+
+
+
 # Get sigma from the variability in the delay detection model
 nreps <- 100
 sd.vec <- 1:nreps
@@ -89,7 +94,7 @@ for(i in 1:nreps){
                             const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
   sd.vec[i] <- sd(log(testie$biomass))
 }
-sigma.vec <- sd.vec*sqrt(1-0.8^2)
+sigma.vec <- sd.vec*sqrt(1-0.5^2)
 test.sigma <- median(sigma.vec)
 #        
 #         
