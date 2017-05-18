@@ -11,13 +11,13 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are, load them into a giant dataframe
-#path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
-path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Menhaden_SavedOutputs/Tau_06"
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+#path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Menhaden_SavedOutputs/Tau_06"
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text summary
   files <- files[-rm]
@@ -33,7 +33,7 @@ nyrs.to.use <- 100 # How many years you want to use to calculate all your metric
 calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
 
 # Add performance measure columns to table
-performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","p.bad4preds","meanDepl")
+performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl")
 # Still haven't added : prob(catch falls below a threshold bc what should the threshold be?)
                 #   mean interannual change in catches
                 #   min closure length - bc it's a tough coding thing (but do it later)
@@ -84,10 +84,10 @@ for (s in 1:nscenarios){
   scen.table[s,performance.measures[9]] <- 1 / median(apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = sd,MARGIN = 1)) # "SDbiomass" **N**
   raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
   
-  yrs.bad <- apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # length of vector is nsims 
-  scen.table[s,performance.measures[10]] <- ifelse(length(which(yrs.bad>0))/nsims == 0, 0,
-                                               1 / length(which(yrs.bad>0))/nsims ) #Prob that biomass ever dipped below 10% of LT mean "p.bad4preds" **N**
-  raw.table[s,performance.measures[10]] <- length(which(yrs.bad>0))/nsims
+  yrs.bad <- apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are very bad for preds - length of vector is nsims 
+
+  scen.table[s,performance.measures[10]] <-  ifelse (median(yrs.bad)==0, 1, 1 / median(yrs.bad) ) #  **N** Number of years below a very low threshold (<10% of long term unfished biomass) "very.bad4preds" **N**
+  raw.table[s,performance.measures[10]] <- median(yrs.bad)
   scen.table[s,performance.measures[11]] <- 
     raw.table[s,performance.measures[11]] <- median(rowMeans(result.to.use$depl[,calc.ind])) 
 }
@@ -107,7 +107,7 @@ write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 palette <- brewer.pal(6,"Spectral")
 show_col(palette)
 hcr.colors <- palette[c(6,5,3,1,2)]
-show_col(hcr.colors) # C1 (Oc), C2 (Len), constF, stability-favoring, trend-based (this is the order of the colors)
+#show_col(hcr.colors) # C1 (Oc), C2 (Len), constF, stability-favoring, trend-based (this is the order of the colors)
 
 all.summaries <- lapply(results,FUN = summ.tab)
 all.summaries <- do.call(rbind.data.frame, all.summaries)
@@ -156,7 +156,7 @@ nice.pms <- data.frame(original = colnames(scen.table[-(1:6)]),
                                     "SD(Catch)","Number of \n 5-yr closures",
                                     "Number of \n 10-yr closures","Number of yrs \n w/ zero catch",
                                     "LT mean biomass","Number of yrs \n above pred threshold",
-                                    "SD(Biomass)","Prob. biomass falls \n below pred threshold",
+                                    "SD(Biomass)","Number of yrs \n below low pred threshold",
                                     "Mean depletion"))
 
 for(steep in 1:2){
@@ -231,6 +231,20 @@ ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=sce
   geom_point(size=5)  + theme_bw(base_size = 18) + 
   theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
   facet_wrap(~variable)
+
+
+# Plot just the predator ones ---------------------------------------------
+            pred.df <- subset(all.summaries,PM %in% c("good4preds","very.bad4preds"))
+            dodge <- position_dodge(.6)
+            ggplot(pred.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type,label=med)) +
+              scale_colour_manual(values = hcr.colors) +
+              scale_alpha_manual(values = c(0.6,1)) +
+              geom_point(size=5,position=dodge)  + 
+              geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
+              geom_text(nudge_x = .3) +
+              theme_bw(base_size = 18) +
+              theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
+              facet_wrap(h~PM,scales="free_y")
 
 # Plot comparing biomass, catch, etc for one run each scenario ------------
 attributes <- c("Biomass","Catches","Recruitment","Depletion (B/B0)")
