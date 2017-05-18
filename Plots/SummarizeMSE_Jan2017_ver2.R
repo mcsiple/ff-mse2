@@ -11,13 +11,13 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Sardine" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are, load them into a giant dataframe
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
-#path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Menhaden_SavedOutputs/Tau_06"
+#path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Menhaden_SavedOutputs/Tau_06"
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text summary
   files <- files[-rm]
@@ -25,12 +25,11 @@ path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Typ
   setwd(path)
   results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all the results - ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
 
-  
 nscenarios <- length(results)
 scen.table <- read.table("Scenario_Table.txt")
 nsims <- nrow(results[[1]]$biomass) # just count nrows to know how many sims there are
 years.test <- ncol(results[[1]]$biomass) # just count cols to know how many years there are
-nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics
+nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
 calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
 
 # Add performance measure columns to table
@@ -76,15 +75,16 @@ for (s in 1:nscenarios){
   raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
   
   scen.table[s,performance.measures[7]] <- 
-    raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$biomass[,calc.ind])) # "meanbiomass"
+    raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$total.true.biomass[,calc.ind])) # "meanbiomass"
   
   scen.table[s,performance.measures[8]] <- 
-    raw.table[s,performance.measures[8]] <- median(apply(X = result.to.use$biomass[,calc.ind],FUN = good4pred,MARGIN = 1)) # "good4preds"
+    raw.table[s,performance.measures[8]] <- median(apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = good4pred,MARGIN = 1, 
+                                                         F0.x = result.to.use$no.fishing.tb[,calc.ind])) # "good4preds" - this is calculated from TOTAL biomass (including age 0)
   
-  scen.table[s,performance.measures[9]] <- 1 / median(apply(X = result.to.use$biomass[,calc.ind],FUN = sd,MARGIN = 1)) # "SDbiomass" **N**
-  raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$biomass[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
+  scen.table[s,performance.measures[9]] <- 1 / median(apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = sd,MARGIN = 1)) # "SDbiomass" **N**
+  raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
   
-  yrs.bad <- apply(X = result.to.use$biomass[,calc.ind],FUN = bad4pred,MARGIN = 1) # length of vector is nsims 
+  yrs.bad <- apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # length of vector is nsims 
   scen.table[s,performance.measures[10]] <- ifelse(length(which(yrs.bad>0))/nsims == 0, 0,
                                                1 / length(which(yrs.bad>0))/nsims ) #Prob that biomass ever dipped below 10% of LT mean "p.bad4preds" **N**
   raw.table[s,performance.measures[10]] <- length(which(yrs.bad>0))/nsims
