@@ -68,16 +68,22 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
   nz1 <- apply(catch,MARGIN = 1,FUN = nzeroes)
   
   # SDbiomass
-  biomass <- result.list$biomass
-  sd.Bs <- apply(biomass, MARGIN = 1,FUN = sd, na.rm = TRUE)
+  true.biomass <- result.list$total.true.biomass
+  sd.Bs <- apply(true.biomass, MARGIN = 1,FUN = sd, na.rm = TRUE)
   sd.B <- quantile(sd.Bs,probs = c(0.05,0.5,0.95))
   
   #Years that are "good for predators"
-  g4p.vec <- apply(X = biomass,FUN = good4pred,MARGIN = 1)
-  
+  g4p.vec <- vector()
+  for(i in 1:nrow(true.biomass)){
+    g4p.vec[i] <- good4pred(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])
+  }
+
   # Number of years that are below a predator threshold
-  yrs.bad <- apply(X = biomass,FUN = bad4pred,MARGIN = 1) # length of vector is nsims 
-  
+  yrs.bad <- vector()
+  for(i in 1:nrow(true.biomass)){
+    yrs.bad[i] <- bad4pred(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])
+  }
+ 
   
   # Performance metrics
   interval <- c(0.05,0.5,0.95)
@@ -88,7 +94,7 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
   n5yr <- quantile(n.5yrclose,probs = interval)     #n.5yrclose
   n10yr <- quantile(n.10yrclose,probs = interval)   #n.10yrclose
   nz <- quantile(nz1,probs = interval)              #nyrs.0catch
-  ltm.b <- ltm$biomass      #LTMBiomass
+  ltm.b <- ltm$total.true.biomass      #LTMBiomass
   g4p <- quantile(g4p.vec,probs = interval)         #Nyears "good for predator"
   sdB <- sd.B                               #SD(Biomass)
   b4p <- quantile(yrs.bad,probs = interval) #p(bad4preds)
