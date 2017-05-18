@@ -7,17 +7,17 @@ nzeroes <- function(x){ # How many years with zero catch
   return(n)
 }
 
-good4pred <- function(x){ # Number of years that are above a certain threshold (here, it's 25% of the long term mean biomass)
-  ltm <- mean(x)
-  thresh <- 0.75*ltm
+good4pred <- function(x, F0.x){ # Nyears above a "good for predators" threshold (here, it's 75% of the long term mean unfished biomass, given rec variation)
+  B.bar <- mean(F0.x)
+  thresh <- 0.75*B.bar
   g4p <- length(which(x>thresh))
   return(g4p)
 }
 
-bad4pred <- function(x){ # Number of years that are below a certain threshold (here, it's 10% of the long term mean biomass)
+bad4pred <- function(x, F0.x){ # Number of years that are below a certain threshold (here, it's 10% of the long term mean unfished biomass, given rec variation)
   # x is a time series of biomass
-  ltm <- mean(x)
-  thresh <- 0.1*ltm
+  B.bar <- mean(F0.x)
+  thresh <- 0.1*B.bar
   b4p <- length(which(x<thresh))
   return(b4p)
 }
