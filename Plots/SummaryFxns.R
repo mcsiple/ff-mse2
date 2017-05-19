@@ -9,7 +9,7 @@ nzeroes <- function(x){ # How many years with zero catch
 
 good4pred <- function(x, F0.x){ # Nyears above a "good for predators" threshold (here, it's 75% of the long term mean unfished biomass, given rec variation)
   B.bar <- mean(F0.x)
-  thresh <- 0.75*B.bar
+  thresh <- 0.8*B.bar
   g4p <- length(which(x>thresh))
   return(g4p)
 }
@@ -17,9 +17,19 @@ good4pred <- function(x, F0.x){ # Nyears above a "good for predators" threshold 
 bad4pred <- function(x, F0.x){ # Number of years that are below a certain threshold (here, it's 10% of the long term mean unfished biomass, given rec variation)
   # x is a time series of biomass
   B.bar <- mean(F0.x)
-  thresh <- 0.1*B.bar
+  thresh <- 0.2*B.bar
   b4p <- length(which(x<thresh))
   return(b4p)
+}
+
+collapse.index <- function(x,F0.x){ # Which years have "collapses"-- use this function to ID the collapse years and look at fishing rates leading up to those collapses.
+  B.bar <- mean(F0.x)
+  thresh <- 0.2*B.bar
+  if(any(x<thresh)){
+    collapse.ind <- which(x<thresh)
+  }
+  else collapse.ind <- 0
+  return(collapse.ind)
 }
 
 n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows are sims, cols are years
