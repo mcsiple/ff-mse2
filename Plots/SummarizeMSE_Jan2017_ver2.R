@@ -241,7 +241,7 @@ ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=sce
               scale_alpha_manual(values = c(0.6,1)) +
               geom_point(size=5,position=dodge)  + 
               geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
-              geom_text(nudge_x = .3) +
+              geom_text(nudge_x = 0.3) +
               theme_bw(base_size = 18) +
               theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
               facet_wrap(h~PM,scales="free_y")
