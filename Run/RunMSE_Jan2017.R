@@ -1,7 +1,7 @@
 # Set directories
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
-subDir <- "Anchovy" # Name of ff type
+subDir <- "Menhaden" # Name of ff type
 
 # Load reshape2 and ggplot2 for plotting examples
 library(reshape2)
@@ -144,7 +144,7 @@ for(s in 1:nscenarios){
     constF[["fishing"]][sim,] <- expt.constF$fishing
     constF[["rec"]][sim,] <- expt.constF$rec
     constF[["depl"]][sim,] <- expt.constF$depl
-    constF[["biomass.oneplus.obs"]][sim,] <- expt.constF$biomass
+    constF[["biomass.oneplus.obs"]][sim,] <- expt.constF$biomass.oneplus.obs
     constF[["biomass.total.true"]][sim,] <- expt.constF$biomass.total.true
     constF[["no.fishing.tb"]] <- no.fishing
     }
