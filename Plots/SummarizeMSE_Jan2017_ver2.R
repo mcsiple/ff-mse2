@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Sardine" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 
 
 
@@ -75,16 +75,16 @@ for (s in 1:nscenarios){
   raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
   
   scen.table[s,performance.measures[7]] <- 
-    raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$total.true.biomass[,calc.ind])) # "meanbiomass"
+    raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$biomass.total.true[,calc.ind])) # "meanbiomass"
   
   scen.table[s,performance.measures[8]] <- 
-    raw.table[s,performance.measures[8]] <- median(apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = good4pred,MARGIN = 1, 
+    raw.table[s,performance.measures[8]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = good4pred,MARGIN = 1, 
                                                          F0.x = result.to.use$no.fishing.tb[,calc.ind])) # "good4preds" - this is calculated from TOTAL biomass (including age 0)
   
-  scen.table[s,performance.measures[9]] <- 1 / median(apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = sd,MARGIN = 1)) # "SDbiomass" **N**
-  raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
+  scen.table[s,performance.measures[9]] <- 1 / median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = sd,MARGIN = 1)) # "SDbiomass" **N**
+  raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
   
-  yrs.bad <- apply(X = result.to.use$total.true.biomass[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are very bad for preds - length of vector is nsims 
+  yrs.bad <- apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are very bad for preds - length of vector is nsims 
 
   scen.table[s,performance.measures[10]] <-  ifelse (median(yrs.bad)==0, 1, 1 / median(yrs.bad) ) #  **N** Number of years below a very low threshold (<10% of long term unfished biomass) "very.bad4preds" **N**
   raw.table[s,performance.measures[10]] <- median(yrs.bad)
@@ -246,9 +246,15 @@ ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=sce
               theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
               facet_wrap(h~PM,scales="free_y")
 
+            
+            
 # Plot comparing biomass, catch, etc for one run each scenario ------------
 attributes <- c("Biomass","Catches","Recruitment","Depletion (B/B0)")
 att.ind <- c(1,2,4,5)
+
+# Plot time series of fishing rates leading up to collapses ---------------
+
+
 
 # Plot first run for each scenario
 # Color order of these is funky because order of results list() is not the same as the order of  scen.table w/ the summary
@@ -278,35 +284,35 @@ for (scenario.index in 1:4){
 par(mfrow=c(4,5))
 for (scenario.index in 1:4){
   #par(mfrow=c(2,2),mar=c(5,4,3,2)+0.1)
-    ts <- results[[scenario.index]][["biomass"]][1,calc.ind]
+    ts <- results[[scenario.index]][["biomass.oneplus.true"]][1,calc.ind]
     plot(ts,col=hcr.colors[4],
          ylab = "Biomass", type="l", lwd=2,xlab="Year")
-        lines(results[[scenario.index]][["obs.biomass"]][1,calc.ind],col = hcr.colors[4],lty=2)
+        lines(results[[scenario.index]][["biomass.oneplus.obs"]][1,calc.ind],col = hcr.colors[4],lty=2)
         text(x = 40,y=max(ts)*0.95,labels = paste(scen.table[scenario.index,'obs.error.type'],sep= " "))
         text(x = 40,y=max(ts)*0.85,labels = paste(scen.table[scenario.index,'h'],sep= " "))
     # The above is so messy but it's just to get the correct range for all the lines. 
-    ts <- results[[scenario.index+4]][["biomass"]][1,calc.ind]
+    ts <- results[[scenario.index+4]][["biomass.oneplus.true"]][1,calc.ind]
     plot(ts,col=hcr.colors[3],
          ylab = "Biomass", type="l", lwd=2,xlab="Year")
-    lines(results[[scenario.index+4]][["obs.biomass"]][1,calc.ind],col=hcr.colors[3],lty=2) 
+    lines(results[[scenario.index+4]][["biomass.oneplus.obs"]][1,calc.ind],col=hcr.colors[3],lty=2) 
     text(x = 40,y=max(ts)*0.95,labels = paste(scen.table[scenario.index,'obs.error.type'],sep= " "))
     
-    ts <- results[[scenario.index+8]][["biomass"]][1,calc.ind]
+    ts <- results[[scenario.index+8]][["biomass.oneplus.true"]][1,calc.ind]
     plot(ts,col=hcr.colors[1],
          ylab = "Biomass", type="l", lwd=2,xlab="Year")
-    lines(results[[scenario.index+8]][["obs.biomass"]][1,calc.ind],col=hcr.colors[1],lty=2) 
+    lines(results[[scenario.index+8]][["biomass.oneplus.obs"]][1,calc.ind],col=hcr.colors[1],lty=2) 
     text(x = 40,y=max(ts)*0.95,labels = paste(scen.table[scenario.index,'obs.error.type'],sep= " "))
     
-    ts <- results[[scenario.index+12]][["biomass"]][1,calc.ind]
+    ts <- results[[scenario.index+12]][["biomass.oneplus.true"]][1,calc.ind]
     plot(ts,col=hcr.colors[2],
          ylab = "Biomass", type="l", lwd=2,xlab="Year")
-    lines(results[[scenario.index+12]][["obs.biomass"]][1,calc.ind],col=hcr.colors[2],lty=2) 
+    lines(results[[scenario.index+12]][["biomass.oneplus.obs"]][1,calc.ind],col=hcr.colors[2],lty=2) 
     text(x = 40,y=max(ts)*0.95,labels = paste(scen.table[scenario.index,'obs.error.type'],sep= " "))
     
-    ts <- results[[scenario.index+16]][["biomass"]][1,calc.ind]
+    ts <- results[[scenario.index+16]][["biomass.oneplus.true"]][1,calc.ind]
     plot(ts,col=hcr.colors[5],
          ylab = "Biomass", type="l", lwd=2,xlab="Year")
-    lines(results[[scenario.index+16]][["obs.biomass"]][1,calc.ind],col=hcr.colors[5],lty=2)
+    lines(results[[scenario.index+16]][["biomass.oneplus.obs"]][1,calc.ind],col=hcr.colors[5],lty=2)
     text(x = 40,y=max(ts)*0.95,labels = paste(scen.table[scenario.index,'obs.error.type'],sep= " "))
     
   legend("topright",col = c("black","black"),lwd=c(2,2),lty=c(1,2),legend = c("true B1+","obs B1+"))
