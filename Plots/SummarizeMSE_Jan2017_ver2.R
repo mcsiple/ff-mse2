@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 
 
 
@@ -27,8 +27,8 @@ path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Typ
 
 nscenarios <- length(results)
 scen.table <- read.table("Scenario_Table.txt")
-nsims <- nrow(results[[1]]$biomass) # just count nrows to know how many sims there are
-years.test <- ncol(results[[1]]$biomass) # just count cols to know how many years there are
+nsims <- nrow(results[[1]]$biomass.oneplus.true) # just count nrows to know how many sims there are
+years.test <- ncol(results[[1]]$biomass.oneplus.true) # just count cols to know how many years there are
 nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
 calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
 
@@ -105,7 +105,7 @@ write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 #palette <- brewer_pal(type="qual",palette=2)
 #palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
 palette <- brewer.pal(6,"Spectral")
-show_col(palette)
+#show_col(palette)
 hcr.colors <- palette[c(6,5,3,1,2)]
 #show_col(hcr.colors) # C1 (Oc), C2 (Len), constF, stability-favoring, trend-based (this is the order of the colors)
 
@@ -139,7 +139,7 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 ###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
 ######################################################################
 
-pdf(paste(Type,"_May16.pdf",sep=""),width = 10,height = 9,onefile = TRUE)
+pdf(paste(Type,"_May21.pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
 scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
 # Compare each of the CRs together? It would be like pairs()
@@ -248,9 +248,26 @@ ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=sce
 
             
             
+# Plot just pred ones for paper -------------------------------------------
+            pred2.df <- subset(all.summaries, PM %in% c("good4preds","very.bad4preds") & 
+                                 h ==0.9)
+            dodge <- position_dodge(.8)
+            ggplot(pred2.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type)) +
+              scale_colour_manual(values = hcr.colors) +
+              scale_alpha_manual(values = c(0.6,1)) +
+              geom_point(size=5,position=dodge)  + 
+              geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
+              theme_bw(base_size = 18) +
+              theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
+              ylab("Median number of years") +
+              facet_wrap(~PM,scales="free_y")
+            
+            
+            
 # Plot comparing biomass, catch, etc for one run each scenario ------------
 attributes <- c("Biomass","Catches","Recruitment","Depletion (B/B0)")
 att.ind <- c(1,2,4,5)
+
 
 # Plot time series of fishing rates leading up to collapses ---------------
 
