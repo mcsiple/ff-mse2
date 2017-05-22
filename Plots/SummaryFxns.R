@@ -78,7 +78,7 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
   nz1 <- apply(catch,MARGIN = 1,FUN = nzeroes)
   
   # SDbiomass
-  true.biomass <- result.list$total.true.biomass
+  true.biomass <- result.list$biomass.total.true
   sd.Bs <- apply(true.biomass, MARGIN = 1,FUN = sd, na.rm = TRUE)
   sd.B <- quantile(sd.Bs,probs = c(0.05,0.5,0.95))
   
@@ -104,7 +104,7 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
   n5yr <- quantile(n.5yrclose,probs = interval)     #n.5yrclose
   n10yr <- quantile(n.10yrclose,probs = interval)   #n.10yrclose
   nz <- quantile(nz1,probs = interval)              #nyrs.0catch
-  ltm.b <- ltm$total.true.biomass      #LTMBiomass
+  ltm.b <- ltm$biomass.total.true      #LTMBiomass
   g4p <- quantile(g4p.vec,probs = interval)         #Nyears "good for predator"
   sdB <- sd.B                               #SD(Biomass)
   b4p <- quantile(yrs.bad,probs = interval) #p(bad4preds)
