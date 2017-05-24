@@ -241,27 +241,10 @@ ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=sce
               scale_alpha_manual(values = c(0.6,1)) +
               geom_point(size=5,position=dodge)  + 
               geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
-              geom_text(nudge_x = 0.3) +
+              #geom_text(nudge_x = 0.3) +
               theme_bw(base_size = 18) +
               theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
               facet_wrap(h~PM,scales="free_y")
-
-            
-            
-# Plot just pred ones for paper -------------------------------------------
-            pred2.df <- subset(all.summaries, PM %in% c("good4preds","very.bad4preds") & 
-                                 h ==0.9)
-            dodge <- position_dodge(.8)
-            ggplot(pred2.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type)) +
-              scale_colour_manual(values = hcr.colors) +
-              scale_alpha_manual(values = c(0.6,1)) +
-              geom_point(size=5,position=dodge)  + 
-              geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
-              theme_bw(base_size = 18) +
-              theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
-              ylab("Median number of years") +
-              facet_wrap(~PM,scales="free_y")
-            
             
             
 # Plot comparing biomass, catch, etc for one run each scenario ------------
@@ -368,4 +351,20 @@ for (scenario in 1:length(results)){
 }
 
 
+dev.off()
+
+pdf(paste(Type,"ErrorPlots.pdf",sep=""),width=9.5,height=5)
+# Plot just pred ones for paper -------------------------------------------
+pred2.df <- subset(all.summaries, PM %in% c("good4preds","very.bad4preds") &
+                     h ==0.9)
+dodge <- position_dodge(.8)
+ggplot(pred2.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type)) +
+  scale_colour_manual(values = hcr.colors) +
+  scale_alpha_manual(values = c(0.6,1)) +
+  geom_point(size=5,position=dodge)  +
+  geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
+  ylab("Median number of years") +
+  facet_wrap(~PM,scales="free_y")
 dev.off()
