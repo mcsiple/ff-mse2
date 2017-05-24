@@ -1,7 +1,7 @@
 # Set directories
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
-subDir <- "Menhaden" # Name of ff type
+subDir <- "Sardine" # Name of ff type
 
 # Load reshape2 and ggplot2 for plotting examples
 library(reshape2)
