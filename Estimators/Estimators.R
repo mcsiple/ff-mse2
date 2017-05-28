@@ -113,7 +113,7 @@ tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
   
   Y_obs <- log(Bprev/Bcurr) #Obesrved changed in biomass
   sigma_sq <- sigma^2
-  mu_post = Y_obs * ( sigma_sq/((tau0^2) + 1)  )^-1
+  mu_post = Y_obs * ( sigma_sq/tau0^2 + 1 )^-1
   tau1_squared = ( (1/tau0^2) + (1/sigma_sq) )^-1
   tau1 <- sqrt(tau1_squared)
   draw <- rnorm(1,mu_post, tau1)
