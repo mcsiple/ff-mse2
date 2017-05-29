@@ -3,9 +3,17 @@ basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
 par(mfcol=c(2,3))
 Types <- c("Sardine","Anchovy","Menhaden")
+
+# Load harvest rules
+source(file.path(basedir,"Control Rules/smith_oceana.R"))
+source(file.path(basedir,"Control Rules/cfp.R"))
+source(file.path(basedir,"Control Rules/hockey-stick.R"))
+source(file.path(basedir,"Control Rules/trend-based-rule.R"))
+
+
+
 for(t in 1:3){
   subDir <- Types[t] # Name of ff type
-
     # Load reshape2 and ggplot2 for plotting examples
     library(reshape2)
     library(ggplot2)
@@ -42,13 +50,6 @@ for(t in 1:3){
       recruit.rho <- 0.2
     }
     
-    
-    # Load harvest rules
-    source(file.path(basedir,"Control Rules/smith_oceana.R"))
-    source(file.path(basedir,"Control Rules/cfp.R"))
-    source(file.path(basedir,"Control Rules/hockey-stick.R"))
-    source(file.path(basedir,"Control Rules/trend-based-rule.R"))
-    
     # Other params
     years.test <- 250
     obs.type <- "AC"
@@ -59,12 +60,12 @@ for(t in 1:3){
     (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
     testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
     
-    plot(testie$oneplus.biomass[150:250],type='l',#ylim=c(0,2e6),
+    plot(testie$biomass.oneplus.true[150:250],type='l',#ylim=c(0,2e6),
          col="darkblue",lwd=1.8,
          xlab="Year",
          ylab="Biomass or B_est",
          main=paste(obs.type))
-    lines(testie$biomass[100:250],col='lightblue',lwd=1.8) #obs 1+ biomass
+    lines(testie$biomass.oneplus.obs[150:250],col='lightblue',lwd=1.8) #obs 1+ biomass
     # lines(testie$total.catch,col='red')
     obs.type = "Tim"
     set.seed(123)
@@ -72,12 +73,12 @@ for(t in 1:3){
     rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
     (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
     testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
-    plot(testie$oneplus.biomass[150:250],type='l',#ylim=c(0,2e6),
+    plot(testie$biomass.oneplus.true[150:250],type='l',#ylim=c(0,2e6),
          col="darkblue",lwd=1.8,
          xlab="Year",
          ylab="Biomass or B_est",
          main=paste(obs.type))
-    lines(testie$biomass[100:250],col='lightblue',lwd=1.8)
+    lines(testie$biomass.oneplus.obs[150:250],col='lightblue',lwd=1.8)
 }
 
 
@@ -92,7 +93,7 @@ for(i in 1:nreps){
   testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, 
                             rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",
                             const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
-  sd.vec[i] <- sd(log(testie$biomass))
+  sd.vec[i] <- sd(log(testie$biomass.oneplus.obs))
 }
 sigma.vec <- sd.vec*sqrt(1-0.5^2)
 test.sigma <- median(sigma.vec)
