@@ -65,7 +65,6 @@ years.test = 250
 nsims = 1000
 tim.params = list(sigma = 1.2,tau0=1.2/5) # The value for tau comes from the "sensitivity tests" for the error function-- this sig/tau ratio ensures that there won't be too many giant peaks (>5 x the max biomass)
                                       # sigma = 1.2 and tau0 = 2 means this is the "high-tau" scenario. If tau 
-const.f.rate = 0.6
 R0.sens = NA #NO DYNAMIC R0 in these cases!!
 
 write.table(scenarios,file = "Scenario_Table.txt")
@@ -106,8 +105,9 @@ for(s in 1:nscenarios){
   recruit.rho = scenarios$recruit.rho[s]
 
   equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
+  const.f.rate = equilib$Fmsy # important change from before (5/30/17)! F=Fmsy for constant F and trend scenarios
           no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
-          set.seed(123) # IMPORTANT! Start each round of sims at same random seed
+          set.seed(123) # Start each round of sims at same random seed
           for (sim in 1:nsims){
                 rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
                 F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params)$biomass.total.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
@@ -116,7 +116,7 @@ for(s in 1:nscenarios){
         
         
   if(HCR=="cfp"){    
-  set.seed(123) # IMPORTANT! Start each round of sims at same random seed
+  set.seed(123) # Start each round of sims at same random seed
   for (sim in 1:nsims){
         rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
         expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params)
@@ -138,7 +138,7 @@ for(s in 1:nscenarios){
     for (sim in 1:nsims){
           rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
           expt.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params)
-          # F0.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params)$biomass.true
+          
     constF[["biomass.oneplus.true"]][sim,] <- expt.constF$biomass.oneplus.true
     constF[["total.catch"]][sim,] <- expt.constF$total.catch
     constF[["fishing"]][sim,] <- expt.constF$fishing
