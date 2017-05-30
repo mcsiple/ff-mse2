@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Sardine" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 
 
 
@@ -139,7 +139,7 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 ###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
 ######################################################################
 
-pdf(paste(Type,"_May21.pdf",sep=""),width = 10,height = 9,onefile = TRUE)
+pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
 scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
 # Compare each of the CRs together? It would be like pairs()
@@ -353,7 +353,7 @@ for (scenario in 1:length(results)){
 
 dev.off()
 
-pdf(paste(Type,"ErrorPlots.pdf",sep=""),width=9.5,height=5)
+pdf(paste(Type,"ErrorPlots",Sys.Date(),".pdf",sep=""),width=9.5,height=5)
 # Plot just pred ones for paper -------------------------------------------
 pred2.df <- subset(all.summaries, PM %in% c("good4preds","very.bad4preds") &
                      h ==0.9)
