@@ -1,5 +1,6 @@
 # Functions for summarizing and plotting performance measures
 # Functions for calculating performance measures ---------------------------
+library(RcppRoll)
 
 nzeroes <- function(x){ # How many years with zero catch
   #x is a vector
@@ -32,6 +33,35 @@ collapse.index <- function(x,F0.x){ # Which years have "collapses"-- use this fu
   return(collapse.ind)
 }
 
+bonanza.index <- function(x,F0.x){ # Which years have "bonanzas"-- use this function to ID the bonanza years and what conditions led up to them.
+  B.bar <- mean(F0.x)
+  thresh <- 0.8*B.bar
+  if(any(x>thresh)){
+    bonanza.ind <- which(x>thresh)
+  }
+  else bonanza.ind <- 0
+  return(bonanza.ind)
+}
+
+mean.duration.bc <- function(x, F0.x){
+  collapses <- collapse.index(x = x, F0.x = F0.x)
+  collapse_tf <- vector(FALSE, length = length(F0.x))
+  collapse_tf[collapses] <- TRUE # change to True/False vector so you can measure duration of collapses
+  y <- rle(collapse_tf)
+  collapse.lengths <- y$lengths[y$values==TRUE]
+  avg.collapse.length <- mean(collapse.lengths)
+  return(avg.collapse.length)
+}
+
+mean.duration.bonanza <- function(x, F0.x){
+    bonzanzas <- bonanza.index(x = x, F0.x = F0.x)
+    bonanza_tf <- vector(FALSE, length = length(F0.x))
+    bonanza_tf[bonzanzas] <- TRUE # change to True/False vector so you can measure duration of bonanzas
+    y <- rle(bonanza_tf)
+    bonanza.lengths <- y$lengths[y$values==TRUE]
+    avg.bonanza.length <- mean(bonanza.lengths)
+    return(avg.bonanza.length)
+  }
 n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows are sims, cols are years
   count5 <- count10 <- vector(length=nrow(x))
   for(i in 1:nrow(x)){ #Either catch OR biomass
