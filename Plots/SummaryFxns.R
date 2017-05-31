@@ -50,10 +50,19 @@ duration.collapse <- function(x, F0.x){
   collapse_tf[collapses] <- TRUE # change to True/False vector so you can measure duration of collapses
   y <- rle(collapse_tf)
   collapse.lengths <- y$lengths[y$values==TRUE]
-  shortest.collapse <- min(collapse.lengths)
-  longest.collapse <- max(collapse.lengths)
-  avg.collapse.length <- mean(collapse.lengths)
-  return(list(shortest.collapse,longest.collapse,avg.collapse.length))
+  
+  if(length(collapse.lengths) == 0){
+    shortest.collapse <- NA
+    longest.collapse <- NA
+    avg.collapse.length <- NA
+  }  else{
+    shortest.collapse <- min(collapse.lengths, na.rm = T)
+    longest.collapse <- max(collapse.lengths, na.rm = T)
+    avg.collapse.length <- mean(collapse.lengths, na.rm = T)
+  }
+  return(list("shortest.collapse" = shortest.collapse,
+              "longest.collapse" = longest.collapse,
+              "avg.collapse.length" = avg.collapse.length))
 }
 
 
@@ -64,10 +73,18 @@ duration.bonanza <- function(x, F0.x){
     bonanza_tf[bonanzas] <- TRUE # change to True/False vector so you can measure duration of bonanzas
     y <- rle(bonanza_tf)
     bonanza.lengths <- y$lengths[y$values==TRUE]
-    shortest.bonanza <- min(bonanza.lengths)
-    longest.bonanza <- max(bonanza.lengths)
-    avg.bonanza.length <- mean(bonanza.lengths)
-    return(list(shortest.bonanza,longest.bonanza,avg.bonanza.length))
+    if(length(bonanza.lengths) == 0){
+      shortest.bonanza <- NA
+      longest.bonanza <- NA
+      avg.bonanza.length <- NA
+    }  else{
+      shortest.bonanza <- min(bonanza.lengths, na.rm = T)
+      longest.bonanza <- max(bonanza.lengths, na.rm = T)
+      avg.bonanza.length <- mean(bonanza.lengths, na.rm = T)
+    }
+      return(list("shortest.bonanza" = shortest.bonanza,
+                  "longest.bonanza" = longest.bonanza,
+                  "avg.bonanza.length" = avg.bonanza.length))
 }
 
 #mean.duration.bonanza(x=testie$biomass.total.true,F0.x = F0.Type)
@@ -136,10 +153,16 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
  
   # Maximum duration of collapse
   max.duration.collapse = min.duration.collapse = avg.duration.collapse <- vector()
+  max.duration.bonanza = min.duration.bonanza = avg.duration.bonanza <- vector()
+  
   for(i in 1:nrow(true.biomass)){
     max.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$longest.collapse
     min.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$shortest.collapse
     avg.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$avg.collapse.length
+    
+    max.duration.bonanza[i] <- duration.bonanza(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$longest.bonanza
+    min.duration.bonanza[i] <- duration.bonanza(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$shortest.bonanza
+    avg.duration.bonanza[i] <- duration.bonanza(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$avg.bonanza.length
   }
   
   # Performance metrics
@@ -157,8 +180,14 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
   b4p <- quantile(yrs.bad,probs = interval) #p(bad4preds)
   ltm.depl <- ltm$depl                      # Mean depletion
   
+  overall.max.coll.len <- c(NA, max(max.duration.collapse,na.rm=T), NA) #Fill quantiles w NAs because other metrics have quantiles and these don't!
+  overall.max.bon.len <- c(NA, max(max.duration.bonanza,na.rm=T), NA)
+  
+  bon.length <- quantile(avg.duration.bonanza,probs = interval,na.rm = T)
+  coll.length <- quantile(avg.duration.collapse,probs = interval, na.rm = T)
+  
   output <- data.frame(PM = performance.measures, loCI = NA, med = NA, hiCI = NA)
-  output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl)
+  output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl,overall.max.coll.len,overall.max.bon.len,bon.length,coll.length)
   return(output)
 }
 
