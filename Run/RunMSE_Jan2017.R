@@ -105,7 +105,7 @@ for(s in 1:nscenarios){
   recruit.rho = scenarios$recruit.rho[s]
 
   equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
-  const.f.rate = equilib$Fmsy # important change from before (5/30/17)! F=Fmsy for constant F and trend scenarios
+  const.f.rate = equilib$Fmsy * 0.5 # important change from before (5/30/17)! F=0.5Fmsy for constant F and trend scenarios
           no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
           set.seed(123) # Start each round of sims at same random seed
           for (sim in 1:nsims){
