@@ -43,25 +43,35 @@ bonanza.index <- function(x,F0.x){ # Which years have "bonanzas"-- use this func
   return(bonanza.ind)
 }
 
-mean.duration.bc <- function(x, F0.x){
+duration.collapse <- function(x, F0.x){
+  # This function returns the min, max, and mean duration of collapses
   collapses <- collapse.index(x = x, F0.x = F0.x)
-  collapse_tf <- vector(FALSE, length = length(F0.x))
+  collapse_tf <- logical(length = length(F0.x))
   collapse_tf[collapses] <- TRUE # change to True/False vector so you can measure duration of collapses
   y <- rle(collapse_tf)
   collapse.lengths <- y$lengths[y$values==TRUE]
+  shortest.collapse <- min(collapse.lengths)
+  longest.collapse <- max(collapse.lengths)
   avg.collapse.length <- mean(collapse.lengths)
-  return(avg.collapse.length)
+  return(list(shortest.collapse,longest.collapse,avg.collapse.length))
 }
 
-mean.duration.bonanza <- function(x, F0.x){
-    bonzanzas <- bonanza.index(x = x, F0.x = F0.x)
-    bonanza_tf <- vector(FALSE, length = length(F0.x))
-    bonanza_tf[bonzanzas] <- TRUE # change to True/False vector so you can measure duration of bonanzas
+
+duration.bonanza <- function(x, F0.x){
+  # This function returns the min, max, and mean duration of bonanzas
+    bonanzas <- bonanza.index(x = x, F0.x = F0.x)
+    bonanza_tf <- logical(length = length(F0.x))
+    bonanza_tf[bonanzas] <- TRUE # change to True/False vector so you can measure duration of bonanzas
     y <- rle(bonanza_tf)
     bonanza.lengths <- y$lengths[y$values==TRUE]
+    shortest.bonanza <- min(bonanza.lengths)
+    longest.bonanza <- max(bonanza.lengths)
     avg.bonanza.length <- mean(bonanza.lengths)
-    return(avg.bonanza.length)
-  }
+    return(list(shortest.bonanza,longest.bonanza,avg.bonanza.length))
+}
+
+#mean.duration.bonanza(x=testie$biomass.total.true,F0.x = F0.Type)
+
 n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows are sims, cols are years
   count5 <- count10 <- vector(length=nrow(x))
   for(i in 1:nrow(x)){ #Either catch OR biomass
@@ -124,6 +134,13 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
     yrs.bad[i] <- bad4pred(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])
   }
  
+  # Maximum duration of collapse
+  max.duration.collapse = min.duration.collapse = avg.duration.collapse <- vector()
+  for(i in 1:nrow(true.biomass)){
+    max.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$longest.collapse
+    min.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$shortest.collapse
+    avg.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$avg.collapse.length
+  }
   
   # Performance metrics
   interval <- c(0.05,0.5,0.95)
