@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 
 
 
@@ -33,10 +33,13 @@ nyrs.to.use <- 100 # How many years you want to use to calculate all your metric
 calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
 
 # Add performance measure columns to table
-performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl")
+performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength")
+pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=9)) # for distinguishing types of PMs (mostly for plotting...)
+
+#overall.max.coll.len,overall.max.bon.len,bon.length,coll.length
 # Still haven't added : prob(catch falls below a threshold bc what should the threshold be?)
                 #   mean interannual change in catches
-                #   min closure length - bc it's a tough coding thing (but do it later)
+                #   min closure length 
                 #   Others (check notes!)
 
 scen.table[,performance.measures] <- NA
@@ -46,6 +49,31 @@ raw.table <- scen.table # This will contain raw info about performance measures,
 # ------------------------------------------------------------------------
 # Summarize everything in one giant "outputs" table - this is ugly, sorry
 # ------------------------------------------------------------------------
+
+# Fxns for summarizing and plotting ---------------------------------------
+
+# Colour palette for time series plots - some of these are from iWantHue and some are ColorBrewer
+        #palette <- brewer_pal(type="qual",palette=2)
+        #palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
+palette <- brewer.pal(6,"Spectral")
+hcr.colors <- palette[c(6,5,3,1,2)]
+#show_col(hcr.colors) # C1 (Oc), C2 (Len), constF, stability-favoring, trend-based (this is the order of the colors)
+
+all.summaries <- lapply(results,FUN = summ.tab)
+all.summaries <- do.call(rbind.data.frame, all.summaries)
+all.summaries$scenario <- rep(1:20,each=length(performance.measures))
+
+# Match the scenarios to type of error, etc.
+all.summaries <- merge(all.summaries,scen.table[,1:6],by="scenario")
+all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type, 
+                                                               'Tim'='Delayed change detection',
+                                                               'AC' = "Autocorrelated"),
+                        HCR = recode(HCR, 'cfp' = 'Stability-favoring',
+                                     'constF' = 'Constant F',
+                                     'lenfest' = 'C2',
+                                     'oceana' = 'C1',
+                                     'trend' = "Trend-based"))
+all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
@@ -90,6 +118,19 @@ for (s in 1:nscenarios){
   raw.table[s,performance.measures[10]] <- median(yrs.bad)
   scen.table[s,performance.measures[11]] <- 
     raw.table[s,performance.measures[11]] <- median(rowMeans(result.to.use$depl[,calc.ind])) 
+  
+  sw <- subset(all.summaries,scenario==s)
+  raw.table[s, performance.measures[12]] <- sw[12,'med']
+  scen.table[s, performance.measures[12]] <- ifelse(is.na(sw[12,'med']),NA, 1 / sw[12,'med'])
+  
+  raw.table[s, performance.measures[13]] <- sw[13,'med'] # **N**
+  scen.table[s, performance.measures[13]] <- ifelse(is.na(sw[13,'med']),NA, 1 / sw[13,'med'])
+  
+  raw.table[s,performance.measures[14]] <- scen.table[s,performance.measures[14]] <- sw[14,'med']
+  
+  raw.table[s,performance.measures[15]] <- sw[15,'med']
+  scen.table[s,performance.measures[15]] <- ifelse(is.na(sw[15,'med']),NA, 1 / sw[15,'med'])
+  
 }
 
 write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
@@ -99,31 +140,7 @@ write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 # PLOTS AND METRICS TO SHOW OUTPUTS ----------------------------
 ############################################################################
 
-# Fxns for summarizing and plotting ---------------------------------------
 
-# Colour palette for time series plots - some of these are from iWantHue and some are ColorBrewer
-#palette <- brewer_pal(type="qual",palette=2)
-#palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
-palette <- brewer.pal(6,"Spectral")
-#show_col(palette)
-hcr.colors <- palette[c(6,5,3,1,2)]
-#show_col(hcr.colors) # C1 (Oc), C2 (Len), constF, stability-favoring, trend-based (this is the order of the colors)
-
-all.summaries <- lapply(results,FUN = summ.tab)
-all.summaries <- do.call(rbind.data.frame, all.summaries)
-all.summaries$scenario <- rep(1:20,each=length(performance.measures))
-
-# Match the scenarios to type of error, etc.
-all.summaries <- merge(all.summaries,scen.table[,1:6],by="scenario")
-all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type, 
-                                                               'Tim'='Delayed change detection',
-                                                               'AC' = "Autocorrelated"),
-                                        HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-                                                    'constF' = 'Constant F',
-                                                    'lenfest' = 'C2',
-                                                    'oceana' = 'C1',
-                                                    'trend' = "Trend-based"))
-all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 # Change labels of things in the table! --------------------------
 scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type, 
                                                         'Tim'='Delayed change detection',
@@ -234,7 +251,7 @@ ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=sce
 
 
 # Plot just the predator ones ---------------------------------------------
-            pred.df <- subset(all.summaries,PM %in% c("good4preds","very.bad4preds"))
+            pred.df <- subset(all.summaries,PM %in% c("good4preds","very.bad4preds","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength"))
             dodge <- position_dodge(.6)
             ggplot(pred.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type,label=med)) +
               scale_colour_manual(values = hcr.colors) +
