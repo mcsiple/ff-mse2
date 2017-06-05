@@ -63,7 +63,7 @@ scenarios$scenario <- 1:nscenarios #Label them so it's easier to find/index em l
 #nyrs.to.use = 150
 years.test = 250
 nsims = 1000
-tim.params = list(sigma = 1.2,tau0=1.2/5) # The value for tau comes from the "sensitivity tests" for the error function-- this sig/tau ratio ensures that there won't be too many giant peaks (>5 x the max biomass)
+tim.params = list(sigma = 1.2,tau0=0.06) # The value for tau comes from the "sensitivity tests" for the error function-- this sig/tau ratio ensures that there won't be too many giant peaks (>5 x the max biomass)
                                       # sigma = 1.2 and tau0 = 2 means this is the "high-tau" scenario. If tau 
 R0.sens = NA #NO DYNAMIC R0 in these cases!!
 
