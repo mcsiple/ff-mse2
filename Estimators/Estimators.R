@@ -44,28 +44,6 @@ tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
   
 }
 
-tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
-  #' @description This function draws one value of log(B[t+1]/B[t]) from the posterior created by a normal prior for log(B[t+1]/B[t]) and a normal likelihood. The draw is one's "best estimate" of the true change in biomass from the previous year. Then it solves for what the "best estimate" of this year's biomass is, based on the posterior draw and Bprev, the biomass in the previous time step. 
-  #' @details The goal of this type of observation error is to mimic what observations might be if we had some prior knowledge about the expected change in B. The level of confidence in our ability to detect change is set by tau0, and sigma^2, the variance in the likelihood (CHECK)
-  #' @param Bprev - biomass in the previous year. This can be either the true biomass in the previous year, or the observed biomass in the previous year, if using a survey instead of true values.
-  #' @param Bcurr - biomass for the current year. Like Bprev, this can be the observed biomass or the true biomass in the current year.
-  #' @param sigma_sq - the variance in the PDF that is in the likelihood
-  #' @param tau0 - the amount of confidence in the survey (or assessment)'s ability to detect changes in biomass. A higher tau0 reflects lower confidence in the ability of the survey or assessment to detect changes in B.
-  #' @return A single value of "observed" biomass, derived from the prior, Bcurr, and Bprev, to be used with the HCR to determine F in the current year.
-  
-  Y_obs <- log(Bcurr/Bprev) #Obesrved changed in biomass
-  sigma_sq <- sigma^2
-  mu_post = Y_obs * ( sigma_sq/tau0^2 + 1 )^-1
-  tau1_squared = ( (1/tau0^2) + (1/sigma_sq) )^-1
-  tau1 <- sqrt(tau1_squared)
-  draw <- rnorm(1,mu_post, tau1)
-  Obs <- exp(draw) * Bprev
-  return(Obs)
-  
-}
-
-
-
 # Lognormal error ---------------------------------------------------------
 
 add.LN.error <- function(biomass.true, obs.cv, years=1){
