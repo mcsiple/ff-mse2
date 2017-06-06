@@ -5,6 +5,69 @@
 
 plot.examples = FALSE
 
+
+# Autocorrelated errors with parameters from Wiedenmann 2015 ------------------------------------------
+add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho){
+  #' @description adds autocorrelated obervation error with lag 1, as in Wiedenmann 2015
+  #' @param biomass.true - the true biomass in year y
+  #' @param epsilon.prev - observation error in previous year
+  #' @param sig.s - sd of observation errors 
+  #' @param rho - degree of autocorrelation in obs error
+  #' @return list: "observed" biomass, and epsilon (observation error) in the current year
+  curly.phi <- rnorm(1,0,sig.s) # random deviations on top of the autocorrelation
+  epsilon.curr <- rho * epsilon.prev + sqrt(1-(rho^2)) * curly.phi # error in the current year
+  biomass.est <- biomass.true*exp(epsilon.curr-(0.5*sig.s^2))
+  return(list(biomass.est=biomass.est,epsilon.curr=epsilon.curr))
+}
+
+
+# “Delay detection” model that mimics delayed detection of big pea --------
+
+
+tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
+  #' @description This function draws one value of log(B[t+1]/B[t]) from the posterior created by a normal prior for log(B[t+1]/B[t]) and a normal likelihood. The draw is one's "best estimate" of the true change in biomass from the previous year. Then it solves for what the "best estimate" of this year's biomass is, based on the posterior draw and Bprev, the biomass in the previous time step. 
+  #' @details The goal of this type of observation error is to mimic what observations might be if we had some prior knowledge about the expected change in B. The level of confidence in our ability to detect change is set by tau0, and sigma^2, the variance in the likelihood (CHECK)
+  #' @param Bprev - biomass in the previous year. This can be either the true biomass in the previous year, or the observed biomass in the previous year, if using a survey instead of true values.
+  #' @param Bcurr - biomass for the current year. Like Bprev, this can be the observed biomass or the true biomass in the current year.
+  #' @param sigma_sq - the variance in the PDF that is in the likelihood
+  #' @param tau0 - the amount of confidence in the survey (or assessment)'s ability to detect changes in biomass. A higher tau0 reflects lower confidence in the ability of the survey or assessment to detect changes in B.
+  #' @return A single value of "observed" biomass, derived from the prior, Bcurr, and Bprev, to be used with the HCR to determine F in the current year.
+  
+  Y_obs <- log(Bcurr/Bprev) #Obesrved changed in biomass
+  sigma_sq <- sigma^2
+  mu_post = Y_obs * ( sigma_sq/tau0^2 + 1 )^-1
+  tau1_squared = ( (1/tau0^2) + (1/sigma_sq) )^-1
+  tau1 <- sqrt(tau1_squared)
+  draw <- rnorm(1,mu_post, tau1)
+  Obs <- exp(draw) * Bprev
+  return(Obs)
+  
+}
+
+tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
+  #' @description This function draws one value of log(B[t+1]/B[t]) from the posterior created by a normal prior for log(B[t+1]/B[t]) and a normal likelihood. The draw is one's "best estimate" of the true change in biomass from the previous year. Then it solves for what the "best estimate" of this year's biomass is, based on the posterior draw and Bprev, the biomass in the previous time step. 
+  #' @details The goal of this type of observation error is to mimic what observations might be if we had some prior knowledge about the expected change in B. The level of confidence in our ability to detect change is set by tau0, and sigma^2, the variance in the likelihood (CHECK)
+  #' @param Bprev - biomass in the previous year. This can be either the true biomass in the previous year, or the observed biomass in the previous year, if using a survey instead of true values.
+  #' @param Bcurr - biomass for the current year. Like Bprev, this can be the observed biomass or the true biomass in the current year.
+  #' @param sigma_sq - the variance in the PDF that is in the likelihood
+  #' @param tau0 - the amount of confidence in the survey (or assessment)'s ability to detect changes in biomass. A higher tau0 reflects lower confidence in the ability of the survey or assessment to detect changes in B.
+  #' @return A single value of "observed" biomass, derived from the prior, Bcurr, and Bprev, to be used with the HCR to determine F in the current year.
+  
+  Y_obs <- log(Bcurr/Bprev) #Obesrved changed in biomass
+  sigma_sq <- sigma^2
+  mu_post = Y_obs * ( sigma_sq/tau0^2 + 1 )^-1
+  tau1_squared = ( (1/tau0^2) + (1/sigma_sq) )^-1
+  tau1 <- sqrt(tau1_squared)
+  draw <- rnorm(1,mu_post, tau1)
+  Obs <- exp(draw) * Bprev
+  return(Obs)
+  
+}
+
+
+
+# Lognormal error ---------------------------------------------------------
+
 add.LN.error <- function(biomass.true, obs.cv, years=1){
   #' @description adds random, lognormal error to biomass.true
   #' @param biomass.true - true biomass
@@ -64,19 +127,6 @@ add.delay.error <- function(prev.yrs.b.vec, # Years of true biomass before bioma
   }
 }
 
-# Autocorrelated errors with parameters from Wiedenmann 2015 ------------------------------------------
-add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho){
-  #' @description adds autocorrelated obervation error with lag 1, as in Wiedenmann 2015
-  #' @param biomass.true - the true biomass in year y
-  #' @param epsilon.prev - observation error in previous year
-  #' @param sig.s - sd of observation errors 
-  #' @param rho - degree of autocorrelation in obs error
-  #' @return list: "observed" biomass, and epsilon (observation error) in the current year
-  curly.phi <- rnorm(1,0,sig.s) # random deviations on top of the autocorrelation
-  epsilon.curr <- rho * epsilon.prev + sqrt(1-(rho^2)) * curly.phi # error in the current year
-  biomass.est <- biomass.true*exp(epsilon.curr-(0.5*sig.s^2))
-  return(list(biomass.est=biomass.est,epsilon.curr=epsilon.curr))
-}
 
 # Autocorrelation error with worse estimation when there is a big change in biomass --------
 error.nis <- function(biomass.true, epsilon.prev, sig.s, rho, biomass.prev = 1, phi.err = 1){
@@ -102,25 +152,6 @@ error.nis <- function(biomass.true, epsilon.prev, sig.s, rho, biomass.prev = 1, 
 }
 
 
-tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
-  #' @description This function draws one value of log(B[t+1]/B[t]) from the posterior created by a normal prior for log(B[t+1]/B[t]) and a normal likelihood. The draw is one's "best estimate" of the true change in biomass from the previous year. Then it solves for what the "best estimate" of this year's biomass is, based on the posterior draw and Bprev, the biomass in the previous time step. 
-  #' @details The goal of this type of observation error is to mimic what observations might be if we had some prior knowledge about the expected change in B. The level of confidence in our ability to detect change is set by tau0, and sigma^2, the variance in the likelihood (CHECK)
-  #' @param Bprev - biomass in the previous year. This can be either the true biomass in the previous year, or the observed biomass in the previous year, if using a survey instead of true values.
-  #' @param Bcurr - biomass for the current year. Like Bprev, this can be the observed biomass or the true biomass in the current year.
-  #' @param sigma_sq - the variance in the PDF that is in the likelihood
-  #' @param tau0 - the amount of confidence in the survey (or assessment)'s ability to detect changes in biomass. A higher tau0 reflects lower confidence in the ability of the survey or assessment to detect changes in B.
-  #' @return A single value of "observed" biomass, derived from the prior, Bcurr, and Bprev, to be used with the HCR to determine F in the current year.
-  
-  Y_obs <- log(Bprev/Bcurr) #Obesrved changed in biomass
-  sigma_sq <- sigma^2
-  mu_post = Y_obs * ( sigma_sq/tau0^2 + 1 )^-1
-  tau1_squared = ( (1/tau0^2) + (1/sigma_sq) )^-1
-  tau1 <- sqrt(tau1_squared)
-  draw <- rnorm(1,mu_post, tau1)
-  Obs <- exp(draw) * Bprev
-  return(Obs)
-  
-}
 
 # Test and plot all these obs error situations ----------------------------
 ###########################################################################
