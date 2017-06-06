@@ -13,7 +13,8 @@ source(file.path(basedir,"Control Rules/trend-based-rule.R"))
 Types <- c("Sardine","Anchovy","Menhaden")
 nyrs <- 20
 startyr <- 250-nyrs
-yrs <- startyr:250
+#yrs <- startyr:250
+yrs=1:20
 par(mfcol=c(2,3))
 
 for(t in 1:3){
@@ -86,12 +87,15 @@ for(t in 1:3){
     lines(testie$biomass.oneplus.obs[yrs],col='lightblue',lwd=1.8)
 }
 
-# plot(testie$biomass.oneplus.true[1:20],type='l',
-#      col="darkblue",lwd=1.8,
-#      xlab="Year",
-#      ylab="Biomass or B_est",
-#      main=paste("DD", subDir, sep = " - "))
-# lines(testie$biomass.oneplus.obs[1:20],col='lightblue',lwd=1.8)
+
+
+testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = 20,hcr.type = "constF",const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
+testie$biomass.oneplus.obs
+testie$biomass.oneplus.true
+plot(testie$biomass.oneplus.true,type='l')
+lines(testie$biomass.oneplus.obs,col="lightblue")
+
+# For some reason, the estimates are showing a lag. 
 
 
 # Get sigma from the variability in the delay detection model
