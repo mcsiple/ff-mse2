@@ -59,7 +59,7 @@ for(t in 1:3){
     years.test <- 250
     obs.type <- "AC"
     steepness  <- 0.6
-    tim.params <- list(sigma = 1.2, tau0 = .0001)
+    tim.params <- list(sigma0 = 0.2, tau0 = 0.1)
     set.seed(123)
     rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
     (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
