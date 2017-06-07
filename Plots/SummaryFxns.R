@@ -90,19 +90,21 @@ duration.bonanza <- function(x, F0.x){
 #mean.duration.bonanza(x=testie$biomass.total.true,F0.x = F0.Type)
 
 n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows are sims, cols are years
-  count5 <- count10 <- vector(length=nrow(x))
+  count1 <- count5 <- count10 <- vector(length=nrow(x))
   for(i in 1:nrow(x)){ #Either catch OR biomass
     ltm <- mean(x[i,])
     if(is.na(threshold)){ thresh <- 0.01*ltm } # threshold can be anything - CHANGE THIS TO BE DIFF FOR DIFF HCRS!!!
     else{thresh = threshold}
     badTorF <- x[i,] <= thresh
+    oneyr <- sum(roll_sum(badTorF, 1) == 1)
     fiveyr <- sum(roll_sum(badTorF, 5) == 5)
     tenyr <- sum(roll_sum(badTorF, 10) == 10)
+    count1[i] <- oneyr # number of one-year closures
     count5[i] <- fiveyr #number of five year closures
     count10[i] <- tenyr # number of 10 year closures
   }
   
-  return(list(count5 = count5,count10 = tenyr)) # Mean number of 5- and 10-yr closures
+  return(list(count1 = count1,count5 = count5,count10 = tenyr)) # Mean number of 5- and 10-yr closures
 }
 
 # Rcpproll demo:
