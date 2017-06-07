@@ -24,24 +24,19 @@ add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho){
 # “Delay detection” model that mimics delayed detection of big pea --------
 
 
-tim.assessment <- function(Bprev,Bcurr,sigma = 1.5, tau0 = 0.65){
-  #' @description This function draws one value of log(B[t+1]/B[t]) from the posterior created by a normal prior for log(B[t+1]/B[t]) and a normal likelihood. The draw is one's "best estimate" of the true change in biomass from the previous year. Then it solves for what the "best estimate" of this year's biomass is, based on the posterior draw and Bprev, the biomass in the previous time step. 
-  #' @details The goal of this type of observation error is to mimic what observations might be if we had some prior knowledge about the expected change in B. The level of confidence in our ability to detect change is set by tau0, and sigma^2, the variance in the likelihood (CHECK)
-  #' @param Bprev - biomass in the previous year. This can be either the true biomass in the previous year, or the observed biomass in the previous year, if using a survey instead of true values.
-  #' @param Bcurr - biomass for the current year. Like Bprev, this can be the observed biomass or the true biomass in the current year.
-  #' @param sigma_sq - the variance in the PDF that is in the likelihood
-  #' @param tau0 - the amount of confidence in the survey (or assessment)'s ability to detect changes in biomass. A higher tau0 reflects lower confidence in the ability of the survey or assessment to detect changes in B.
-  #' @return A single value of "observed" biomass, derived from the prior, Bcurr, and Bprev, to be used with the HCR to determine F in the current year.
-  
-  Y_obs <- log(Bcurr/Bprev) #Obesrved changed in biomass
-  sigma_sq <- sigma^2
-  mu_post = Y_obs * ( sigma_sq/tau0^2 + 1 )^-1
-  tau1_squared = ( (1/tau0^2) + (1/sigma_sq) )^-1
-  tau1 <- sqrt(tau1_squared)
-  draw <- rnorm(1,mu_post, tau1)
-  Obs <- exp(draw) * Bprev
-  return(Obs)
-  
+tim.assessment <- function(B,Eprev,sigma0 = NA, tau0 = NA){
+  #' @description This function takes the previous year's biomass estimate (Eprev) and the current biomass (B) and returns an estimate for biomass in the present year. Observation error is described by sigma0, and is just random and lognormal.
+  #' @details The goal of this type of observation error is to mimic what observations might be if we had some prior knowledge about the expected change in B. The level of confidence in our ability to detect change is set by tau0, with small tau0 indicating a case where the assessment or scientist is resistant to large changes in biomass, and large tau0 indicating a case where errors are random, i.e., a large change in biomass is plausible.
+  #' @param B - biomass in the current year. 
+  #' @param Eprev - biomass ESTIMATE in the previous year. 
+  #' @param sigma0 - observation error (between B and E there is an intermediate step not explicitly shown here, which is that there is random lognormal survey error)
+  #' @param tau0 - the amount of confidence in the survey (or assessment)'s ability to detect changes in biomass. Smaller tau0 indicates an assessment or expert who is unlikely to believe large changes in biomass.
+  #' @return A single value of "observed" biomass, described as the estimate of biomass in the current year
+  tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
+  yt <- log(B/Eprev)
+  mu1.tmp <- yt * (1-sigma0^2/(tau0^2+sigma0^2))
+  Ecurr <- Eprev * exp(rnorm(1,mu1.tmp,tau1))
+  return(Ecurr)
 }
 
 # Lognormal error ---------------------------------------------------------
