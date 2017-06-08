@@ -56,12 +56,12 @@ raw.table <- scen.table # This will contain raw info about performance measures,
         #palette <- brewer_pal(type="qual",palette=2)
         #palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
 palette <- brewer.pal(6,"Spectral")
-hcr.colors <- palette[c(6,5,3,1,2)]
-#show_col(hcr.colors) # C1 (Oc), C2 (Len), constF, stability-favoring, trend-based (this is the order of the colors)
-
+hcr.colors <- palette[c(6,5,4,3,1,2)]
+#show_col(hcr.colors) # C1 (Oc), C2 (Len), C3, constF, stability-favoring, trend-based (this is the order of the colors)
+all.summaries <- NA
 all.summaries <- lapply(results,FUN = summ.tab)
 all.summaries <- do.call(rbind.data.frame, all.summaries)
-all.summaries$scenario <- rep(1:20,each=length(performance.measures))
+all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
 
 # Match the scenarios to type of error, etc.
 all.summaries <- merge(all.summaries,scen.table[,1:6],by="scenario")
@@ -70,10 +70,12 @@ all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
                                                                'AC' = "Autocorrelated"),
                         HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                                      'constF' = 'Constant F',
-                                     'lenfest' = 'C2',
-                                     'oceana' = 'C1',
+                                     'C1' = 'C1',
+                                     'C2' = 'C2',
+                                     'C3' = 'C3',
                                      'trend' = "Trend-based"))
-all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
+
+all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
@@ -88,16 +90,29 @@ for (s in 1:nscenarios){
   scen.table[s,performance.measures[3]] <- 1 / median(apply(X = result.to.use$total.catch[,calc.ind],FUN = sd,MARGIN = 1)) #"SDcatch" **N**
   raw.table[s,performance.measures[3]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = sd,MARGIN = 1)) 
   
-  mean.num5yrclosures <- mean(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5, na.rm=TRUE)
-  scen.table[s,performance.measures[4]] <- ifelse(mean.num5yrclosures ==0, 1,
-                                                  1 / mean.num5yrclosures) # "n.5yrclose" **N**
-  raw.table[s,performance.measures[4]] <- mean.num5yrclosures # Mean number of 5-yr closures
+  ######
+  five.yr.closure.given1 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5 / 
+    n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1
+  median.P5 <- median(five.yr.closure.given1,na.rm=TRUE) # This is now the # of 5-year closures given a 1-year closure
+  if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0) &
+     all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1==0)){
+    median.P5 = 0
+  }
+  scen.table[s,performance.measures[4]] <- ifelse(median.P5==0, 1, 1/median.P5)
+  raw.table[s,performance.measures[4]] <- median.P5 # Mean number of 5-yr closures given a 1-yr closure
   
-  mean.num10yrclosures <- mean(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10, na.rm=TRUE)
-  scen.table[s,performance.measures[5]] <- ifelse(mean.num10yrclosures==0, 1,
-                                                  1 / mean.num10yrclosures) # "n.10yrclose" **N**
-  raw.table[s,performance.measures[5]] <- mean.num10yrclosures
+  ######
+  ten.yr.closure.given5 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10 / 
+    n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5
+  median.P10 <- median(ten.yr.closure.given5,na.rm=TRUE) 
+  if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10==0) &
+     all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0)){
+    median.P10 = 0
+  }
+  scen.table[s,performance.measures[5]] <- ifelse(median.P10==0, 1, 1/median.P10)
+  raw.table[s,performance.measures[5]] <- median.P10 # Mean number of 10-yr closures given a 5-yr closure
   
+  ######
   scen.table[s,performance.measures[6]] <- ifelse(median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1)) ==0, 1,
                                                   1 / median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1)) ) # "nyrs0catch" **N**
   raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
@@ -117,19 +132,19 @@ for (s in 1:nscenarios){
   scen.table[s,performance.measures[10]] <-  ifelse (median(yrs.bad)==0, 1, 1 / median(yrs.bad) ) #  **N** Number of years below a very low threshold (<10% of long term unfished biomass) "very.bad4preds" **N**
   raw.table[s,performance.measures[10]] <- median(yrs.bad)
   scen.table[s,performance.measures[11]] <- 
-    raw.table[s,performance.measures[11]] <- median(rowMeans(result.to.use$depl[,calc.ind])) 
+    raw.table[s,performance.measures[11]] <- median(rowMeans(result.to.use$depl[,calc.ind]))  # Median depletion
   
   sw <- subset(all.summaries,scenario==s)
   raw.table[s, performance.measures[12]] <- sw[12,'med']
-  scen.table[s, performance.measures[12]] <- ifelse(is.na(sw[12,'med']),NA, 1 / sw[12,'med'])
+  scen.table[s, performance.measures[12]] <- ifelse(is.na(sw[12,'med']),NA, 1 / sw[12,'med'])    # max collapse length
   
   raw.table[s, performance.measures[13]] <- sw[13,'med'] # **N**
-  scen.table[s, performance.measures[13]] <- ifelse(is.na(sw[13,'med']),NA, 1 / sw[13,'med'])
+  scen.table[s, performance.measures[13]] <- ifelse(is.na(sw[13,'med']),NA, 1 / sw[13,'med'])   # max bonanza length
   
-  raw.table[s,performance.measures[14]] <- scen.table[s,performance.measures[14]] <- sw[14,'med']
+  raw.table[s,performance.measures[14]] <- scen.table[s,performance.measures[14]] <- sw[14,'med']   # mean bonanza length
   
   raw.table[s,performance.measures[15]] <- sw[15,'med']
-  scen.table[s,performance.measures[15]] <- ifelse(is.na(sw[15,'med']),NA, 1 / sw[15,'med'])
+  scen.table[s,performance.measures[15]] <- ifelse(is.na(sw[15,'med']),NA, 1 / sw[15,'med'])    # mean collapse length
   
 }
 
@@ -145,11 +160,12 @@ write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type, 
                                                         'Tim'='Delayed change detection',
                                                         'AC' = "Autocorrelated"),
-                                           HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-                                                        'constF' = 'Constant F',
-                                                        'lenfest' = 'C2',
-                                                        'oceana' = 'C1',
-                                                        'trend' = "Trend-based"))
+                                             HCR = recode(HCR, 'cfp' = 'Stability-favoring',
+                                                          'constF' = 'Constant F',
+                                                          'C1' = 'C1',
+                                                          'C2' = 'C2',
+                                                          'C3' = 'C3',
+                                                          'trend' = "Trend-based"))
 
 
 ######################################################################
@@ -158,7 +174,7 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 
 pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
-scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","Constant F","Stability-favoring","Trend-based"))
+scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
 # Compare each of the CRs together? It would be like pairs()
 
 
@@ -174,12 +190,13 @@ nice.pms <- data.frame(original = colnames(scen.table[-(1:6)]),
                                     "Number of \n 10-yr closures","Number of yrs \n w/ zero catch",
                                     "LT mean biomass","Number of yrs \n above pred threshold",
                                     "SD(Biomass)","Number of yrs \n below low pred threshold",
-                                    "Mean depletion"))
+                                    "Mean depletion","Max collapse length","Max bonanza length",
+                                    "Bonanza length","Collapse length"))
 
 for(steep in 1:2){
   for(obs in 1:2){
     tab <- subset(scen.table, obs.error.type == obs.error.types[obs] & h == steepnesses[steep])
-    tab.metrics <- tab[,7:17]
+    tab.metrics <- tab[,-(1:6)]
     props <- tab.metrics
     maxes <- apply(X = tab.metrics,MARGIN = 2,FUN = max)
     for(i in 1:nrow(props)){
@@ -194,7 +211,7 @@ for(steep in 1:2){
     if(length(na.metrics>0)){
       print(paste("The following performance metrics had NAs and was removed from the figure: ",na.metrics))
       final.tab <- final.tab[,-which(test.nas)]
-      rm.metrics <- which(nice.pms$original == na.metrics)
+      rm.metrics <- which(nice.pms$original %in% na.metrics)
       axis.labels <- nice.pms[-rm.metrics,'polished']
     }
     
