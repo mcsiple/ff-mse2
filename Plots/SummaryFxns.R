@@ -182,11 +182,32 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
   b4p <- quantile(yrs.bad,probs = interval) #p(bad4preds)
   ltm.depl <- ltm$depl                      # Mean depletion
   
-  overall.max.coll.len <- c(NA, max(max.duration.collapse,na.rm=T), NA) #Fill quantiles w NAs because other metrics have quantiles and these don't!
-  overall.max.bon.len <- c(NA, max(max.duration.bonanza,na.rm=T), NA)
+  # Awkward but necessary for when there are NAs in these vectors
+  if(all(is.na(max.duration.collapse))){
+    overall.max.coll.len <- rep(NA,times=3)
+      }else{
+  overall.max.coll.len <-  c(NA, max(max.duration.collapse,na.rm=T), NA)  #Fill quantiles w NAs because other metrics have quantiles and these don't!
+      }
   
+  # Ugh
+  if(all(is.na(max.duration.bonanza))){
+    overall.max.bon.len <- rep(NA,times=3)
+  }else{
+    overall.max.bon.len <- c(NA, max(max.duration.bonanza,na.rm=T), NA)
+  }
+  
+  # Sigh 
+  if(all(is.na(avg.duration.bonanza))){
+    bon.length <- rep(NA,times=3)
+  } else{
   bon.length <- quantile(avg.duration.bonanza,probs = interval,na.rm = T)
-  coll.length <- quantile(avg.duration.collapse,probs = interval, na.rm = T)
+  }
+  # whatever
+  if(all(is.na(avg.duration.collapse))){
+    coll.length <- rep(NA,times=3)
+  } else{
+    coll.length <- quantile(avg.duration.collapse,probs = interval, na.rm = T)
+  }
   
   output <- data.frame(PM = performance.measures, loCI = NA, med = NA, hiCI = NA)
   output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl,overall.max.coll.len,overall.max.bon.len,bon.length,coll.length)
