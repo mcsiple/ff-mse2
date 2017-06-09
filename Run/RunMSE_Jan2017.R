@@ -99,7 +99,7 @@ CFP <- C1 <- C2 <- C3 <- constF <- trend <-
 # --- ---------------------------------------------------------------------
 
 
-for(s in 5:8){  #1:nscenarios
+for(s in 1:nscenarios){  #
   steepness = scenarios$h[s]
   obs.type <- scenarios$obs.error.type[s]
   HCR <- scenarios$HCR[s]
