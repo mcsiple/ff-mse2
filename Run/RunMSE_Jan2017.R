@@ -3,7 +3,13 @@ basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
 subDir <- "Sardine" # Name of ff type
 
-# Load reshape2 and ggplot2 for plotting examples
+#Set up other simulation params
+years.test = 250
+nsims = 1000
+tim.params = list(sigma0 = 0.2,tau0 = 0.1)
+R0.sens = NA #NO DYNAMIC R0 anymore-- ignore
+
+# Load packages
 library(reshape2)
 library(ggplot2)
 # Load rev devs generating fxn, MSE main model, estimator fxns
@@ -47,7 +53,7 @@ source(file.path(basedir,"Control Rules/cfp.R"))
 source(file.path(basedir,"Control Rules/hockey-stick.R"))
 source(file.path(basedir,"Control Rules/trend-based-rule.R"))
 
-# If a sardine folder doesn't exist already, create one!
+# If a results folder doesn't exist already, create one!
 dir.create(file.path(resultsdir, subDir))
 setwd(file.path(resultsdir, subDir))
 
@@ -62,12 +68,6 @@ colnames(scenarios) <- c("h","obs.error.type","HCR","recruit.sd","recruit.rho","
 nscenarios <- nrow(scenarios)
 scenarios$scenario <- 1:nscenarios #Label them so it's easier to find/index em later
 
-#Set up other simulation params
-#nyrs.to.use = 150
-years.test = 250
-nsims = 10
-tim.params = list(sigma0 = 0.2,tau0 = 0.1)
-R0.sens = NA #NO DYNAMIC R0 in these cases!!
 
 write.table(scenarios,file = "Scenario_Table.txt")
 
@@ -99,7 +99,7 @@ CFP <- C1 <- C2 <- C3 <- constF <- trend <-
 # --- ---------------------------------------------------------------------
 
 
-for(s in 1:nscenarios){
+for(s in 5:8){  #1:nscenarios
   steepness = scenarios$h[s]
   obs.type <- scenarios$obs.error.type[s]
   HCR <- scenarios$HCR[s]
