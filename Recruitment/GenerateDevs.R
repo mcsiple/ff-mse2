@@ -1,8 +1,12 @@
 
-
+cv <- function(ts){
+  mean = mean(ts)
+  sd = sd(ts)
+  CV <- sd/mean
+  return(CV)
+}
 
 # A la Thorson et al.  ----------------------------------------------------
-
 
 generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
   #' @description Function to generate recruitment deviations using the "time series" method 
@@ -22,7 +26,11 @@ generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
   #Trim off burn-in years (this is so we get the stationary part, if it's stationary)
   dev.ts <- dev.ts[-(1:burnin)]
   dev.ts <- exp(dev.ts) #Since these are log deviations
-  if(plot==TRUE){ plot(1:N, dev.ts, type='l',ylab='Recruit deviations',xlab='Year')}
+  if(plot==TRUE){ plot(1:N, dev.ts, type='l',yaxt="n",ylab='',xlab='Year')
+                  title(ylab="Recruit deviations", line=0.4, cex.lab=1.2)
+                  CV <- round(cv(dev.ts),digits = 2)
+                  text(x = 46,y = 0.99*max(dev.ts),labels = paste("CV =",CV))
+                  }
   return(dev.ts)
 }
 
@@ -35,19 +43,19 @@ if(toplot == TRUE){
         par(mfcol=c(3,3))
         # "Sardine"
         for(i in 1:3){
-          generate.devs(N=200,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = TRUE)
+          generate.devs(N=50,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = TRUE)
           if(i==1){mtext(side = 3,text = "Sardine-like",outer = FALSE)}
           }
         
         # "Herring/anchovy" 
         for(i in 1:3){
-          generate.devs(N=200,rho = 0.5,sd.devs = 0.3,burnin = 100,plot = TRUE)
+          generate.devs(N=50,rho = 0.5,sd.devs = 0.3,burnin = 100,plot = TRUE)
           if(i==1){mtext(side = 3,text = "Herring/anchovy-like",outer = FALSE)}
         }
         
         # "Menhaden"
         for(i in 1:3){
-          generate.devs(N=200,rho = 0,sd.devs = 0.7,burnin = 100,plot = TRUE)
+          generate.devs(N=50,rho = 0,sd.devs = 0.7,burnin = 100,plot = TRUE)
           if(i==1){mtext(side = 3,text = "Menhaden-like",outer = FALSE)}
         }
   
