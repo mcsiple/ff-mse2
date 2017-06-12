@@ -17,7 +17,7 @@ toplot=FALSE      # Don't plot examples of rec trajectories
 source(file.path(basedir,"Recruitment/GenerateDevs.R")) 
 source(file.path("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/HCR_Trajectory.R"))
 source(file.path(basedir,"Estimators/Estimators.R"))
-source(file.path,basedir,"Run/generate_M.R")
+source(file.path(basedir,"Run/generate_M.R"))
 
 # Load control files
 # Sardines
@@ -94,9 +94,36 @@ CFP <- C1 <- C2 <- C3 <- constF <- trend <-
         nofish <- melt(test.constF[-c(1,4,9,10)])
         nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
         ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") + xlim(c(150,250))
+        
+# Test pop and see if it crashes ------------------------------------------
+# Check that population will still sometimes collapse even without fishing.
+nexamples <- 20 # How many time series do you want to plot
+var.to.plot <- "biomass.oneplus.true"
+      big.df <- data.frame()
+      for(i in 1:nexamples){
+      steepness = scenarios$h[2]
+      obs.type <- scenarios$obs.error.type[2]
+      HCR <- scenarios$HCR[1]
+      recruit.sd = .6 #scenarios$recruit.sd[1]
+      recruit.rho = .9 #scenarios$recruit.rho[1]
+      equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
+      rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
+      test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
+      nofish <- melt(test.constF[-c(1,4,9,10)])
+      nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
+      vars.to.plot <- subset(nofish, L1 %in% var.to.plot)
+      vars.to.plot$rep <- paste(i)
+      big.df <- rbind(big.df,vars.to.plot)
+      }
+      
+ndf <- big.df %>% group_by(rep) %>% mutate(low.B.thresh = 0.2*mean(value)) %>% as.data.frame()
+ggplot(ndf,aes(x=year,y=value)) + geom_line() +geom_line(aes(y=low.B.thresh),col="red") + facet_wrap(~rep,scales = "free_y") #xlim(c(150,250)
 
-        #plot(test.constF$biomass,test.constF$oneplus.biomass)
-# --- ---------------------------------------------------------------------
+  
+        
+
+# -------------------------------------------------------------------------
+
 
 
 for(s in 1:nscenarios){  #
