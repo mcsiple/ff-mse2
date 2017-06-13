@@ -64,7 +64,7 @@ all.summaries <- do.call(rbind.data.frame, all.summaries)
 all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
 
 # Match the scenarios to type of error, etc.
-all.summaries <- merge(all.summaries,scen.table[,1:6],by="scenario")
+all.summaries <- merge(all.summaries,scen.table[,1:7],by="scenario")
 all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type, 
                                                                'Tim'='Delayed change detection',
                                                                'AC' = "Autocorrelated"),
@@ -77,7 +77,7 @@ all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
 
 all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
-for (s in 1:nscenarios){
+for (s in 1:24){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
   scen.table[s,performance.measures[1]] <- raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind])) #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
@@ -184,7 +184,7 @@ mat <- matrix(1:4,nrow=2,byrow = TRUE)
 plotnames <- list()
 steepnesses <- unique(scen.table$h)
 obs.error.types <- unique(scen.table$obs.error.type)
-nice.pms <- data.frame(original = colnames(scen.table[-(1:6)]),
+nice.pms <- data.frame(original = colnames(scen.table[-(1:7)]),
                        polished = c("LT mean catch","LT mean nonzero catch",
                                     "SD(Catch)","Number of \n 5-yr closures",
                                     "Number of \n 10-yr closures","Number of yrs \n w/ zero catch",
@@ -196,18 +196,25 @@ nice.pms <- data.frame(original = colnames(scen.table[-(1:6)]),
 for(steep in 1:2){
   for(obs in 1:2){
     tab <- subset(scen.table, obs.error.type == obs.error.types[obs] & h == steepnesses[steep])
-    tab.metrics <- tab[,-(1:6)]
+    tab.metrics <- tab[,-(1:7)]
     props <- tab.metrics
-    maxes <- apply(X = tab.metrics,MARGIN = 2,FUN = max)
+    maxes <- apply(X = tab.metrics,MARGIN = 2,FUN = max,na.rm  = T )
     for(i in 1:nrow(props)){
       props[i,] <- tab.metrics[i,] / maxes
     }
-    final.tab <- cbind(tab[,3],props)
+    final.tab <- cbind(tab[,'HCR'],props)
     colnames(final.tab)[1] <- "group"
     test.nas <- apply(X = final.tab,FUN = anyNA,MARGIN = 2)
     na.metrics <- names(which(test.nas))
     axis.labels <- nice.pms[,'polished']
     
+    ##
+    # example1 <- example[,c('group','LTmeancatch','LTnonzeromeancatch','SDcatch','n.5yrclose','meanbiomass','BonanzaLength','overallMaxBonanzaLength','CollapseLength')]
+    # ggradar(example1,font.radar = "Helvetica",grid.label.size=3,axis.label.size=2.5,
+    #         legend.text.size = 2.5,
+    #         #axis.labels = axis.labels,
+    #         plot.legend=legend.presence,palette.vec = hcr.colors)
+    ##
     if(length(na.metrics>0)){
       print(paste("The following performance metrics had NAs and was removed from the figure: ",na.metrics))
       final.tab <- final.tab[,-which(test.nas)]
