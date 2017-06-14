@@ -208,7 +208,7 @@ for(steep in 1:2){
     na.metrics <- names(which(test.nas))
     axis.labels <- nice.pms[,'polished']
     
-    ##
+    # example <- final.tab[1:6,]
     # example1 <- example[,c('group','LTmeancatch','LTnonzeromeancatch','SDcatch','n.5yrclose','meanbiomass','BonanzaLength','overallMaxBonanzaLength','CollapseLength')]
     # ggradar(example1,font.radar = "Helvetica",grid.label.size=3,axis.label.size=2.5,
     #         legend.text.size = 2.5,
