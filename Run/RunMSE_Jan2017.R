@@ -98,7 +98,8 @@ CFP <- C1 <- C2 <- C3 <- constF <- trend <-
 # Test pop and see if it crashes ------------------------------------------
 # Check that population will still sometimes collapse even without fishing.
 nexamples <- 20 # How many time series do you want to plot
-var.to.plot <- "biomass.oneplus.true"
+var.to.plot <- "rec"
+set.seed(123)
       big.df <- data.frame()
       for(i in 1:nexamples){
       steepness = scenarios$h[2]
@@ -117,7 +118,7 @@ var.to.plot <- "biomass.oneplus.true"
       }
       
 ndf <- big.df %>% group_by(rep) %>% mutate(low.B.thresh = 0.2*mean(value)) %>% as.data.frame()
-ggplot(ndf,aes(x=year,y=value)) + geom_line() +geom_line(aes(y=low.B.thresh),col="red") + facet_wrap(~rep,scales = "free_y") #xlim(c(150,250)
+ggplot(ndf,aes(x=year,y=value)) + geom_line() + facet_wrap(~rep,scales = "free_y") # +geom_line(aes(y=low.B.thresh),col="red") #xlim(c(150,250)
 
   
         
