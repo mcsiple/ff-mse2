@@ -73,20 +73,30 @@ rec.ram.test <- rec.ram.test[-80]
 x <- ffdat %>% subset(!is.na(R)) 
 stocks <- unique(x$ASSESSID)
 nstocks <- length(stocks)
-
+bigframe <- vector()
 for(i in 1:nstocks){
-  stock <- ffdat %>% subset(ASSESSID == stocks[i])
+  stock <- ffdat %>% subset(ASSESSID == stocks[i] & !is.na(R)) %>% as.data.frame()
   rec.ram.test <- stock$R
+  years.to.plot <- length(rec.ram.test)
   steepness = 0.6
   obs.type <- "AC"
   HCR <- "constF"
   recruit.sd = .6 #scenarios$recruit.sd[1]
   recruit.rho = .9 #scenarios$recruit.rho[1]
   equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
-  rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-  test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
+  #rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
+  test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = NA,rec.ram = rec.ram.test, F0 = F0.test, cr = cr.test, years = years.to.plot,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
   nofish <- melt(test.constF[-c(1,4,9,10)])
-  nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
-  ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
-  
+  nofish$year <- rep(1:years.to.plot,times=length(unique(nofish$L1)))
+  nofish$stock <- stocks[i]
+  mf <- subset(nofish,L1=="biomass.oneplus.true")
+  mf$thresh <- (mean(mf$value))*0.2
+  mf$bm <- mean(mf$value)
+  bigframe <- rbind(bigframe,mf)
 }
+
+#ltp<- unique(bigframe[,c("stock","thresh","bm")]) # thresholds
+pdf("B_oneplus_true_RAM.pdf",width=14,height =9)
+ggplot(bigframe,aes(x=year,y=value)) + geom_line() + geom_hline(aes(yintercept = thresh),col="red")  + #geom_hline(aes(yintercept = bm),col="blue") +
+  facet_wrap(~stock,scales = "free_y")  #+ xlim(c(150,250))
+dev.off()
