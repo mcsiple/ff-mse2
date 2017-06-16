@@ -84,17 +84,19 @@ CFP <- C1 <- C2 <- C3 <- constF <- trend <-
 
 # Test params and runs to make sure they look good ------------------------
         steepness = scenarios$h[1]
-        obs.type <- scenarios$obs.error.type[2]
+        obs.type <- scenarios$obs.error.type[1]
         HCR <- scenarios$HCR[1]
         recruit.sd = .6 #scenarios$recruit.sd[1]
         recruit.rho = .9 #scenarios$recruit.rho[1]
         equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
         rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-        test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
+        test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
         nofish <- melt(test.constF[-c(1,4,9,10)])
         nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
-        ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") + xlim(c(150,250))
+        ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
         
+
+
 # Test pop and see if it crashes ------------------------------------------
 # Check that population will still sometimes collapse even without fishing.
 nexamples <- 20 # How many time series do you want to plot
@@ -118,10 +120,11 @@ set.seed(123)
       }
       
 ndf <- big.df %>% group_by(rep) %>% mutate(low.B.thresh = 0.2*mean(value)) %>% as.data.frame()
-ggplot(ndf,aes(x=year,y=value)) + geom_line() + facet_wrap(~rep,scales = "free_y") # +geom_line(aes(y=low.B.thresh),col="red") #xlim(c(150,250)
+ggplot(ndf,aes(x=year,y=value)) + geom_line() + facet_wrap(~rep,scales = "free_y") + geom_line(aes(y=low.B.thresh),col="red") #xlim(c(150,250)
 
-  
-        
+#New, just for the recruitment time series
+fff <- nofish %>% subset(L1=="biomass.oneplus.true") %>% mutate(low.B.thresh = 0.2*mean(value,na.rm=TRUE))
+nofish %>% subset(L1=="biomass.oneplus.true") %>% as.data.frame() %>% ggplot(aes(x=year,y=value))+geom_line()+ geom_hline(yintercept = 15639.94,col = "red")
 
 # -------------------------------------------------------------------------
 
