@@ -100,3 +100,69 @@ pdf("B_oneplus_true_RAM.pdf",width=14,height =9)
 ggplot(bigframe,aes(x=year,y=value)) + geom_line() + geom_hline(aes(yintercept = thresh),col="red")  + #geom_hline(aes(yintercept = bm),col="blue") +
   facet_wrap(~stock,scales = "free_y")  #+ xlim(c(150,250))
 dev.off()
+
+# Need to categorize the stocks in RAM to make sure correct params are used in OM
+IDtable <- unique(ffdat[,c("ASSESSID","stocklong")])
+IDtable$type <- c("Anchovy","Anchovy","Anchovy","Anchovy","Anchovy",
+                  NA,NA,NA,NA,NA,NA,NA,
+                  rep("Anchovy",times=24), # These are herrings but they're lumped in w anchovy in rec devs
+                  "Anchovy","Anchovy","Anchovy", #Actual anchovies
+                  NA, NA, NA,
+                  "Menhaden","Menhaden",
+                  "Anchovy","Sardine","Anchovy","Sardine","Sardine","Sardine",
+                  NA, NA,# SBWHITACIR and SBWHITARGS; Whiting
+                  rep(NA,times=5),
+                  "Anchovy","Sardine","Anchovy",
+                  rep("Anchovy",times=4))
+
+x <- ffdat %>% subset(!is.na(R)) 
+touse <- subset(IDtable,!is.na(type))
+stocks <- unique(touse$ASSESSID)
+
+nstocks <- length(stocks)
+bigframe <- vector()
+
+for(i in 1:nstocks){
+  stock <- ffdat %>% subset(ASSESSID == stocks[i] & !is.na(R)) %>% as.data.frame()
+  type <- touse$type[which(touse$ASSESSID == stocks[i])]
+  rec.ram.test <- stock$R
+  years.to.plot <- length(rec.ram.test)
+  steepness = 0.6
+  obs.type <- "AC"
+  HCR <- "constF"
+  
+  if(type == "Sardine"){
+    source(file.path(basedir,"Ctl/Sardine_LHControl.R"))
+    source(file.path(basedir,"Ctl/Sardine_FisheryControl.R"))
+    # Sardine params
+    recruit.sd <- 0.6
+    recruit.rho <- 0.9
+  }
+  # Anchovy/Herring
+  if(type == "Anchovy"){
+    source(file.path(basedir,"Ctl/Anchovy_LHControl.R"))
+    source(file.path(basedir,"Ctl/Anchovy_FisheryControl.R"))
+    #Anchovy recruitment dev params
+    recruit.sd <- 0.6
+    recruit.rho <- 0.5
+  }
+  # Menhaden
+  if(subDir == "Menhaden"){
+    source(file.path(basedir,"Ctl/Menhaden_LHControl.R"))
+    source(file.path(basedir,"Ctl/Menhaden_FisheryControl.R"))
+    #Anchovy recruitment dev params
+    recruit.sd <- 0.8
+    recruit.rho <- 0.2
+  }
+
+  equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
+  #rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
+  test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = NA,rec.ram = rec.ram.test, F0 = F0.test, cr = cr.test, years = years.to.plot,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
+  nofish <- melt(test.constF[-c(1,4,9,10)])
+  nofish$year <- rep(1:years.to.plot,times=length(unique(nofish$L1)))
+  nofish$stock <- stocks[i]
+  mf <- subset(nofish,L1=="biomass.oneplus.true")
+  mf$thresh <- (mean(mf$value))*0.2
+  mf$bm <- mean(mf$value)
+  bigframe <- rbind(bigframe,mf)
+}
