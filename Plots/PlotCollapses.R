@@ -98,6 +98,6 @@ for(i in 1:nstocks){
 #ltp<- unique(bigframe[,c("stock","thresh","bm")]) # thresholds
 pdf("B_oneplus_true_RAM.pdf",width=14,height =9)
 ggplot(bigframe,aes(x=year,y=value)) + geom_line() + geom_hline(aes(yintercept = thresh),col="red")  + #geom_hline(aes(yintercept = bm),col="blue") +
-  facet_wrap(~stock,scales = "free_y")  #+ xlim(c(150,250))
+  facet_wrap(~stock,scales = "free_y") + ylab("1+ Biomass") + xlab("Year") + theme_classic(base_size = 12) 
 dev.off()
 
