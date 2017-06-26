@@ -1,3 +1,5 @@
+# This code is to figure out whether the rec devs we made up generate similar biomass dynamics to real populations, without fishing. I.e., do they seem to generate the same number and frequency of collapses without fishing, as real populations would experience w/o fishing? I fed RAM recruitment estimates straight into the age-structured model to see.
+
 # Set directories
                   basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
                   resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
@@ -82,8 +84,6 @@ for(i in 1:nstocks){
   steepness = 0.6
   obs.type <- "AC"
   HCR <- "constF"
-  recruit.sd = .6 #scenarios$recruit.sd[1]
-  recruit.rho = .9 #scenarios$recruit.rho[1]
   equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
   #rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
   test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = NA,rec.ram = rec.ram.test, F0 = F0.test, cr = cr.test, years = years.to.plot,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
@@ -100,7 +100,9 @@ for(i in 1:nstocks){
   bigframe <- rbind(bigframe,mf)
 }
 
-#ltp<- unique(bigframe[,c("stock","thresh","bm")]) # thresholds
+
+
+# Plot thresholds and stuff
 pdf("B_oneplus_true_RAM.pdf",width=14,height =9)
 ggplot(bigframe,aes(x=year,y=value)) + geom_line() + geom_hline(aes(yintercept = thresh),col="red")  + #geom_hline(aes(yintercept = bm),col="blue") +
   facet_wrap(~stock,scales = "free_y") + ylab("1+ Biomass") + xlab("Year") + theme_classic(base_size = 12) 
