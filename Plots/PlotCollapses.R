@@ -78,6 +78,7 @@ for(i in 1:nstocks){
   stock <- ffdat %>% subset(ASSESSID == stocks[i] & !is.na(R)) %>% as.data.frame()
   rec.ram.test <- stock$R
   years.to.plot <- length(rec.ram.test)
+  actual.years <- stock$Years
   steepness = 0.6
   obs.type <- "AC"
   HCR <- "constF"
@@ -87,11 +88,15 @@ for(i in 1:nstocks){
   #rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
   test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = NA,rec.ram = rec.ram.test, F0 = F0.test, cr = cr.test, years = years.to.plot,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
   nofish <- melt(test.constF[-c(1,4,9,10)])
-  nofish$year <- rep(1:years.to.plot,times=length(unique(nofish$L1)))
+  nofish$year <- rep(actual.years,times=length(unique(nofish$L1)))
   nofish$stock <- stocks[i]
   mf <- subset(nofish,L1=="biomass.oneplus.true")
-  mf$thresh <- (mean(mf$value))*0.2
-  mf$bm <- mean(mf$value)
+  mf$thresh <- (mean(mf$value))*0.2           #"Collapse" threshold - always based on unfished biomass
+  mf$bm <- mean(mf$value)                     # mean biomass, in case you want to plot it
+  test.coll <- mf$value < mf$thresh
+  coll.years <- length(which(test.coll))      # Total # years collapsed
+  y <- rle(test.coll)
+  n.colls <- length(which(y$values==TRUE))    # number of "collapse" periods (consecutive years with low biomass)
   bigframe <- rbind(bigframe,mf)
 }
 
