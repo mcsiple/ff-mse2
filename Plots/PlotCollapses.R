@@ -75,9 +75,23 @@ rec.ram.test <- rec.ram.test[-80]
 x <- ffdat %>% subset(!is.na(R)) 
 stocks <- unique(x$ASSESSID)
 nstocks <- length(stocks)
+id.table <- unique(x[,c('ASSESSID','commonname')])
+id.table$type <- NA
+# Anchovy and herring are together - I know this is a little weird
+ id.table$type[grep(pattern = "anch",ignore.case = T,x = id.table$commonname)] <- "Anchovy"
+ id.table$type[grep(pattern = "herring",ignore.case = T,x = id.table$commonname)] <- "Anchovy"
+ 
+ id.table$type[grep(pattern = "menhaden",ignore.case = T,x = id.table$commonname)] <- "Menhaden"
+ 
+ id.table$type[grep(pattern = "sardine",ignore.case = T,x = id.table$commonname)] <- "Sardine"
+ id.table$type[grep(pattern = "pilchard",ignore.case = T,x = id.table$commonname)] <- "Sardine"
+
+na.types <- id.table$ASSESSID[which(is.na(id.table$type))] # these stocks are removed because they're types we're not including in the analysis
+ 
 bigframe <- vector()
 for(i in 1:nstocks){
   stock <- ffdat %>% subset(ASSESSID == stocks[i] & !is.na(R)) %>% as.data.frame()
+  if(stock$ASSESSID[i] %in% na.types){next} #skip stocks we aren't using
   rec.ram.test <- stock$R
   years.to.plot <- length(rec.ram.test)
   actual.years <- stock$Years
