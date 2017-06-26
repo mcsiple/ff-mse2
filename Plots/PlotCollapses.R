@@ -21,32 +21,6 @@
                   source(file.path(basedir,"Estimators/Estimators.R"))
                   source(file.path(basedir,"Run/generate_M.R"))
                   
-                  # Load control files
-                  # Sardines
-                  if(subDir == "Sardine"){
-                    source(file.path(basedir,"Ctl/Sardine_LHControl.R"))
-                    source(file.path(basedir,"Ctl/Sardine_FisheryControl.R"))
-                    # Sardine params
-                    recruit.sd <- 0.6
-                    recruit.rho <- 0.9
-                  }
-                  # Anchovy/Herring
-                  if(subDir == "Anchovy"){
-                    source(file.path(basedir,"Ctl/Anchovy_LHControl.R"))
-                    source(file.path(basedir,"Ctl/Anchovy_FisheryControl.R"))
-                    #Anchovy recruitment dev params
-                    recruit.sd <- 0.6
-                    recruit.rho <- 0.5
-                  }
-                  # Menhaden
-                  if(subDir == "Menhaden"){
-                    source(file.path(basedir,"Ctl/Menhaden_LHControl.R"))
-                    source(file.path(basedir,"Ctl/Menhaden_FisheryControl.R"))
-                    #Anchovy recruitment dev params
-                    recruit.sd <- 0.8
-                    recruit.rho <- 0.2
-                  }
-                  
                   # Load harvest rules
                   source(file.path(basedir,"Control Rules/smith_oceana.R"))
                   source(file.path(basedir,"Control Rules/cfp.R"))
@@ -91,13 +65,32 @@ na.types <- id.table$ASSESSID[which(is.na(id.table$type))] # these stocks are re
 bigframe <- vector()
 for(i in 1:nstocks){
   stock <- ffdat %>% subset(ASSESSID == stocks[i] & !is.na(R)) %>% as.data.frame()
-  if(stock$ASSESSID[i] %in% na.types){next} #skip stocks we aren't using
+  type <- id.table$type[which(id.table$ASSESSID == stock$ASSESSID[1])]
+  if(is.na(type)){next}
+  print(type)
   rec.ram.test <- stock$R
   years.to.plot <- length(rec.ram.test)
   actual.years <- stock$Years
   steepness = 0.6
   obs.type <- "AC"
   HCR <- "constF"
+  # Get LH characteristics for that ff type
+            # Sardines
+            if(type == "Sardine"){
+              source(file.path(basedir,"Ctl/Sardine_LHControl.R"))
+              source(file.path(basedir,"Ctl/Sardine_FisheryControl.R"))
+            }else{
+            # Anchovy/Herring
+            if(type == "Anchovy"){
+              source(file.path(basedir,"Ctl/Anchovy_LHControl.R"))
+              source(file.path(basedir,"Ctl/Anchovy_FisheryControl.R"))
+            }else{
+            # Menhaden
+            if(subDir == "Menhaden"){
+              source(file.path(basedir,"Ctl/Menhaden_LHControl.R"))
+              source(file.path(basedir,"Ctl/Menhaden_FisheryControl.R"))
+            }
+            }}
   equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
   #rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
   test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = NA,rec.ram = rec.ram.test, F0 = F0.test, cr = cr.test, years = years.to.plot,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
@@ -107,18 +100,29 @@ for(i in 1:nstocks){
   mf <- subset(nofish,L1=="biomass.oneplus.true")
   mf$thresh <- (mean(mf$value))*0.2           #"Collapse" threshold - always based on unfished biomass
   mf$bm <- mean(mf$value)                     # mean biomass, in case you want to plot it
+  mf$type <- type
   test.coll <- mf$value < mf$thresh
   coll.years <- length(which(test.coll))      # Total # years collapsed
   y <- rle(test.coll)
   n.colls <- length(which(y$values==TRUE))    # number of "collapse" periods (consecutive years with low biomass)
+  mf$ncolls <- n.colls
+  mf$collyears <- coll.years
   bigframe <- rbind(bigframe,mf)
 }
 
-
+# For adding summary stats to plots
+labels <- unique(bigframe[,c("stock","ncolls","collyears")])
+labels <- bigframe %>% group_by(stock, ncolls, collyears) %>% summarize(ycoord = max(value) * 0.9) %>% as.data.frame()
 
 # Plot thresholds and stuff
 pdf("B_oneplus_true_RAM.pdf",width=14,height =9)
-ggplot(bigframe,aes(x=year,y=value)) + geom_line() + geom_hline(aes(yintercept = thresh),col="red")  + #geom_hline(aes(yintercept = bm),col="blue") +
-  facet_wrap(~stock,scales = "free_y") + ylab("1+ Biomass") + xlab("Year") + theme_classic(base_size = 12) 
+baseplot <- ggplot(bigframe,aes(x=year,y=value,colour=type)) + geom_line() + geom_hline(aes(yintercept = thresh),col="red")  + 
+  scale_color_brewer(type="qual",palette=2) +
+  geom_hline(aes(yintercept = bm,colour=type),alpha=0.2) +
+  facet_wrap(~stock,scales = "free_y") + ylab("1+ Biomass") + 
+  xlab("Year") + theme_classic(base_size = 12) 
+baseplot + 
+  geom_label(x = 2000, aes(y=ycoord, label = ncolls),size=3,colour="black",data=labels)
+  
 dev.off()
 
