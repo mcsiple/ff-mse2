@@ -114,15 +114,16 @@ for(i in 1:nstocks){
 labels <- unique(bigframe[,c("stock","ncolls","collyears")])
 labels <- bigframe %>% group_by(stock, ncolls, collyears) %>% summarize(ycoord = max(value) * 0.9) %>% as.data.frame()
 
-# Plot thresholds and stuff
-pdf("B_oneplus_true_RAM.pdf",width=14,height =9)
 baseplot <- ggplot(bigframe,aes(x=year,y=value,colour=type)) + geom_line() + geom_hline(aes(yintercept = thresh),col="red")  + 
   scale_color_brewer(type="qual",palette=2) +
   geom_hline(aes(yintercept = bm,colour=type),alpha=0.2) +
   facet_wrap(~stock,scales = "free_y") + ylab("1+ Biomass") + 
   xlab("Year") + theme_classic(base_size = 12) 
+
+# Plot thresholds and stuff - doesn't make a difference what the obs model is.
+pdf("B_oneplus_true_RAM_AC.pdf",width=14,height =9)
 baseplot + 
-  geom_label(x = 2000, aes(y=ycoord, label = ncolls),size=3,colour="black",data=labels)
-  
+  geom_label(x = 2000, aes(y=ycoord, label = ncolls),size=3,colour="black",data=labels) +
+  theme(strip.background = element_rect(colour="white"))
 dev.off()
 
