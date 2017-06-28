@@ -60,7 +60,7 @@ id.table$type <- NA
  id.table$type[grep(pattern = "sardine",ignore.case = T,x = id.table$commonname)] <- "Sardine"
  id.table$type[grep(pattern = "pilchard",ignore.case = T,x = id.table$commonname)] <- "Sardine"
 
-na.types <- id.table$ASSESSID[which(is.na(id.table$type))] # these stocks are removed because they're types we're not including in the analysis
+na.types <- id.table$ASSESSID[which(is.na(id.table$type))] # these stocks are removed because they're types we're not including in the analysis (.e.g, mackerel)
  
 bigframe <- vector()
 for(i in 1:nstocks){
@@ -113,6 +113,7 @@ for(i in 1:nstocks){
 # For adding summary stats to plots
 labels <- unique(bigframe[,c("stock","ncolls","collyears")])
 labels <- bigframe %>% group_by(stock, ncolls, collyears) %>% summarize(ycoord = max(value) * 0.9) %>% as.data.frame()
+print(labels)
 
 baseplot <- ggplot(bigframe,aes(x=year,y=value,colour=type)) + geom_line() + geom_hline(aes(yintercept = thresh),col="red")  + 
   scale_color_brewer(type="qual",palette=2) +
