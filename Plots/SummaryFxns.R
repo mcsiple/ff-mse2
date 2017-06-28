@@ -93,7 +93,7 @@ n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows a
   count1 <- count5 <- count10 <- vector(length=nrow(x))
   for(i in 1:nrow(x)){ #Either catch OR biomass
     ltm <- mean(x[i,])
-    if(is.na(threshold)){ thresh <- 0.01*ltm } # threshold can be anything - CHANGE THIS TO BE DIFF FOR DIFF HCRS!!!
+    if(is.na(threshold)){ thresh <- 0.01*ltm } # threshold can be anything - default is 1% of long term mean C or B
     else{thresh = threshold}
     badTorF <- x[i,] <= thresh
     oneyr <- sum(roll_sum(badTorF, 1) == 1)
