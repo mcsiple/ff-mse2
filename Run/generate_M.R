@@ -13,7 +13,7 @@ return(M)
 regime.M <- function(Mbar, cutoff.yr, n){
   # n is the length of the total simulation time series (not just the years used to calculate metrics)
   # likewise, cutoff.yr is marked in the entire simulation (so if you want it to be halfway thru the measured years, have to calc accordingly)
-   M <- rep(Mbar*0.25, times=n)
+   M <- rep(Mbar, times=n)
    M[cutoff.yr:n] <- Mbar*1.25 
    return(M)
 }
