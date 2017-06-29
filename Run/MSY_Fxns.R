@@ -15,7 +15,7 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
     c(x,tail(biomass.oneplus.true, 1), # B0
       tail(sp, 2)[1],  # Equilibrium SP. tail(sp, 2)[1] is because the last year of surplus production is NA (because it's calculated from B[t+1]) so it's hacky but it's fine.
       total.catch[years])))  # Total catch, for getting msy 
-  print(equilib)
+  #print(equilib)
   #The value of F which maximizes surplus production is Fmsy
   f.msy <- fish[which.max(equilib[3,])]
   #The value of B which maximizes biomass is Binf
@@ -42,20 +42,20 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
 
 
 # What is impact of M on the population
-
-i=1
-lh.test$M <- plot.mat[i,1] 
-xx <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$x.vec
-yy <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$y.vec
-plot(xx,yy,type='l',ylim=c(0,2e5),,main="Final year catch",xlab="Relative depletion",ylab="Catch (t)")
-
-for(i in 2:4){
-  lh.test$M <- plot.mat[i,1] 
-  xx <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$x.vec
-  yy <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$y.vec
-  lines(xx,yy,col=rainbow(5)[i])
-}
-
+              # 
+              # i=1
+              # lh.test$M <- plot.mat[i,1] 
+              # xx <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$x.vec
+              # yy <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$y.vec
+              # plot(xx,yy,type='l',ylim=c(0,2e5),,main="Final year catch",xlab="Relative depletion",ylab="Catch (t)")
+              # 
+              # for(i in 2:4){
+              #   lh.test$M <- plot.mat[i,1] 
+              #   xx <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$x.vec
+              #   yy <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$y.vec
+              #   lines(xx,yy,col=rainbow(5)[i])
+              # }
+              # 
 
 # years.test <- 150
 # getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 10,steepness=0.9)
