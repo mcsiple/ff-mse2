@@ -2,7 +2,7 @@
 # Functions for calculating performance measures ---------------------------
 library(RcppRoll)
 
-nzeroes <- function(x){ # How many years with zero catch
+nzeroes <- function(x){         # How many years with zero catch
   #x is a vector
   n <- length(which(x==0))
   return(n)
@@ -244,5 +244,23 @@ add.alpha <- function(col, alpha=1){
   apply(sapply(col, col2rgb)/255, 2, 
         function(x) 
           rgb(x[1], x[2], x[3], alpha=alpha))  
+}
+
+
+# Quickly plot time series for a given scenario and simulation # ----------
+
+plot.scenario <- function(result.ind, nyrs.to.use = 100, sim = 1){
+  # quickly plot basic stuff for one scenario (combo of LH traits and control rule)
+  to.use <- results[[result.ind]]
+  nsims <- nrow(to.use$biomass.oneplus.true) # just count nrows to know how many sims there are
+  years.test <- ncol(to.use$biomass.oneplus.true) # just count cols to know how many years there are
+  calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
+  for(i in 1:length(to.use)){ # Trim results to yrs calculating metrics for
+    to.use[[i]] <- to.use[[i]][,calc.ind]
+  } 
+  mtu <- melt(to.use)
+  colnames(mtu) <- c("Sim","Year","value","variable")
+  toplot <- subset(mtu, Sim==sim)
+  ggplot(toplot,aes(x=Year,y=value)) + geom_line() + facet_wrap(~variable,scales="free_y")
 }
 
