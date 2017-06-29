@@ -1,7 +1,7 @@
 # Set directories
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
-subDir <- "Menhaden" # Name of ff type
+subDir <- "Anchovy" # Name of ff type
 
 #Set up other simulation params
 years.test = 250
@@ -95,8 +95,6 @@ CFP <- C1 <- C2 <- C3 <- constF <- trend <-
         nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
         ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
         
-
-
 # Test pop and see if it crashes ------------------------------------------
 # Check that population will still sometimes collapse even without fishing.
 nexamples <- 20 # How many time series do you want to plot
@@ -128,7 +126,7 @@ nofish %>% subset(L1=="biomass.oneplus.true") %>% as.data.frame() %>% ggplot(aes
 
 # -------------------------------------------------------------------------
 
-
+tm <- proc.time()
 
 for(s in 1:nscenarios){  #
   steepness = scenarios$h[s]
@@ -142,7 +140,7 @@ for(s in 1:nscenarios){  #
   const.f.rate = equilib$Fmsy * 0.5 # important change from before (5/30/17)! F=0.5Fmsy for constant F and trend scenarios
           no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
           set.seed(123) # Start each round of sims at same random seed
-          time.var.m <- NA # Basic case: M constant 
+          time.var.m <- NA # Base case: M constant 
           if(M.type == "timevar"){time.var.m <- rw.M(Mbar = lh.test$M, rho.m = 0.6, sigma.m = 0.2,n = years.test)}
           if(M.type == "regimeshift"){time.var.m <- regime.M(Mbar = lh.test$M,cutoff.yr = 201,n = years.test)}
           for (sim in 1:nsims){
@@ -262,6 +260,6 @@ for(s in 1:nscenarios){  #
   }
 }
 
-
+proc.time() - ptm
   
   
