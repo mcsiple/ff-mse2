@@ -11,22 +11,21 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Sardine" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are, load them into a giant dataframe
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
-#path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Menhaden_SavedOutputs/Tau_06"
   files <- list.files(path=path)
-  rm <- grep(files,pattern = ".txt") # Don't load the text summary
+  rm <- grep(files,pattern = ".txt") # Don't load the text table summary
   files <- files[-rm]
   files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
   setwd(path)
   results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all the results - ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
 
 nscenarios <- length(results)
-scen.table <- read.table("Scenario_Table.txt")
+scen.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
 nsims <- nrow(results[[1]]$biomass.oneplus.true) # just count nrows to know how many sims there are
 years.test <- ncol(results[[1]]$biomass.oneplus.true) # just count cols to know how many years there are
 nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
@@ -59,12 +58,12 @@ palette <- brewer.pal(6,"Spectral")
 hcr.colors <- palette[c(6,5,4,3,1,2)]
 #show_col(hcr.colors) # C1 (Oc), C2 (Len), C3, constF, stability-favoring, trend-based (this is the order of the colors)
 all.summaries <- NA
-all.summaries <- lapply(results,FUN = summ.tab)
+all.summaries <- lapply(results,FUN = summ.tab)   # This will take a while
 all.summaries <- do.call(rbind.data.frame, all.summaries)
 all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
 
 # Match the scenarios to type of error, etc.
-all.summaries <- merge(all.summaries,scen.table[,1:7],by="scenario")
+all.summaries <- merge(all.summaries,scen.table[,1:7],by="scenario")    # all.summaries is a giant table with 1080 rows = 72 scenarios * 15 PMs
 all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type, 
                                                                'Tim'='Delayed change detection',
                                                                'AC' = "Autocorrelated"),
@@ -77,7 +76,7 @@ all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
 
 all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
-for (s in 1:24){
+for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
   scen.table[s,performance.measures[1]] <- raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind])) #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
