@@ -12,8 +12,10 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
                          rec.dev = rep(1,times=years), F0=x, cr=NULL, 
                          years=years, hcr.type = "constF",const.f.rate = x,
                          equilib=NULL,steepness=steepness),
-    c(x,tail(biomass.oneplus.true, 1), tail(sp, 2)[1],total.catch[years])))  # tail(sp, 2)[1] is because the last year of surplus production is NA (because it's calculated from B[t+1]) so it's hacky but it's fine.
-  
+    c(x,tail(biomass.oneplus.true, 1), # B0
+      tail(sp, 2)[1],  # Equilibrium SP. tail(sp, 2)[1] is because the last year of surplus production is NA (because it's calculated from B[t+1]) so it's hacky but it's fine.
+      total.catch[years])))  # Total catch, for getting msy 
+  print(equilib)
   #The value of F which maximizes surplus production is Fmsy
   f.msy <- fish[which.max(equilib[3,])]
   #The value of B which maximizes biomass is Binf
@@ -26,13 +28,35 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
   b.0 <- tail(unfished$biomass.oneplus.true,1)
   
   #Plot equilibrium yield curve
-  #plot(equilib[2,]/b.inf,equilib[4,],type="l",xlim=c(0,1),main="Final year catch",xlab="Relative depletion",ylab="Catch (t)")
+  x.vec <- fish
+  y.vec <- equilib[4,]
+  
+  # x.vec <- equilib[2,]/b.inf
+  # y.vec <- equilib[4,]
+  
+  #lines(equilib[2,]/b.inf,equilib[4,],type="l",xlim=c(0,1),main="Final year catch",xlab="Relative depletion",ylab="Catch (t)",col="blue")
   
   
-  return(list("Fmsy"=f.msy,"Bmsy"=b.msy,"Binf"=b.inf,"B0" = b.0))
+  return(list("Fmsy"=f.msy,"Bmsy"=b.msy,"Binf"=b.inf,"B0" = b.0,"x.vec"=x.vec,"y.vec"=y.vec))
+}
+
+
+# What is impact of M on the population
+
+i=1
+lh.test$M <- plot.mat[i,1] 
+xx <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$x.vec
+yy <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$y.vec
+plot(xx,yy,type='l',ylim=c(0,2e5),,main="Final year catch",xlab="Relative depletion",ylab="Catch (t)")
+
+for(i in 2:4){
+  lh.test$M <- plot.mat[i,1] 
+  xx <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$x.vec
+  yy <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])$y.vec
+  lines(xx,yy,col=rainbow(5)[i])
 }
 
 
 # years.test <- 150
 # getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 10,steepness=0.9)
-# getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=0.5)
+# getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])
