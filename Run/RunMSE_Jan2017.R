@@ -1,7 +1,7 @@
 # Set directories
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
-subDir <- "Sardine" # Name of ff type
+subDir <- "Menhaden" # Name of ff type
 
 #Set up other simulation params
 years.test = 250
