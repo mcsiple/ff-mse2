@@ -76,6 +76,8 @@ all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
 
 all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
+write.csv(all.summaries, "Anchovy_AllSummaries.csv")
+
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
@@ -194,7 +196,7 @@ nice.pms <- data.frame(original = colnames(scen.table[-(1:7)]),
 
 for(steep in 1:2){
   for(obs in 1:2){
-    tab <- subset(scen.table, obs.error.type == obs.error.types[obs] & h == steepnesses[steep])
+    tab <- subset(scen.table, obs.error.type == obs.error.types[obs] & h == steepnesses[steep] & M.type == "constant")
     tab.metrics <- tab[,-(1:7)]
     props <- tab.metrics
     maxes <- apply(X = tab.metrics,MARGIN = 2,FUN = max,na.rm  = T )
