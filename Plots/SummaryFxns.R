@@ -111,7 +111,7 @@ n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows a
 
 
 # Get summary metrics so you can make Zeh plots (or whatever you want)
-summ.tab <- function(result.list){ #result.list is one of the results (=1 harvest rule, 1000 time series of biomass, catch, fishing, rec, depl)
+summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one of the results (=1 harvest rule, 1000 time series of biomass, catch, fishing, rec, depl)
   for(i in 1:length(result.list)){
     result.list[[i]] <- result.list[[i]][,calc.ind]
   } # Trim results to the years we're using
@@ -175,7 +175,7 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
   n5yr <- quantile(n.5yrclose,probs = interval)     #n.5yrclose
   n10yr <- quantile(n.10yrclose,probs = interval)   #n.10yrclose
   nz <- quantile(nz1,probs = interval)              #nyrs.0catch
-  ltm.b <- ltm$biomass.total.true      #LTMBiomass
+  ltm.b <- ltm$biomass.total.true                   #LTMBiomass
   g4p <- quantile(g4p.vec,probs = interval)         #Nyears "good for predator"
   sdB <- sd.B                               #SD(Biomass)
   b4p <- quantile(yrs.bad,probs = interval) #p(bad4preds)
@@ -220,16 +220,30 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
   #LTmean biomass
   #yrs good4preds
   #SDbiomass
-  # yrs bad4preds
+  #yrs bad4preds
   #ltm depletion
   #max collapse length (across ALL SIMULATIONS) - do not use in correlations
   #max bonanza length (across ALL SIMULATIONS) - do not use in correlations
   #mean bonanza length
   #mean collapse length
   sim.output[[1]] <- LTmeans.list$total.catch
-  
-  return(output)
-}
+  sim.output[[2]] <- ltm.nzc1 
+  sim.output[[3]] <- sd.catches
+  sim.output[[4]] <- n.5yrclose
+  sim.output[[5]] <- n.10yrclose
+  sim.output[[6]] <- nz1
+  sim.output[[7]] <- LTmeans.list$biomass.total.true
+  sim.output[[8]] <- g4p.vec
+  sim.output[[9]] <- sd.Bs
+  sim.output[[10]] <- yrs.bad
+  sim.output[[11]] <- LTmeans.list$depl
+  sim.output[[12]] <- avg.duration.bonanza
+  sim.output[[13]] <- avg.duration.collapse
+  names(sim.output) <- performance.measures[-c(12,13)]
+  if(individual.sim==TRUE){return(sim.output)}
+  else{return(output)}
+    }
+
 
 # Function to plot medians and certainty intervals from simulations:
 plotintervals <- function(result.mat,ylab){ #result.mat is a matrix (e.g., biomass for results[[1]])
