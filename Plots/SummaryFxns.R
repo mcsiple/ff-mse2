@@ -128,12 +128,13 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   sd.catches <- apply(catch, MARGIN = 1,FUN = sd, na.rm = TRUE)
   sd.catch <- quantile(sd.catches,probs = c(0.05,0.5,0.95))
   
-  #5- and 10-yr closures
-  n.5yrclose <- n.multiyr.closures(catch)$count5
-  n.10yrclose <- n.multiyr.closures(catch)$count10
-  
   #Number of years w zero catch
   nz1 <- apply(catch,MARGIN = 1,FUN = nzeroes)
+  
+  #5- and 10-yr closures
+  n.5yrclose <- n.multiyr.closures(catch)$count5 / nz1 # P(5yr closure | closure)
+  n.10yrclose <- n.multiyr.closures(catch)$count10 / n.5yrclose
+  
   
   # SDbiomass
   true.biomass <- result.list$biomass.total.true
@@ -172,8 +173,8 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   ltm.c <- ltm$total.catch  # ltmcatch
   ltm.nzc <- ltm.nzc2       #ltmnonzerocatch
   SDcatch <- sd.catch       #SD(Catch)
-  n5yr <- quantile(n.5yrclose,probs = interval)     #n.5yrclose
-  n10yr <- quantile(n.10yrclose,probs = interval)   #n.10yrclose
+  n5yr <- quantile(n.5yrclose,probs = interval, na.rm=TRUE)     #n.5yrclose
+  n10yr <- quantile(n.10yrclose,probs = interval, na.rm=TRUE)   #n.10yrclose
   nz <- quantile(nz1,probs = interval)              #nyrs.0catch
   ltm.b <- ltm$biomass.total.true                   #LTMBiomass
   g4p <- quantile(g4p.vec,probs = interval)         #Nyears "good for predator"
