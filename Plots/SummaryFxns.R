@@ -8,7 +8,7 @@ nzeroes <- function(x){         # How many years with zero catch
   return(n)
 }
 
-good4pred <- function(x, F0.x){ # Nyears above a "good for predators" threshold (here, it's 75% of the long term mean unfished biomass, given rec variation)
+good4pred <- function(x, F0.x){ # Nyears above a "good for predators" threshold (here, it's 80% of the long term mean unfished biomass, given rec variation). This is the same as "number of bonanza years"
   B.bar <- mean(F0.x)
   thresh <- 0.8*B.bar
   g4p <- length(which(x>thresh))
@@ -64,7 +64,6 @@ duration.collapse <- function(x, F0.x){
               "longest.collapse" = longest.collapse,
               "avg.collapse.length" = avg.collapse.length))
 }
-
 
 duration.bonanza <- function(x, F0.x){
   # This function returns the min, max, and mean duration of bonanzas
@@ -211,6 +210,24 @@ summ.tab <- function(result.list){ #result.list is one of the results (=1 harves
   
   output <- data.frame(PM = performance.measures, loCI = NA, med = NA, hiCI = NA)
   output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl,overall.max.coll.len,overall.max.bon.len,bon.length,coll.length)
+  sim.output <- list()
+  #LTmean catch
+  #LTmean nonzero catch
+  #SDcatch
+  #n5yr
+  #n10yr
+  #yrs w zero catch
+  #LTmean biomass
+  #yrs good4preds
+  #SDbiomass
+  # yrs bad4preds
+  #ltm depletion
+  #max collapse length (across ALL SIMULATIONS) - do not use in correlations
+  #max bonanza length (across ALL SIMULATIONS) - do not use in correlations
+  #mean bonanza length
+  #mean collapse length
+  sim.output[[1]] <- LTmeans.list$total.catch
+  
   return(output)
 }
 
