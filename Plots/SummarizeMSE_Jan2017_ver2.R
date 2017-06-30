@@ -78,6 +78,11 @@ all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Consta
 
 write.csv(all.summaries, "Anchovy_AllSummaries.csv")
 
+
+# See if performance metrics are correlated -------------------------------
+sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
+
+
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
