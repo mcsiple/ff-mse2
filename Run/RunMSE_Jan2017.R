@@ -124,7 +124,10 @@ ggplot(ndf,aes(x=year,y=value)) + geom_line() + facet_wrap(~rep,scales = "free_y
 fff <- nofish %>% subset(L1=="biomass.oneplus.true") %>% mutate(low.B.thresh = 0.2*mean(value,na.rm=TRUE))
 nofish %>% subset(L1=="biomass.oneplus.true") %>% as.data.frame() %>% ggplot(aes(x=year,y=value))+geom_line()+ geom_hline(yintercept = 15639.94,col = "red")
 
-# -------------------------------------------------------------------------
+###########################################################################
+# SIMULATIONS -------------------------------------------------------------
+###########################################################################
+
 
 tm <- proc.time()
 
@@ -260,6 +263,6 @@ for(s in 1:nscenarios){  #
   }
 }
 
-proc.time() - ptm
+proc.time() - tm
   
   
