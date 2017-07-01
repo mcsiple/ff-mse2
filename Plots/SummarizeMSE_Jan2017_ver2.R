@@ -42,7 +42,7 @@ pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=9)) # for distinguishi
                 #   Others (check notes!)
 
 scen.table[,performance.measures] <- NA
-raw.table <- scen.table # This will contain raw info about performance measures, when scen.table includes things that are scaled so that higher numbers = good
+raw.table <- scen.table # This will contain raw info about performance measures, whereas scen.table includes things that are scaled so that higher numbers = good
 
 
 # ------------------------------------------------------------------------
@@ -81,7 +81,7 @@ write.csv(all.summaries, "Anchovy_AllSummaries.csv")
 
 # See if performance metrics are correlated -------------------------------
 sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
-
+#pairs(sims.all[[33]],pch=19,col=rgb(0,0,0,0.2))
 
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
