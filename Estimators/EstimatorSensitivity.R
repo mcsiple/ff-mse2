@@ -88,14 +88,12 @@ for(t in 1:3){
 }
 
 
-
-testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = 20,hcr.type = "constF",const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
-testie$biomass.oneplus.obs
-testie$biomass.oneplus.true
-plot(testie$biomass.oneplus.true,type='l')
-lines(testie$biomass.oneplus.obs,col="lightblue")
-
-# For some reason, the estimates are showing a lag. 
+# 
+# testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = 20,hcr.type = "constF",const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
+# testie$biomass.oneplus.obs
+# testie$biomass.oneplus.true
+# plot(testie$biomass.oneplus.true,type='l')
+# lines(testie$biomass.oneplus.obs,col="lightblue")
 
 
 # Get sigma from the variability in the delay detection model
