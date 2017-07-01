@@ -1,9 +1,7 @@
+# This is how 
 par(mfrow=c(2,1))
 
-
 # Sine curve example ------------------------------------------------------
-
-
 tau0 <-  0.1
 sigma0 <- 0.2
 #tau1 <- (1/tau0^2+1/sigma0^2)^(-0.5)
@@ -43,7 +41,7 @@ B.true <- c(3392.50470568473, 3870.74716918686, 5262.84780497428, 6277.175226866
             4098.29010637602, 4922.94228974542, 8452.46928649048, 5793.51812263745, 
             4416.60642293191, 1892.68921288849, 2710.52490095019, 1754.64167878724
             )
-#This is some example biomass from 
+#This is some example biomass from simulations
 plot(timelist,B.true,type='l')
 B.obs <- B.true
 
@@ -54,4 +52,28 @@ for(i in 2:length(B.obs)){
 }
 
 lines(B.obs,col='blue')
+
+# Now compare to AC error:
+B.obs2 <- B.obs
+        sig.s = 0.41 # This value comes from running the delay function a bunch of times, getting a target sd(log) - this is the target for AC
+                     # I changed this from the Wiedenmann et al. value because the error didn't look big enough
+        rho = 0.5
+
+# eps.prev = ifelse(yr==1,0.5,eps.prev) # Initialize epsilon. Need to do this every time this type of error is used. #2 is NEW
+# outs <-  add.wied.error(biomass.true = oneplus.biomass[yr],
+#                         epsilon.prev = eps.prev, 
+#                         sig.s =  sig.s, rho = rho)
+# biomass[yr] <- outs$biomass.est
+# eps.prev <- outs$epsilon.curr
+
+eps.vec <- vector(length=length(B.obs))
+eps.vec[1] <- 0.5
+
+for(i in 2:length(B.obs2)){
+    outs <- add.wied.error(biomass.true = B.true[i],epsilon.prev = eps.vec[i-1],sig.s = sig.s,rho=rho)
+    B.obs2[i] <- outs$biomass.est
+    eps.vec[i] <-outs$epsilon.curr
+}
+
+lines(B.obs2,col='red')
 
