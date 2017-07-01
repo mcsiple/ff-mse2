@@ -39,6 +39,8 @@ tim.assessment <- function(B,Eprev,sigma0 = NA, tau0 = NA){
   return(Ecurr)
 }
 
+
+
 # Lognormal error ---------------------------------------------------------
 
 add.LN.error <- function(biomass.true, obs.cv, years=1){
