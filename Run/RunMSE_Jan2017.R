@@ -3,6 +3,7 @@ basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
 subDir <- "Anchovy" # Name of ff type
 
+
 #Set up other simulation params
 years.test = 250
 nsims = 1000
@@ -12,6 +13,9 @@ R0.sens = NA #NO DYNAMIC R0 anymore-- ignore
 # Load packages
 library(reshape2)
 library(ggplot2)
+library(plyr)
+library(dplyr)
+
 # Load rev devs generating fxn, MSE main model, estimator fxns
 toplot=FALSE      # Don't plot examples of rec trajectories
 source(file.path(basedir,"Recruitment/GenerateDevs.R")) 
@@ -116,6 +120,7 @@ set.seed(123)
       vars.to.plot$rep <- paste(i)
       big.df <- rbind(big.df,vars.to.plot)
       }
+
       
 ndf <- big.df %>% group_by(rep) %>% mutate(low.B.thresh = 0.2*mean(value)) %>% as.data.frame()
 ggplot(ndf,aes(x=year,y=value)) + geom_line() + facet_wrap(~rep,scales = "free_y") + geom_line(aes(y=low.B.thresh),col="red") #xlim(c(150,250)
