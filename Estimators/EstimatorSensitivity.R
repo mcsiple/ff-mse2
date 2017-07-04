@@ -96,18 +96,25 @@ for(t in 1:3){
 # lines(testie$biomass.oneplus.obs,col="lightblue")
 
 
-# Get sigma from the variability in the delay detection model
-nreps <- 100
-sd.vec <- 1:nreps
-for(i in 1:nreps){
-  rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-  (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
-  testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, 
-                            rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",
-                            const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
-  sd.vec[i] <- sd(log(testie$biomass.oneplus.obs))
+# Get sigma from the variability in the delay detection model - sigma is different for each forage fish type
+tim.params
+obs.type = "Tim"
+
+for(t in 1:3){
+      nreps <- 100
+      sd.vec <- 1:nreps
+      for(i in 1:nreps){
+        rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
+        (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
+        testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, 
+                                  rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",
+                                  const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
+        sd.vec[i] <- sd(log(testie$biomass.oneplus.obs))
+      }
+      sigma.vec <- sd.vec*sqrt(1-0.5^2)
+      test.sigma <- median(sigma.vec)
+      target.sd.vec[t] <- test.sigma
 }
-sigma.vec <- sd.vec*sqrt(1-0.5^2)
-test.sigma <- median(sigma.vec)
+
 #        
 #         
