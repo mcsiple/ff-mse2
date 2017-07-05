@@ -97,24 +97,62 @@ for(t in 1:3){
 
 
 # Get sigma from the variability in the delay detection model - sigma is different for each forage fish type
+# The code below runs the DD ("Tim") version of the operating model, gets the SD from that, and compares it to the actual SD when there is just autocorrelated error.
+
 tim.params
 obs.type = "Tim"
-
+target.sd.vec <- AC.sd.vec <- vector(length=3)
+#     Type     TargetSD
+# 1  Sardine 0.5117551
+# 2  Anchovy 0.3221512
+# 3 Menhaden 0.3009440
 for(t in 1:3){
+      type <- Types [t]
+      if(type == "Sardine"){
+        source(file.path(basedir,"Ctl/Sardine_LHControl.R"))
+        source(file.path(basedir,"Ctl/Sardine_FisheryControl.R"))
+        recruit.sd <- 0.6
+        recruit.rho <- 0.9
+        sig.s <- 0.511
+      }
+      if(type == "Anchovy"){
+        source(file.path(basedir,"Ctl/Anchovy_LHControl.R"))
+        source(file.path(basedir,"Ctl/Anchovy_FisheryControl.R"))
+        recruit.sd <- 0.6
+        recruit.rho <- 0.5
+        sig.s <- 0.322
+      }
+      if(type == "Menhaden"){
+        source(file.path(basedir,"Ctl/Menhaden_LHControl.R"))
+        source(file.path(basedir,"Ctl/Menhaden_FisheryControl.R"))
+        recruit.sd <- 0.8
+        recruit.rho <- 0.2
+        sig.s <- 0.300
+      }
       nreps <- 100
-      sd.vec <- 1:nreps
+      sd.vec <- sd.vec2 <- 1:nreps
+      set.seed(123)
       for(i in 1:nreps){
         rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
         (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
         testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, 
                                   rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",
-                                  const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = NA, tim.params = tim.params)
+                                  const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = "Tim",R0.traj = NA, tim.params = tim.params,sig.s=sig.s)
+        testie2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, 
+                                  rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",
+                                  const.f.rate=0,equilib = equilib,steepness=steepness,obs.type = "AC",R0.traj = NA, tim.params = tim.params,sig.s=sig.s)
         sd.vec[i] <- sd(log(testie$biomass.oneplus.obs))
+        sd.vec2[i] <- sd(log(testie2$biomass.oneplus.obs))
       }
-      sigma.vec <- sd.vec*sqrt(1-0.5^2)
+      sigma.vec <- sd.vec*sqrt(1-0.5^2)  # Double check-- are these corrections for autocorrelation?
+      sigma.vec2 <- sd.vec2*sqrt(1-0.5^2)
       test.sigma <- median(sigma.vec)
+      test.sigma2 <- median(sigma.vec2)
       target.sd.vec[t] <- test.sigma
+      AC.sd.vec[t] <- test.sigma2
+      #sd.check.vec
 }
+print(data.frame("Type"=Types, "TargetSD" = target.sd.vec, "ActualSD"=AC.sd.vec))
 
 #        
 #         
