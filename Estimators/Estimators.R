@@ -7,7 +7,7 @@ plot.examples = FALSE
 
 
 # Autocorrelated errors with parameters from Wiedenmann 2015 ------------------------------------------
-add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho){
+add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho, return.error = FALSE){
   #' @description adds autocorrelated obervation error with lag 1, as in Wiedenmann 2015
   #' @param biomass.true - the true biomass in year y
   #' @param epsilon.prev - observation error in previous year
@@ -16,15 +16,19 @@ add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho){
   #' @return list: "observed" biomass, and epsilon (observation error) in the current year
   curly.phi <- rnorm(1,0,sig.s) # random deviations on top of the autocorrelation
   epsilon.curr <- rho * epsilon.prev + sqrt(1-(rho^2)) * curly.phi # error in the current year
-  biomass.est <- biomass.true*exp(epsilon.curr-(0.5*sig.s^2))
-  return(list(biomass.est=biomass.est,epsilon.curr=epsilon.curr))
+  err <- epsilon.curr-(0.5*sig.s^2)
+  biomass.est <- biomass.true*exp(err)
+  return(ifelse(return.error,
+                err,
+                list(biomass.est=biomass.est,epsilon.curr=epsilon.curr)))
+  
 }
 
 
-# “Delay detection” model that mimics delayed detection of big pea --------
+# “Delay detection” model that mimics delayed detection of big peaks --------
 
 
-tim.assessment <- function(B,Eprev,sigma0 = NA, tau0 = NA){
+tim.assessment <- function(B,Eprev,sigma0 = NA, tau0 = NA, return.error = FALSE){
   #' @description This function takes the previous year's biomass estimate (Eprev) and the current biomass (B) and returns an estimate for biomass in the present year. Observation error is described by sigma0, and is just random and lognormal.
   #' @details The goal of this type of observation error is to mimic what observations might be if we had some prior knowledge about the expected change in B. The level of confidence in our ability to detect change is set by tau0, with small tau0 indicating a case where the assessment or scientist is resistant to large changes in biomass, and large tau0 indicating a case where errors are random, i.e., a large change in biomass is plausible.
   #' @param B - biomass in the current year. 
@@ -35,8 +39,9 @@ tim.assessment <- function(B,Eprev,sigma0 = NA, tau0 = NA){
   tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
   yt <- log(B/Eprev)
   mu1.tmp <- yt * (1-sigma0^2/(tau0^2+sigma0^2))
-  Ecurr <- Eprev * exp(rnorm(1,mu1.tmp,tau1))
-  return(Ecurr)
+  err <- rnorm(1,mu1.tmp,tau1)
+  Ecurr <- Eprev * exp(err)
+  return(ifelse(return.error,err,Ecurr))
 }
 
 
