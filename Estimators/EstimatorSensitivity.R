@@ -113,25 +113,27 @@ for(t in 1:3){
         source(file.path(basedir,"Ctl/Sardine_FisheryControl.R"))
         recruit.sd <- 0.6
         recruit.rho <- 0.9
-        sig.s <- 0.511
+        #sig.s <- 0.511
       }
       if(type == "Anchovy"){
         source(file.path(basedir,"Ctl/Anchovy_LHControl.R"))
         source(file.path(basedir,"Ctl/Anchovy_FisheryControl.R"))
         recruit.sd <- 0.6
         recruit.rho <- 0.5
-        sig.s <- 0.322
+        #sig.s <- 0.322
       }
       if(type == "Menhaden"){
         source(file.path(basedir,"Ctl/Menhaden_LHControl.R"))
         source(file.path(basedir,"Ctl/Menhaden_FisheryControl.R"))
         recruit.sd <- 0.8
         recruit.rho <- 0.2
-        sig.s <- 0.300
+        #sig.s <- 0.300
       }
       nreps <- 100
       sd.vec <- sd.vec2 <- 1:nreps
       set.seed(123)
+      #sig.s <- (tim.params$sigma0^2 + 1/(tim.params$tau0^2))^0.5
+      sig.s <- (1/tim.params$tau0^2 + 1/tim.params$sigma0^2)^(-0.5)
       for(i in 1:nreps){
         rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
         (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
@@ -152,7 +154,7 @@ for(t in 1:3){
       AC.sd.vec[t] <- test.sigma2
       #sd.check.vec
 }
-print(data.frame("Type"=Types, "TargetSD" = target.sd.vec, "ActualSD"=AC.sd.vec))
+print(data.frame("Type"=Types, "TargetSDlog" = target.sd.vec, "ActualSDlog"=AC.sd.vec))
 
 #        
 #         
