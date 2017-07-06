@@ -9,6 +9,16 @@ source(file.path(basedir,"Control Rules/cfp.R"))
 source(file.path(basedir,"Control Rules/hockey-stick.R"))
 source(file.path(basedir,"Control Rules/trend-based-rule.R"))
 
+# Load reshape2 and ggplot2 for plotting examples
+library(reshape2)
+library(ggplot2)
+
+# Load rev devs generating fxn, MSE main model, estimator fxns
+toplot=FALSE
+source(file.path(basedir,"Recruitment/GenerateDevs.R")) # Don't plot examples of rec trajectories
+source(file.path("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/HCR_Trajectory.R"))
+source(file.path(basedir,"Estimators/Estimators.R"))
+
 # 
 Types <- c("Sardine","Anchovy","Menhaden")
 nyrs <- 20
@@ -19,14 +29,6 @@ par(mfcol=c(2,3))
 
 for(t in 1:3){
   subDir <- Types[t] # Name of ff type
-    # Load reshape2 and ggplot2 for plotting examples
-    library(reshape2)
-    library(ggplot2)
-    # Load rev devs generating fxn, MSE main model, estimator fxns
-    toplot=FALSE
-    source(file.path(basedir,"Recruitment/GenerateDevs.R")) # Don't plot examples of rec trajectories
-    source(file.path("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/HCR_Trajectory.R"))
-    source(file.path(basedir,"Estimators/Estimators.R"))
     
     # Load control files
     # Sardines
@@ -133,7 +135,7 @@ for(t in 1:3){
       sd.vec <- sd.vec2 <- 1:nreps
       set.seed(123)
       #sig.s <- (tim.params$sigma0^2 + 1/(tim.params$tau0^2))^0.5
-      sig.s <- (1/tim.params$tau0^2 + 1/tim.params$sigma0^2)^(-0.5)
+      sig.s <- (1/(tim.params$tau0^2) + 1/(tim.params$sigma0^2))^(-0.5)
       for(i in 1:nreps){
         rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
         (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
@@ -146,7 +148,7 @@ for(t in 1:3){
         sd.vec[i] <- sd(log(testie$biomass.oneplus.obs))
         sd.vec2[i] <- sd(log(testie2$biomass.oneplus.obs))
       }
-      sigma.vec <- sd.vec*sqrt(1-0.5^2)  # Double check-- are these corrections for autocorrelation?
+      sigma.vec <- sd.vec*sqrt(1-0.5^2)         # Corrections for autocorrelation? Because rho = 0.5
       sigma.vec2 <- sd.vec2*sqrt(1-0.5^2)
       test.sigma <- median(sigma.vec)
       test.sigma2 <- median(sigma.vec2)
@@ -154,6 +156,13 @@ for(t in 1:3){
       AC.sd.vec[t] <- test.sigma2
       #sd.check.vec
 }
+
+#SDs of the simulated time series are very similar
+sd(sd.vec)
+sd(sd.vec2)
+
+hist(sd.vec,xlim=c(0,0.75),col=rgb(1,0,0,0.5)) # DD = red; AC = blue
+hist(sd.vec2, col=rgb(0,0,1,0.5), add=T)
 print(data.frame("Type"=Types, "TargetSDlog" = target.sd.vec, "ActualSDlog"=AC.sd.vec))
 
 #        
