@@ -149,8 +149,8 @@ if(plot.examples==TRUE){
               #  autocorrelated error  (Wiedenmann et al.) --------------------------------------------------
               
               obs.ts <- vector(length=length(try.ts))
-              sig.s = 0.95 # 0.35 == This is what Wiedenmann et al. use in the paper; I think realistically it should  be higher.
-              rho = 0.7
+              sig.s = 0.3 # 0.3 this value comes from getting sensitivity, fitting so that sig.s gives a time series with similar SD(error structure) to the same obs time series made from tim.params=list(sigma0=0.2,tau0=0.1)
+              rho = 0.5
               eps.prev <- 0.5 # Initialize epsilon value
               for(i in 1:length(obs.ts)){
                 eps.prev = ifelse(i==1,0.5,eps.prev) # If it's the first year of the time series, need to set epsilon.prev
