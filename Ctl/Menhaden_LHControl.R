@@ -13,3 +13,10 @@ lh.test <- list(type = "Menhaden",
                 maturity = c(0,0.13,0.53,0.83,0.98,1,1), # Table 3.4.1
                 R0=1e9) # R0 is flexible, and can be changed. I made it up.
 
+    #  Plot mat and sel to make sure FMSY values aren’t weird -----------------
+    # plot(ages.test,selectivity.test[,2],type='l',col='red')
+    # lines(ages.test,lh.test$maturity,col='blue')
+    # legend("topleft",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
+    # 
+    # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
+    # plot(equilib$x.vec,equilib$y.vec)
