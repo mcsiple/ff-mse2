@@ -136,8 +136,8 @@ for(t in 1:3){
       set.seed(123)
       #sig.s <- (tim.params$sigma0^2 + 1/(tim.params$tau0^2))^0.5
       sig.s <- (1/(tim.params$tau0^2) + 1/(tim.params$sigma0^2))^(-0.5)
+      rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
       for(i in 1:nreps){
-        rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
         (equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) )
         testie <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, 
                                   rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF",
