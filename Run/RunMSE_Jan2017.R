@@ -8,6 +8,7 @@ subDir <- "Anchovy" # Name of ff type
 years.test = 250
 nsims = 1000
 tim.params = list(sigma0 = 0.2,tau0 = 0.1)
+sig.s = 0.30
 R0.sens = NA #NO DYNAMIC R0 anymore-- ignore
 
 # Load packages
@@ -35,7 +36,6 @@ if(subDir == "Sardine"){
     # Sardine params
     recruit.sd <- 0.6
     recruit.rho <- 0.9
-    sig.s <- 0.511
     }
 # Anchovy/Herring
 if(subDir == "Anchovy"){
@@ -44,7 +44,6 @@ if(subDir == "Anchovy"){
     #Anchovy recruitment dev params
     recruit.sd <- 0.6
     recruit.rho <- 0.5
-    sig.s <- 0.322
 }
 
 # Menhaden
@@ -54,7 +53,6 @@ if(subDir == "Menhaden"){
   #Anchovy recruitment dev params
   recruit.sd <- 0.8
   recruit.rho <- 0.2
-  sig.s <- 0.300
 }
 
 
@@ -101,7 +99,7 @@ CFP <- C1 <- C2 <- C3 <- constF <- trend <-
         recruit.rho = .9 #scenarios$recruit.rho[1]
         equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
         rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-        test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
+        test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s)
         nofish <- melt(test.constF[-c(1,4,9,10)])
         nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
         ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
@@ -120,7 +118,7 @@ set.seed(123)
       recruit.rho = .9 #scenarios$recruit.rho[1]
       equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
       rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-      test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA)
+      test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s)
       nofish <- melt(test.constF[-c(1,4,9,10)])
       nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
       vars.to.plot <- subset(nofish, L1 %in% var.to.plot)
