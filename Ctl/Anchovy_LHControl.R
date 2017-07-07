@@ -7,8 +7,10 @@
 ages.test <- 0:6 # Mais CalCOFI report
 nages.test <- length(ages.test)
 
-selectivity.test <- cbind(age=ages.test,selectivity = c(0,0.6,1.000,1.00,1.00,1,1))  # Fishery selectivity-- this is also made up except the part where age 0 aren't in survey or fishery-- that's a fact! 
-lh.test <- list(M = 1.2,   #from Jacobson et al. 2001, which cites Jacobson et al. (1994), Jacobson et al. (1995), and Methot (1989)
+#selectivity.test <- cbind(age=ages.test,selectivity = c(0,0.6,1.000,1.00,1.00,1,1))  # Fishery selectivity-- this is also made up except the part where age 0 
+#aren't in survey or fishery-- that's a fact! 
+selectivity.test <- cbind(age=ages.test,selectivity = c(0,0.8,0.99,1.00,1.00,1,1))
+lh.test <- list(M = 1.05,   #mean between CA value (M = 1.2, from Jacobson et al. 2001, which cites Jacobson et al. (1994), Jacobson et al. (1995), and Methot (1989)), and the South Africa value (M = 0.9, Cunningham & Butterworth 2007) mean(c(1.2,0.9)
                 selectivity = selectivity.test,
                 ages = ages.test,
                 l.at.age = c(8.0,10.8,14.0,16.3,17.8,18.9,19.6), # lengths in cm - from Huppert  et al. 1980
@@ -16,3 +18,9 @@ lh.test <- list(M = 1.2,   #from Jacobson et al. 2001, which cites Jacobson et a
                 maturity = c(0,0.4,0.85,0.99,1,1,1), # This is made up, based on anecdotal info from Alec (see email, end of January 2017).
                 R0=1e9) # R0 is flexible, and can be changed. I made it up here, based on the unfished behavior of the population...
 
+        # plot(ages.test,selectivity.test[,2],type='l',col='red')
+        # lines(ages.test,lh.test$maturity,col='blue')
+        # legend("topleft",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
+        # 
+        # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
+        # plot(equilib$x.vec,equilib$y.vec)
