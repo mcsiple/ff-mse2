@@ -16,3 +16,12 @@ lh.test <- list(M = 0.4,   #from sardine assessment (Hurtado-Ferro & Punt 2014)
                 maturity = c(0,0.4,0.85,0.99,rep(1,times=12)), # Roughly based on maturity ogives from Silva et al. 2006 ICES JMS.
                 R0=5e9) # R0 is flexible, and can be changed. It was estimated in Hill et al. to be approx. 4.8 billion fish (https://swfsc.noaa.gov/uploadedFiles/Events/Meetings/Meeting_2014/H1b_2014_FULL_Electric_PacificSardine_StockAssmnt_APR2014BB.pdf)
 
+
+#  Plot mat and sel to make sure FMSY values aren’t weird -----------------
+      # plot(ages.test,selectivity.test[,2],type='l',col='red')
+      # lines(ages.test,lh.test$maturity,col='blue')
+      # legend("topleft",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
+      # 
+      # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
+      # plot(equilib$x.vec,equilib$y.vec)
+      # 
