@@ -18,9 +18,12 @@ lh.test <- list(M = 1.05,   #mean between CA value (M = 1.2, from Jacobson et al
                 maturity = c(0,0.4,0.85,0.99,1,1,1), # This is made up, based on anecdotal info from Alec (see email, end of January 2017).
                 R0=1e9) # R0 is flexible, and can be changed. I made it up here, based on the unfished behavior of the population...
 
+
+#  Code for testing FMSY and other ref points -----------------------------
+# Ideally the fishery parameters (like selectivity) could be adjusted until FMSY is similar to the estimate in the stock assessment. Howevever, for these stocks they aren't manage using FMSY, so I just looked for clues in the assessment about FMSY or proxy.
         # plot(ages.test,selectivity.test[,2],type='l',col='red')
         # lines(ages.test,lh.test$maturity,col='blue')
         # legend("topleft",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
         # 
-        # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
+        # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) 
         # plot(equilib$x.vec,equilib$y.vec)
