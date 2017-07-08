@@ -13,7 +13,7 @@ types <- c("Anchovy"="Anchovy",
 # Parallelize so each simulation is on a different core:
 registerDoParallel(4)
 llply(.data=types,.fun = run.mod,.parallel = TRUE)
-stopCluster(cl)
+stopCluster()
 
       run.mod <- function(fftype){
         basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
@@ -37,10 +37,11 @@ stopCluster(cl)
         # Load rev devs generating fxn, MSE main model, estimator fxns
         #toplot=FALSE      # Don't plot examples of rec trajectories
         source(file.path(basedir,"Recruitment/GenerateDevs.R")) 
+        source(file.path(basedir,"Estimators/CalcFTrue.R"))
         source(file.path("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/HCR_Trajectory.R"))
         source(file.path(basedir,"Estimators/Estimators.R"))
         source(file.path(basedir,"Run/generate_M.R"))
-        
+
         # Load control files & set parameter values
         #     Type     TargetSD
         # 1  Sardine 0.5117551
@@ -101,6 +102,7 @@ stopCluster(cl)
                     list(biomass.oneplus.true=matrix(nrow = nsims,ncol = years.test), 
                     total.catch=matrix(nrow = nsims,ncol = years.test),
                     fishing= matrix(nrow = nsims,ncol = years.test),
+                    intended.f=matrix(nrow = nsims,ncol = years.test),
                     rec= matrix(nrow = nsims,ncol = years.test),
                     depl= matrix(nrow = nsims,ncol = years.test),
                     biomass.oneplus.obs = matrix(nrow = nsims,ncol = years.test),
@@ -156,7 +158,7 @@ stopCluster(cl)
         ###########################################################################
         
         
-        tm <- proc.time()
+        #tm <- proc.time()
         
         for(s in 1:nscenarios){  #
           steepness = scenarios$h[s]
@@ -184,16 +186,18 @@ stopCluster(cl)
           set.seed(123) # Start each round of sims at same random seed
           for (sim in 1:nsims){
                 rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-                expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
+                expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s,rec.ram = NA)
               
             CFP[["biomass.oneplus.true"]][sim,] <- expt.cfp$biomass.oneplus.true # This is the true one-plus biomass
             CFP[["total.catch"]][sim,] <- expt.cfp$total.catch  
             CFP[["fishing"]][sim,] <- expt.cfp$fishing
+            CFP[["intended.f"]][sim,] <- expt.cfp$intended.f    
             CFP[["rec"]][sim,] <- expt.cfp$rec
             CFP[["depl"]][sim,] <- expt.cfp$depl
             CFP[["biomass.oneplus.obs"]][sim,] <- expt.cfp$biomass.oneplus.obs        # This is the observed one-plus biomass
             CFP[["biomass.total.true"]][sim,] <- expt.cfp$biomass.total.true          # This is the true total biomass
             CFP[["no.fishing.tb"]] <- no.fishing    # True total biomass with no fishing
+            
           }
             save(CFP,file=paste("All",s,"CFP",".RData",sep="_"))
             }
@@ -207,6 +211,7 @@ stopCluster(cl)
             constF[["biomass.oneplus.true"]][sim,] <- expt.constF$biomass.oneplus.true
             constF[["total.catch"]][sim,] <- expt.constF$total.catch
             constF[["fishing"]][sim,] <- expt.constF$fishing
+            constF[["intended.f"]][sim,] <- expt.constF$intended.f   
             constF[["rec"]][sim,] <- expt.constF$rec
             constF[["depl"]][sim,] <- expt.constF$depl
             constF[["biomass.oneplus.obs"]][sim,] <- expt.constF$biomass.oneplus.obs
@@ -225,6 +230,7 @@ stopCluster(cl)
             C1[["biomass.oneplus.true"]][sim,] <- expt.c1$biomass.oneplus.true
             C1[["total.catch"]][sim,] <- expt.c1$total.catch
             C1[["fishing"]][sim,] <- expt.c1$fishing
+            C1[["intended.f"]][sim,] <- expt.c1$intended.f    
             C1[["rec"]][sim,] <- expt.c1$rec
             C1[["depl"]][sim,] <- expt.c1$depl
             C1[["biomass.oneplus.obs"]][sim,] <- expt.c1$biomass.oneplus.obs
@@ -243,6 +249,7 @@ stopCluster(cl)
               C2[["biomass.oneplus.true"]][sim,] <- expt.c2$biomass.oneplus.true
               C2[["total.catch"]][sim,] <- expt.c2$total.catch
               C2[["fishing"]][sim,] <- expt.c2$fishing
+              C2[["intended.f"]][sim,] <- expt.c2$intended.f    
               C2[["rec"]][sim,] <- expt.c2$rec
               C2[["depl"]][sim,] <- expt.c2$depl
               C2[["biomass.oneplus.obs"]][sim,] <- expt.c2$biomass.oneplus.obs
@@ -261,6 +268,7 @@ stopCluster(cl)
               C3[["biomass.oneplus.true"]][sim,] <- expt.c3$biomass.oneplus.true
               C3[["total.catch"]][sim,] <- expt.c3$total.catch
               C3[["fishing"]][sim,] <- expt.c3$fishing
+              C3[["intended.f"]][sim,] <- expt.c3$intended.f    
               C3[["rec"]][sim,] <- expt.c3$rec
               C3[["depl"]][sim,] <- expt.c3$depl
               C3[["biomass.oneplus.obs"]][sim,] <- expt.c3$biomass.oneplus.obs
@@ -280,6 +288,7 @@ stopCluster(cl)
               trend[["biomass.oneplus.true"]][sim,] <- expt.trend$biomass.oneplus.true
               trend[["total.catch"]][sim,] <- expt.trend$total.catch
               trend[["fishing"]][sim,] <- expt.trend$fishing
+              trend[["intended.f"]][sim,] <- expt.trend$intended.f    # True total biomass with no fishing
               trend[["rec"]][sim,] <- expt.trend$rec
               trend[["depl"]][sim,] <- expt.trend$depl
               trend[["biomass.oneplus.obs"]][sim,] <- expt.trend$biomass.oneplus.obs # Observed one-plus biomass
@@ -288,7 +297,7 @@ stopCluster(cl)
             }
             save(trend,file=paste("All",s,"trend",".RData",sep="_")) 
           }
-        }
+        } # end of scenarios loop
         
         #print(proc.time() - tm)
       }
