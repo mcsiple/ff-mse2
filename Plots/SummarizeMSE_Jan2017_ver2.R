@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 
 
 
@@ -76,12 +76,12 @@ all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
 
 all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
-write.csv(all.summaries, "Anchovy_AllSummaries.csv")
+write.csv(all.summaries, "Sardine_AllSummaries.csv")
 
 
 # See if performance metrics are correlated -------------------------------
-sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
-#pairs(sims.all[[33]],pch=19,col=rgb(0,0,0,0.2))
+# sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
+# pairs(sims.all[[33]],pch=19,col=rgb(0,0,0,0.2))
 
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
@@ -192,15 +192,19 @@ steepnesses <- unique(scen.table$h)
 obs.error.types <- unique(scen.table$obs.error.type)
 nice.pms <- data.frame(original = colnames(scen.table[-(1:7)]),
                        polished = c("LT mean catch","LT mean nonzero catch",
-                                    "SD(Catch)","Number of \n 5-yr closures",
+                                    "SD(Catch)","Probability of \n 5-yr closure",
                                     "Number of \n 10-yr closures","Number of yrs \n w/ zero catch",
                                     "LT mean biomass","Number of yrs \n above pred threshold",
                                     "SD(Biomass)","Number of yrs \n below low pred threshold",
                                     "Mean depletion","Max collapse length","Max bonanza length",
                                     "Bonanza length","Collapse length"))
 
-for(steep in 1:2){
-  for(obs in 1:2){
+#For final version of paper, want to just show one scenario - this is is the basic one!
+
+#for(steep in 1:2){
+#for(obs in 1:2){
+steep=2
+obs.error.type=1
     tab <- subset(scen.table, obs.error.type == obs.error.types[obs] & h == steepnesses[steep] & M.type == "constant")
     tab.metrics <- tab[,-(1:7)]
     props <- tab.metrics
@@ -212,15 +216,7 @@ for(steep in 1:2){
     colnames(final.tab)[1] <- "group"
     test.nas <- apply(X = final.tab,FUN = anyNA,MARGIN = 2)
     na.metrics <- names(which(test.nas))
-    axis.labels <- nice.pms[,'polished']
     
-    # example <- final.tab[1:6,]
-    # example1 <- example[,c('group','LTmeancatch','LTnonzeromeancatch','SDcatch','n.5yrclose','meanbiomass','BonanzaLength','overallMaxBonanzaLength','CollapseLength')]
-    # ggradar(example1,font.radar = "Helvetica",grid.label.size=3,axis.label.size=2.5,
-    #         legend.text.size = 2.5,
-    #         #axis.labels = axis.labels,
-    #         plot.legend=legend.presence,palette.vec = hcr.colors)
-    ##
     if(length(na.metrics>0)){
       print(paste("The following performance metrics had NAs and was removed from the figure: ",na.metrics))
       final.tab <- final.tab[,-which(test.nas)]
@@ -228,14 +224,23 @@ for(steep in 1:2){
       axis.labels <- nice.pms[-rm.metrics,'polished']
     }
     
-    legend.presence <- ifelse(mat[steep,obs] != 1,FALSE,TRUE)
-    plotnames[[mat[steep,obs]]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=2.5,
-                                           legend.text.size = 2.5,
+    #legend.presence <- ifelse(mat[steep,obs] != 1,FALSE,TRUE)
+    legend.presence = TRUE
+    remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds")
+    remove.ind <- which(colnames(final.tab) %in% remove.these)
+    final.tab <- final.tab[-remove.ind]
+    axis.labels <- nice.pms$polished[-(remove.ind-1)]
+
+    
+  pdf(file=paste(Type, "_Kite.pdf",sep=""),width = 10,height=7,useDingbats = FALSE)  
+  ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=4,
+                                           legend.text.size = 4,
                                            axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors)
-  }}
+dev.off()
+    #}}
 
-grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]], plotnames[[4]])
+#grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]], plotnames[[4]])
 
 
 # Zeh plots (e.g. Punt 2015) -----------------------------------------------
