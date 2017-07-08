@@ -11,7 +11,7 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
     with(calc.trajectory(lh=lh, obs.cv = 0, init = rep(1000,length(lh$ages)), 
                          rec.dev = rep(1,times=years), F0=x, cr=NULL, 
                          years=years, hcr.type = "constF",const.f.rate = x,
-                         equilib=NULL,steepness=steepness),
+                         equilib=NULL,steepness=steepness,obs.type = "noerror"),
     c(x,tail(biomass.oneplus.true, 1), # B0
       tail(sp, 2)[1],  # Equilibrium SP. tail(sp, 2)[1] is because the last year of surplus production is NA (because it's calculated from B[t+1]) so it's hacky but it's fine.
       total.catch[years])))  # Total catch, for getting msy 
