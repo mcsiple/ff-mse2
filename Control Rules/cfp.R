@@ -9,6 +9,7 @@
 #' @param Fmax Max fishing rate
 
 calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax){
+  if(Bt==0){f=0}else{
   f <- NA
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
   adj.constant <- Btarget/Fmax        # scales y axis to max fishing mortality
@@ -20,13 +21,13 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax){
   if(possible.catch >= prevCatch * 1.15) {newcatch <- prevCatch*1.15 }
   if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch } # This used to say Bt
   else(newcatch <- possible.catch)
-  f <- newcatch / Bt
+  f <- newcatch / Bt}
   return(f)
 }
 
 
 # Test
-# calc.F.cfp(prevCatch = 39.6, Bt = 95.8,Btarget = 21,Blim = 100,Fmax = 0.6)
+# calc.F.cfp(prevCatch = 39.6, Bt = 0,Btarget = 21,Blim = 100,Fmax = 0.6)
 # calc.F.cfp(prevCatch = 35.3, Bt = 117.7,Btarget = 21,Blim = 100,Fmax = 0.6)
 
 # test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
