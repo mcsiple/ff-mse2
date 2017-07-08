@@ -5,12 +5,14 @@
 calc.F.oceana <- function(Bt, Blim, Btarget, M){
   Fmax = 0.5*M #The max F is determined from natural mortality
   #Btarget = 0.75*B0
+  if(Bt==0){f=0}else{
   f <- NA
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
   adj.constant <- Btarget/Fmax     # scales y axis to max fishing mortality
   if (Bt <= Blim) {f = 0}
   if (Bt > Blim & Bt <= Btarget) {f <- slope * (Bt-Blim) / adj.constant}
   if (Bt > Btarget) {f = Fmax }
+  }
   return(f)
 }
 
