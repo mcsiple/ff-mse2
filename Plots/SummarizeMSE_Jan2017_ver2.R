@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Sardine" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 
 
 
@@ -152,7 +152,7 @@ for (s in 1:nscenarios){
   raw.table[s,performance.measures[15]] <- sw[15,'med']
   scen.table[s,performance.measures[15]] <- ifelse(is.na(sw[15,'med']),NA, 1 / sw[15,'med'])    # mean collapse length
   
-}
+} # This loop is a hot mess and needs to be optimized - can also take out "scen.table" assignments because they're all done below for the kite plots
 
 write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 
@@ -172,6 +172,15 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
                                                           'C2' = 'C2',
                                                           'C3' = 'C3',
                                                           'trend' = "Trend-based"))
+raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type, 
+                                                         'Tim'='Delayed change detection',
+                                                         'AC' = "Autocorrelated"),
+                     HCR = recode(HCR, 'cfp' = 'Stability-favoring',
+                                  'constF' = 'Constant F',
+                                  'C1' = 'C1',
+                                  'C2' = 'C2',
+                                  'C3' = 'C3',
+                                  'trend' = "Trend-based"))
 
 
 ######################################################################
@@ -180,7 +189,7 @@ scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type,
 
 pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
-scen.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
+scen.table$HCR <- raw.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
 # Compare each of the CRs together? It would be like pairs()
 
 
@@ -204,9 +213,15 @@ nice.pms <- data.frame(original = colnames(scen.table[-(1:7)]),
 #for(steep in 1:2){
 #for(obs in 1:2){
 steep=2
-obs.error.type=1
-    tab <- subset(scen.table, obs.error.type == obs.error.types[obs] & h == steepnesses[steep] & M.type == "constant")
+obs=1
+    
+    #tab <- subset(scen.table, obs.error.type == obs.error.types[obs] & h == steepnesses[steep] & M.type == "constant")
+    tab <- subset(raw.table,obs.error.type == obs.error.types[obs] & h == steepnesses[steep] & M.type == "constant")
     tab.metrics <- tab[,-(1:7)]
+    #Here are the PMs that are NEGATIVES (i.e., a high value for these is bad news)
+    bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength")
+    which.bad <- which(colnames(tab.metrics) %in% bad.pms)
+    tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) ifelse(x==0,1,1/x)) # Turn all the "bad" PMs to their inverse
     props <- tab.metrics
     maxes <- apply(X = tab.metrics,MARGIN = 2,FUN = max,na.rm  = T )
     for(i in 1:nrow(props)){
@@ -304,11 +319,12 @@ attributes <- c("Biomass","Catches","Recruitment","Depletion (B/B0)")
 att.ind <- c(1,2,4,5)
 
 
+
 # Plot time series of fishing rates leading up to collapses ---------------
 
 
 
-# Plot first run for each scenario
+# Plot first run for each scenario - DEPRACATED needs to be fixed for generic # scenarios
 # Color order of these is funky because order of results list() is not the same as the order of  scen.table w/ the summary
 for (scenario.index in 1:4){
   par(mfrow=c(2,2),mar=c(5,4,3,2)+0.1)
