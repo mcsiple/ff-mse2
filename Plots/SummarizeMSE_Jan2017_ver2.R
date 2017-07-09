@@ -436,3 +436,5 @@ ggplot(pred2.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.
   ylab("Median number of years") +
   facet_wrap(~PM,scales="free_y")
 dev.off()
+
+
