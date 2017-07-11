@@ -438,3 +438,21 @@ ggplot(pred2.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.
 dev.off()
 
 
+# Plot DD scenarios - for paper! ------------------------------------------
+# For plotting the differences between AC error and delayed detection
+# First, for menhaden, try scenario 2 (AC) vs. 4 (DD)-- biggest change in p(closure)
+ac <- results[[2]]
+dd <- results[[4]]
+yrs <- 150:250
+par(mfrow=c(2,1))
+plot(ac$biomass.oneplus.true[1,yrs],type='l',ylab="Total biomass",xlab="Year",ylim=c(0,250000))
+lines(ac$biomass.oneplus.obs[1,yrs],col='red')
+lines(dd$biomass.oneplus.obs[1,yrs],col='blue')
+
+lines(ac$total.catch[1,yrs],lty=2,col='red')
+lines(dd$total.catch[1,yrs],lty=2,col='blue')
+
+plot(ac$total.catch[1,yrs],type='l',col='red',ylab="Total catches",xlab="Year",ylim=c(0,250000))
+lines(dd$total.catch[1,yrs],col='blue')
+
+which(ac$total.catch[1,yrs] > ac$biomass.oneplus.true[1,yrs])
