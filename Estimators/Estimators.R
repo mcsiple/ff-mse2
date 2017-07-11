@@ -33,12 +33,21 @@ tim.assessment <- function(B,Eprev,sigma0 = NA, tau0 = NA){
   #' @param sigma0 - observation error (between B and E there is an intermediate step not explicitly shown here, which is that there is random lognormal survey error)
   #' @param tau0 - the amount of confidence in the survey (or assessment)'s ability to detect changes in biomass. Smaller tau0 indicates an assessment or expert who is unlikely to believe large changes in biomass.
   #' @return A single value of "observed" biomass, described as the estimate of biomass in the current year
-  if(B==0 | Eprev==0){Ecurr=0}else{
-  tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
-  yt <- log(B/Eprev)
-  mu1.tmp <- yt * (1-sigma0^2/(tau0^2+sigma0^2))
-  err <- rnorm(1,mu1.tmp,tau1)
-  Ecurr <- Eprev * exp(err)}
+  # If function inputs are single values of B and Eprev:
+  if(length(B)<2 & length(Eprev)<2){ # Sometimes B and Eprev will be given as single values
+    if(B==0 | Eprev==0){Ecurr=0}else{
+      tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
+      yt <- log(B/Eprev)
+      mu1.tmp <- yt * (1-sigma0^2/(tau0^2+sigma0^2))
+      err <- rnorm(1,mu1.tmp,tau1)
+      Ecurr <- Eprev * exp(err)}}else{   # If function inputs are vectors (in case this is the situation where B is vectorized)
+        if(sum(B)==0 | sum(Eprev)==0){Ecurr=rep(0,times=length(B))}else{
+          tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
+          yt <- log(B/Eprev)
+          mu1.tmp <- yt * (1-sigma0^2/(tau0^2+sigma0^2))
+          err <- rnorm(length(B),mu1.tmp,tau1) # add error to each age class
+          Ecurr <- Eprev * exp(err)}
+  }
   return(Ecurr)
 }
 
