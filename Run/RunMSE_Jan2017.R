@@ -104,7 +104,6 @@ stopCluster()
                     fishing= matrix(nrow = nsims,ncol = years.test),
                     intended.f=matrix(nrow = nsims,ncol = years.test),
                     rec= matrix(nrow = nsims,ncol = years.test),
-                    depl= matrix(nrow = nsims,ncol = years.test),
                     biomass.oneplus.obs = matrix(nrow = nsims,ncol = years.test),
                     biomass.total.true = matrix(nrow = nsims,ncol = years.test),
                     no.fishing.tb = matrix(nrow = nsims,ncol = years.test))
@@ -290,7 +289,7 @@ stopCluster()
               trend[["fishing"]][sim,] <- expt.trend$fishing
               trend[["intended.f"]][sim,] <- expt.trend$intended.f    # True total biomass with no fishing
               trend[["rec"]][sim,] <- expt.trend$rec
-              trend[["depl"]][sim,] <- expt.trend$depl
+              #trend[["depl"]][sim,] <- expt.trend$depl
               trend[["biomass.oneplus.obs"]][sim,] <- expt.trend$biomass.oneplus.obs # Observed one-plus biomass
               trend[["biomass.total.true"]][sim,] <- expt.trend$biomass.total.true
               trend[["no.fishing.tb"]] <- no.fishing
