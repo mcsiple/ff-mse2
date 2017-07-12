@@ -20,7 +20,7 @@ cfp.vec[i] <- calc.F.cfp(prevCatch = 10,Bt = B[i], Btarget = Bmsy, Fmax = Fmsy,B
 
 pdf("ControlRules.pdf",width = 7,height = 7,useDingbats = FALSE)
 lwdp = 3
-par(las=2,mar=c()) # Rotate axis labels 
+par(las=2,mar=c(6,5,4,2)+0.1) # Rotate axis labels 
 # margins: c(5, 4, 4, 2) + 0.1
 plot(C1.vec,type='l',col=hcr.colors[1],lwd=lwdp, ylim=c(0,0.9),
      axes=FALSE,xlab="Biomass",ylab="Fishing rate (F)") #xaxt="n",yaxt="n"
