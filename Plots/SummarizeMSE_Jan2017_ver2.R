@@ -32,8 +32,8 @@ nyrs.to.use <- 100 # How many years you want to use to calculate all your metric
 calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
 
 # Add performance measure columns to table
-performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength")
-pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=9)) # for distinguishing types of PMs (mostly for plotting...)
+performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity")
+pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11)) # for distinguishing types of PMs (mostly for plotting...)
 
 #overall.max.coll.len,overall.max.bon.len,bon.length,coll.length
 # Still haven't added : prob(catch falls below a threshold bc what should the threshold be?)
