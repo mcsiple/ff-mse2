@@ -15,18 +15,20 @@ for(i in 1:length(B)){
 C1.vec[i] <- calc.F.oceana(Bt = B[i],Blim = 0.4*B0,Btarget = 0.8*B0, M = m)
 C2.vec[i] <- calc.F.oceana(Bt = B[i], Blim = 0.1*B0, Btarget = 0.8*B0, M = m)
 C3.vec[i] <- calc.F.stick(Bt = B[i], Blim = 0.4*B0, Btarget = 0.8*B0, Fmax = Fmsy)
-cfp.vec[i] <- calc.F.cfp(prevCatch = 10,Bt = B[i], Btarget = Bmsy, Fmax = Fmsy,Blim = 0.5*Bmsy )
+cfp.vec[i] <- calc.F.cfp(prevCatch = 10,Bt = B[i], Btarget = Bmsy, Fmax = Fmsy,Blim = 0.5*Bmsy)
 }
 
 pdf("ControlRules.pdf",width = 7,height = 7,useDingbats = FALSE)
 lwdp = 3
-par(las=2) # Rotate axis labels
+par(las=2,mar=c()) # Rotate axis labels 
+# margins: c(5, 4, 4, 2) + 0.1
 plot(C1.vec,type='l',col=hcr.colors[1],lwd=lwdp, ylim=c(0,0.9),
      axes=FALSE,xlab="Biomass",ylab="Fishing rate (F)") #xaxt="n",yaxt="n"
 
-ticks = c(0,0.1*B0,0.5*Bmsy,0.4*B0,max(B))
-axis(side = 1, at = ticks,labels = c(" ","0.1*B0","0.5Bmsy","0.4*B0"," "))
-axis(side = 2)
+xticks = c(0,0.1*B0,0.5*Bmsy,0.4*B0,0.8*B0,max(B))
+yticks = c(0,0.5*m,Fmsy,0.8)
+axis(side = 1, at = xticks,labels = c(" ","0.1*B0","0.5Bmsy","0.4*B0","0.8*B0"," "))
+axis(side = 2, at = yticks, labels = c("0","0.5*M","Fmsy"," "))
 
 lines(C2.vec, col=hcr.colors[2],lwd=lwdp)
 lines(C3.vec, col=hcr.colors[3],lwd=lwdp)
