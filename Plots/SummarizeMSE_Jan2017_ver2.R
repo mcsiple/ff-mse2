@@ -456,3 +456,4 @@ plot(ac$total.catch[1,yrs],type='l',col='red',ylab="Total catches",xlab="Year",y
 lines(dd$total.catch[1,yrs],col='blue')
 
 which(ac$total.catch[1,yrs] > ac$biomass.oneplus.true[1,yrs])
+which(dd$total.catch[1,yrs] > dd$biomass.oneplus.true[1,yrs])
