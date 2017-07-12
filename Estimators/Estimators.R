@@ -42,12 +42,14 @@ tim.assessment <- function(B,Eprev,sigma0 = NA, tau0 = NA){
       err <- rnorm(1,mu1.tmp,tau1)
       Ecurr <- Eprev * exp(err)}}else{   # If function inputs are vectors (in case this is the situation where B is vectorized)
         if(sum(B)==0 | sum(Eprev)==0){Ecurr=rep(0,times=length(B))}else{
+          # Ahhhh I don't know if this is the right thing to do!
+          B[which(B==0)] <- 0.0001
+          Eprev[which(Eprev==0)] <- 0.0001
           tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
           yt <- log(B/Eprev)
           mu1.tmp <- yt * (1-sigma0^2/(tau0^2+sigma0^2))
           err <- rnorm(length(B),mu1.tmp,tau1) # add error to each age class
-          Ecurr <- Eprev * exp(err)}
-  }
+          Ecurr <- Eprev * exp(err)}}
   return(Ecurr)
 }
 
