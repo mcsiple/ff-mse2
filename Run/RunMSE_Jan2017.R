@@ -38,7 +38,7 @@ stopCluster()
         #toplot=FALSE      # Don't plot examples of rec trajectories
         source(file.path(basedir,"Recruitment/GenerateDevs.R")) 
         source(file.path(basedir,"Estimators/CalcFTrue.R"))
-        source(file.path("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/HCR_Trajectory.R"))
+        source(file.path("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/HCR_Trajectory_NEW.R"))
         source(file.path(basedir,"Estimators/Estimators.R"))
         source(file.path(basedir,"Run/generate_M.R"))
 
@@ -68,7 +68,7 @@ stopCluster()
         if(subDir == "Menhaden"){
           source(file.path(basedir,"Ctl/Menhaden_LHControl.R"))
           source(file.path(basedir,"Ctl/Menhaden_FisheryControl.R"))
-          #Anchovy recruitment dev params
+          #Menhaden recruitment dev params
           recruit.sd <- 0.8
           recruit.rho <- 0.2
         }
@@ -88,7 +88,7 @@ stopCluster()
         h = c(0.9, 0.6)
         obs.error.type = c("AC","Tim")
         HCR = c("cfp","constF","C1","C2","C3","trend")
-        M.type = c("constant","timevar","regimeshift")
+        M.type = c("constant","regimeshift")
         
         scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type)
         colnames(scenarios) <- c("h","obs.error.type","HCR","recruit.sd","recruit.rho","M.type")
@@ -193,7 +193,7 @@ stopCluster()
             CFP[["fishing"]][sim,] <- expt.cfp$fishing
             CFP[["intended.f"]][sim,] <- expt.cfp$intended.f    
             CFP[["rec"]][sim,] <- expt.cfp$rec
-            CFP[["depl"]][sim,] <- expt.cfp$depl
+            #CFP[["depl"]][sim,] <- expt.cfp$depl
             CFP[["biomass.oneplus.obs"]][sim,] <- expt.cfp$biomass.oneplus.obs        # This is the observed one-plus biomass
             CFP[["biomass.total.true"]][sim,] <- expt.cfp$biomass.total.true          # This is the true total biomass
             CFP[["no.fishing.tb"]] <- no.fishing    # True total biomass with no fishing
@@ -213,7 +213,7 @@ stopCluster()
             constF[["fishing"]][sim,] <- expt.constF$fishing
             constF[["intended.f"]][sim,] <- expt.constF$intended.f   
             constF[["rec"]][sim,] <- expt.constF$rec
-            constF[["depl"]][sim,] <- expt.constF$depl
+            #constF[["depl"]][sim,] <- expt.constF$depl
             constF[["biomass.oneplus.obs"]][sim,] <- expt.constF$biomass.oneplus.obs
             constF[["biomass.total.true"]][sim,] <- expt.constF$biomass.total.true
             constF[["no.fishing.tb"]] <- no.fishing
@@ -232,7 +232,7 @@ stopCluster()
             C1[["fishing"]][sim,] <- expt.c1$fishing
             C1[["intended.f"]][sim,] <- expt.c1$intended.f    
             C1[["rec"]][sim,] <- expt.c1$rec
-            C1[["depl"]][sim,] <- expt.c1$depl
+            #C1[["depl"]][sim,] <- expt.c1$depl
             C1[["biomass.oneplus.obs"]][sim,] <- expt.c1$biomass.oneplus.obs
             C1[["biomass.total.true"]][sim,] <- expt.c1$biomass.total.true
             C1[["no.fishing.tb"]] <- no.fishing
@@ -251,7 +251,7 @@ stopCluster()
               C2[["fishing"]][sim,] <- expt.c2$fishing
               C2[["intended.f"]][sim,] <- expt.c2$intended.f    
               C2[["rec"]][sim,] <- expt.c2$rec
-              C2[["depl"]][sim,] <- expt.c2$depl
+              #C2[["depl"]][sim,] <- expt.c2$depl
               C2[["biomass.oneplus.obs"]][sim,] <- expt.c2$biomass.oneplus.obs
               C2[["biomass.total.true"]][sim,] <- expt.c2$biomass.total.true
               C2[["no.fishing.tb"]] <- no.fishing
@@ -270,7 +270,7 @@ stopCluster()
               C3[["fishing"]][sim,] <- expt.c3$fishing
               C3[["intended.f"]][sim,] <- expt.c3$intended.f    
               C3[["rec"]][sim,] <- expt.c3$rec
-              C3[["depl"]][sim,] <- expt.c3$depl
+              #C3[["depl"]][sim,] <- expt.c3$depl
               C3[["biomass.oneplus.obs"]][sim,] <- expt.c3$biomass.oneplus.obs
               C3[["biomass.total.true"]][sim,] <- expt.c3$biomass.total.true
               C3[["no.fishing.tb"]] <- no.fishing
