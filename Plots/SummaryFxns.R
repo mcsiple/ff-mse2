@@ -115,8 +115,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   for(i in 1:length(result.list)){
     result.list[[i]] <- result.list[[i]][,calc.ind]
   } # Trim results to the years we're using
-  performance.measures
-  LTmeans.list <- lapply(result.list,FUN = rowMeans) 
+  LTmeans.list <- lapply(result.list,FUN = rowMeans,na.rm=TRUE) 
   # median and quantiles of LTM of all PMs
   ltm <- lapply(LTmeans.list,FUN = quantile, probs = c(0.05,0.5,0.95)) 
   # mean nonzero catch
@@ -156,8 +155,9 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   # Maximum duration of collapse
   max.duration.collapse = min.duration.collapse = avg.duration.collapse <- vector()
   max.duration.bonanza = min.duration.bonanza = avg.duration.bonanza <- vector()
+  collapse.severity = vector()
   
-  for(i in 1:nrow(true.biomass)){
+  for(i in 1:nrow(true.biomass)){ # Each one = 1 simulation
     max.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$longest.collapse
     min.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$shortest.collapse
     avg.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$avg.collapse.length
@@ -165,7 +165,18 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
     max.duration.bonanza[i] <- duration.bonanza(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$longest.bonanza
     min.duration.bonanza[i] <- duration.bonanza(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$shortest.bonanza
     avg.duration.bonanza[i] <- duration.bonanza(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$avg.bonanza.length
-  }
+    
+    # Probability of collapse
+    coll.yrs <- collapse.index(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,]) 
+    prob.collapse[i] <- length(coll.yrs) / length(true.biomass[i,])
+    
+    # Severity of collapse (as a percentage of mean unfished biomass)
+    coll.thresh <- mean(result.list$no.fishing.tb[i,]) * 0.2
+    collapse.yrs <- true.biomass[i,coll.yrs]
+    collapse.severity[i] <- median(collapse.yrs,na.rm=T)
+    }
+  
+
   
   # Performance metrics
   interval <- c(0.05,0.5,0.95)
