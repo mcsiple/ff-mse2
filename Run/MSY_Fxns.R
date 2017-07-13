@@ -9,9 +9,9 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
   if(is.null(steepness)){print("Steepness value is missing")}
   equilib <- sapply(fish, function(x)
     with(calc.trajectory(lh=lh, obs.cv = 0, init = rep(1000,length(lh$ages)), 
-                         rec.dev = rep(1,times=years), F0=x, cr=NULL, 
+                         rec.dev = rep(1,times=years), F0=x, cr=NULL,R0.traj = NA, 
                          years=years, hcr.type = "constF",const.f.rate = x,
-                         equilib=NULL,steepness=steepness,obs.type = "noerror"),
+                         equilib=NULL,steepness=steepness,obs.type = "noerror",rec.ram = NA,time.var.m = NA),
     c(x,tail(biomass.oneplus.true, 2)[1], # B0
       tail(sp, 3)[1],  # Equilibrium SP. tail(sp, 2)[1] is because the last year of surplus production is NA (because it's calculated from B[t+1]) so it's hacky but it's fine.
       fishing[years-1],
@@ -25,7 +25,8 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
   
   unfished <- calc.trajectory(lh, obs.cv = 0, init = rep(10000,length(lh$ages)), 
                               rec.dev = rep(1,times=years), F0=0, cr=NULL, 
-                              years=years, hcr.type = "constF",const.f.rate = 0, equilib=NULL,steepness=steepness)
+                              years=years, hcr.type = "constF",obs.type="noerror",const.f.rate = 0, 
+                              equilib=NULL,steepness=steepness)
   b.0 <- tail(unfished$biomass.oneplus.true,1)
   
   #Plot equilibrium yield curve
@@ -59,5 +60,5 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
               # 
 
 # years.test <- 150
-# getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 10,steepness=0.9)
+# getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=0.9)
 # getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])
