@@ -81,11 +81,13 @@ write.csv(all.summaries, file = paste(Type,"_AllSummaries.csv",sep=""))
 # sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
 # pairs(sims.all[[33]],pch=19,col=rgb(0,0,0,0.2))
 
+# Table of summary stats! -----------------------------------------------------------
+
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
   #scen.table[s,performance.measures[1]] <- 
-  raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind])) #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
+  raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind],na.rm = TRUE)) #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
   nonzero.catch <- result.to.use$total.catch[,calc.ind]
   nonzero.catch <- ifelse(nonzero.catch<0.1,NA,nonzero.catch)
   mnz.catches <- rowMeans(nonzero.catch,na.rm=TRUE)
@@ -144,11 +146,12 @@ for (s in 1:nscenarios){
   raw.table[s, performance.measures[13]] <- sw[13,'med'] # **N**
   #scen.table[s, performance.measures[13]] <- ifelse(is.na(sw[13,'med']),NA, 1 / sw[13,'med'])       # max bonanza length
   
-  raw.table[s,performance.measures[14]] <- scen.table[s,performance.measures[14]] <- sw[14,'med']   # mean bonanza length
+  raw.table[s,performance.measures[14]] <-  sw[14,'med']   # mean bonanza length
   
   raw.table[s,performance.measures[15]] <- sw[15,'med']
   #scen.table[s,performance.measures[15]] <- ifelse(is.na(sw[15,'med']),NA, 1 / sw[15,'med'])    # mean collapse length
-  
+  raw.table[s,performance.measures[16]] <- sw[16,'med']
+  raw.table[s,performance.measures[17]] <- sw[17,'med']
 } # This loop is a hot mess and needs to be optimized - can also take out "scen.table" assignments because they're all done below for the kite plots
 
 write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
@@ -160,15 +163,6 @@ write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 
 
 # Change labels of things in the table! --------------------------
-scen.table <- mutate(scen.table, obs.error.type = recode(obs.error.type, 
-                                                        'Tim'='Delayed change detection',
-                                                        'AC' = "Autocorrelated"),
-                                             HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-                                                          'constF' = 'Constant F',
-                                                          'C1' = 'C1',
-                                                          'C2' = 'C2',
-                                                          'C3' = 'C3',
-                                                          'trend' = "Trend-based"))
 raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type, 
                                                          'Tim'='Delayed change detection',
                                                          'AC' = "Autocorrelated"),
