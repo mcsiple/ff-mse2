@@ -76,7 +76,7 @@ all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
 
 all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
-write.csv(all.summaries, "Sardine_AllSummaries.csv")
+write.csv(all.summaries, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 
 # See if performance metrics are correlated -------------------------------
