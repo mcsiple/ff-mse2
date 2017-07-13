@@ -91,13 +91,13 @@ duration.bonanza <- function(x, F0.x){
 n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows are sims, cols are years
   count1 <- count5 <- count10 <- vector(length=nrow(x))
   for(i in 1:nrow(x)){ #Either catch OR biomass
-    ltm <- mean(x[i,])
+    ltm <- mean(x[i,],na.rm = T)
     if(is.na(threshold)){ thresh <- 0.01*ltm } # threshold can be anything - default is 1% of long term mean C or B
     else{thresh = threshold}
     badTorF <- x[i,] <= thresh
-    oneyr <- sum(roll_sum(badTorF, 1) == 1)
-    fiveyr <- sum(roll_sum(badTorF, 5) == 5)
-    tenyr <- sum(roll_sum(badTorF, 10) == 10)
+    oneyr <- sum(roll_sum(badTorF, 1) == 1,na.rm = T)
+    fiveyr <- sum(roll_sum(badTorF, 5) == 5,na.rm = T)
+    tenyr <- sum(roll_sum(badTorF, 10) == 10,na.rm = T)
     count1[i] <- oneyr # number of one-year closures
     count5[i] <- fiveyr #number of five year closures
     count10[i] <- tenyr # number of 10 year closures
@@ -155,8 +155,8 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   # Maximum duration of collapse
   max.duration.collapse = min.duration.collapse = avg.duration.collapse <- vector()
   max.duration.bonanza = min.duration.bonanza = avg.duration.bonanza <- vector()
-  collapse.severity = vector()
-  
+  prob.collapse = collapse.severity = vector()
+  depl <- matrix(nrow=nrow(true.biomass),ncol=ncol(true.biomass))
   for(i in 1:nrow(true.biomass)){ # Each one = 1 simulation
     max.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$longest.collapse
     min.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$shortest.collapse
@@ -173,10 +173,15 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
     # Severity of collapse (as a percentage of mean unfished biomass)
     coll.thresh <- mean(result.list$no.fishing.tb[i,]) * 0.2
     collapse.yrs <- true.biomass[i,coll.yrs]
-    collapse.severity[i] <- median(collapse.yrs,na.rm=T)
+    collapse.severity[i] <- 1 - (median(collapse.yrs,na.rm=T)/ (median(result.list$no.fishing.tb[i,]))) 
+    # median biomass at collapse, over the median unfished biomass for that simulation - a higher value of that is "better" (less severe) so substract it from 1 to get higher number == worse severity.
+    
+    #Depletion based on unfished B0
+      depl[i,] <-  true.biomass[i,]/result.list$no.fishing.tb[i,]
+    
     }
   
-
+  mean.depl <- apply(depl,MARGIN = 1,FUN = mean)
   
   # Performance metrics
   interval <- c(0.05,0.5,0.95)
@@ -191,7 +196,9 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   g4p <- quantile(g4p.vec,probs = interval)         #Nyears "good for predator"
   sdB <- sd.B                               #SD(Biomass)
   b4p <- quantile(yrs.bad,probs = interval) #p(bad4preds)
-  ltm.depl <- ltm$depl                      # Mean depletion
+  ltm.depl <- quantile(depl, probs = interval,na.rm=T)                     # Mean depletion
+  prob.coll <- quantile(prob.collapse,probs = interval,na.rm=T)
+  severity <- quantile(collapse.severity,probs = interval,na.rm=T)
   
   # Awkward but necessary for when there are NAs in these vectors
   if(all(is.na(max.duration.collapse))){
@@ -221,7 +228,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   }
   
   output <- data.frame(PM = performance.measures, loCI = NA, med = NA, hiCI = NA)
-  output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl,overall.max.coll.len,overall.max.bon.len,bon.length,coll.length)
+  output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl,overall.max.coll.len,overall.max.bon.len,bon.length,coll.length,prob.coll,severity)
   sim.output <- list()
   #LTmean catch
   #LTmean nonzero catch
@@ -251,7 +258,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   sim.output[[11]] <- LTmeans.list$depl
   sim.output[[12]] <- avg.duration.bonanza
   sim.output[[13]] <- avg.duration.collapse
-  names(sim.output) <- performance.measures[-c(12,13)]
+  #names(sim.output) <- performance.measures[-c(12,13)]
   if(individual.sim==TRUE){return(sim.output)}
   else{return(output)}
     }
