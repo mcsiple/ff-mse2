@@ -7,7 +7,7 @@ library(plyr)
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
 types <- c("Anchovy"="Anchovy",
-           "Menhaden" = "Menhaden",
+           #"Menhaden" = "Menhaden",
            "Sardine" = "Sardine")
 
 # Parallelize so each simulation is on a different core:
@@ -124,7 +124,7 @@ stopCluster()
                 
         # Test pop and see if it crashes ------------------------------------------
         # Check that population will still sometimes collapse even without fishing.
-        nexamples <- 20 # How many time series do you want to plot
+        nexamples <- 1 # How many time series do you want to plot
         var.to.plot <- "rec"
         set.seed(123)
               big.df <- data.frame()
@@ -149,9 +149,9 @@ stopCluster()
         ggplot(ndf,aes(x=year,y=value)) + geom_line() + facet_wrap(~rep,scales = "free_y") + geom_line(aes(y=low.B.thresh),col="red") #xlim(c(150,250)
         
         #New, just for the recruitment time series
-        fff <- nofish %>% subset(L1=="biomass.oneplus.true") %>% mutate(low.B.thresh = 0.2*mean(value,na.rm=TRUE))
-        nofish %>% subset(L1=="biomass.oneplus.true") %>% as.data.frame() %>% ggplot(aes(x=year,y=value))+geom_line()+ geom_hline(yintercept = 15639.94,col = "red")
-        
+        # fff <- nofish %>% subset(L1=="biomass.oneplus.true") %>% mutate(low.B.thresh = 0.2*mean(value,na.rm=TRUE))
+        # nofish %>% subset(L1=="biomass.oneplus.true") %>% as.data.frame() %>% ggplot(aes(x=year,y=value))+geom_line()+ geom_hline(yintercept = 15639.94,col = "red")
+        # 
         ###########################################################################
         # SIMULATIONS -------------------------------------------------------------
         ###########################################################################
