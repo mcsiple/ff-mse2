@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 
 
 
@@ -218,7 +218,7 @@ for(p in 1:3){
     }
     
     #legend.presence <- ifelse(p == 1,TRUE,FALSE)
-    legend.presence <- FALSE
+    legend.presence <- TRUE
     remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength")
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
