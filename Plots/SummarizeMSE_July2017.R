@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 
 
 
@@ -32,8 +32,8 @@ nyrs.to.use <- 100 # How many years you want to use to calculate all your metric
 calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
 
 # Add performance measure columns to table
-performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity")
-pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11)) # for distinguishing types of PMs (mostly for plotting...)
+performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch")
+pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery") # for distinguishing types of PMs (mostly for plotting...)
 
 #overall.max.coll.len,overall.max.bon.len,bon.length,coll.length
 # Still haven't added : prob(catch falls below a threshold bc what should the threshold be?)
@@ -62,7 +62,7 @@ all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
 
 # Match the scenarios to type of error, etc.
 all.summaries <- merge(all.summaries,raw.table[,1:7],by="scenario")    # all.summaries is a giant table with 1080 rows = 72 scenarios * 15 PMs
-all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type, 
+all.summaries2 <- mutate(all.summaries, obs.error.type = recode(obs.error.type, 
                                                                'Tim'='Delayed change detection',
                                                                'AC' = "Autocorrelated"),
                         HCR = recode(HCR, 'cfp' = 'Stability-favoring',
@@ -72,9 +72,9 @@ all.summaries <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
                                      'C3' = 'C3',
                                      'trend' = "Trend-based"))
 
-all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
+all.summaries2$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
-write.csv(all.summaries, file = paste(Type,"_AllSummaries.csv",sep=""))
+write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 
 # See if performance metrics are correlated -------------------------------
@@ -133,25 +133,22 @@ for (s in 1:nscenarios){
   
   yrs.bad <- apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are very bad for preds - length of vector is nsims 
 
-  #scen.table[s,performance.measures[10]] <-  ifelse (median(yrs.bad)==0, 1, 1 / median(yrs.bad) ) #  **N** Number of years below a very low threshold (<10% of long term unfished biomass) "very.bad4preds" **N**
   raw.table[s,performance.measures[10]] <- median(yrs.bad)
-  #scen.table[s,performance.measures[11]] <- 
-    raw.table[s,performance.measures[11]] <- NA  # CHange this back, later!!!!
-    #median(rowMeans(result.to.use$depl[,calc.ind]))  # Median depletion
   
   sw <- subset(all.summaries,scenario==s)
-  raw.table[s, performance.measures[12]] <- sw[12,'med']
-  #scen.table[s, performance.measures[12]] <- ifelse(is.na(sw[12,'med']),NA, 1 / sw[12,'med'])    # max collapse length
+    raw.table[s,performance.measures[11]] <- sw[11,'med']  
+    
+    raw.table[s, performance.measures[12]] <- sw[12,'med'] # max collapse length
   
-  raw.table[s, performance.measures[13]] <- sw[13,'med'] # **N**
-  #scen.table[s, performance.measures[13]] <- ifelse(is.na(sw[13,'med']),NA, 1 / sw[13,'med'])       # max bonanza length
+  raw.table[s, performance.measures[13]] <- sw[13,'med'] # **N**max bonanza length
   
   raw.table[s,performance.measures[14]] <-  sw[14,'med']   # mean bonanza length
   
-  raw.table[s,performance.measures[15]] <- sw[15,'med']
+  raw.table[s,performance.measures[15]] <- sw[15,'med']    #mean collapse length
   #scen.table[s,performance.measures[15]] <- ifelse(is.na(sw[15,'med']),NA, 1 / sw[15,'med'])    # mean collapse length
-  raw.table[s,performance.measures[16]] <- sw[16,'med']
-  raw.table[s,performance.measures[17]] <- sw[17,'med']
+  raw.table[s,performance.measures[16]] <- sw[16,'med']     # probability of collapse 
+  raw.table[s,performance.measures[17]] <- sw[17,'med']   # severity of collapses (1 - fraction of B0)
+  raw.table[s,performance.measures[18]] <- sw[18,'med']   # CV(catch)
 } # This loop is a hot mess and needs to be optimized - can also take out "scen.table" assignments because they're all done below for the kite plots
 
 write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
@@ -162,55 +159,45 @@ write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 ############################################################################
 
 
-# Change labels of things in the table! --------------------------
-raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type, 
-                                                         'Tim'='Delayed change detection',
-                                                         'AC' = "Autocorrelated"),
-                     HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-                                  'constF' = 'Constant F',
-                                  'C1' = 'C1',
-                                  'C2' = 'C2',
-                                  'C3' = 'C3',
-                                  'trend' = "Trend-based"))
-
 
 ######################################################################
 ###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
 ######################################################################
 
-pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
+#pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
+
 # Put control rules in order so they plot right
-scen.table$HCR <- raw.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
-# Compare each of the CRs together? It would be like pairs()
+raw.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
+raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
+                                            'constF' = 'Constant F',
+                                            'C1' = 'C1',
+                                            'C2' = 'C2',
+                                            'C3' = 'C3',
+                                            'trend' = "Trend-based"))
 
 
 
 # Kite plots showing tradeoffs --------------------------------------------
-mat <- matrix(1:4,nrow=2,byrow = TRUE)
-plotnames <- list()
-steepnesses <- unique(scen.table$h)
-obs.error.types <- unique(scen.table$obs.error.type)
-nice.pms <- data.frame(original = colnames(scen.table[-(1:7)]),
+
+nice.pms <- data.frame(original = colnames(raw.table[-(1:7)]),
                        polished = c("LT mean catch","LT mean nonzero catch",
                                     "SD(Catch)","Probability of \n 5-yr closure",
                                     "Number of \n 10-yr closures","Number of yrs \n w/ zero catch",
                                     "LT mean biomass","Number of yrs \n above pred threshold",
                                     "SD(Biomass)","Number of yrs \n below low pred threshold",
                                     "Mean depletion","Max collapse length","Max bonanza length",
-                                    "Bonanza length","Collapse length"))
+                                    "Bonanza length","Collapse length", "Probability \n of collapse",
+                                    "Collapse severity","CV(Catch)"))
 
-#For final version of paper, want to just show one scenario - this is is the basic one!
+plotnames <- list()
 
-#for(steep in 1:2){
-#for(obs in 1:2){
-steep=2
-obs=1
-    
-    #tab <- subset(scen.table, obs.error.type == obs.error.types[obs] & h == steepnesses[steep] & M.type == "constant")
-    tab <- subset(raw.table,obs.error.type == obs.error.types[obs] & h == steepnesses[steep] & M.type == "constant")
+plots <- data.frame("steepness"=c(0.6,0.9,0.6),"obs.error.type" = c("AC","AC","Tim"))
+
+for(p in 1:3){
+    tab <- subset(raw.table,obs.error.type == plots$obs.error.type[p] & h == plots$steepness[p] & M.type == "constant")
     tab.metrics <- tab[,-(1:7)]
     #Here are the PMs that are NEGATIVES (i.e., a high value for these is bad news)
-    bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength")
+    bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV(Catch)")
     which.bad <- which(colnames(tab.metrics) %in% bad.pms)
     tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) ifelse(x==0,1,1/x)) # Turn all the "bad" PMs to their inverse
     props <- tab.metrics
@@ -230,23 +217,34 @@ obs=1
       axis.labels <- nice.pms[-rm.metrics,'polished']
     }
     
-    #legend.presence <- ifelse(mat[steep,obs] != 1,FALSE,TRUE)
-    legend.presence = TRUE
-    remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds")
+    #legend.presence <- ifelse(p == 1,TRUE,FALSE)
+    legend.presence <- FALSE
+    remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength")
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
-
-    
-  pdf(file=paste(Type, "_Kite.pdf",sep=""),width = 10,height=7,useDingbats = FALSE)  
-  ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=4,
+  
+  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=4,
                                            legend.text.size = 4,
                                            axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors)
-dev.off()
-    #}}
+}
 
-#grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]], plotnames[[4]])
+pdf(file = paste(Type,"_KitePlots.pdf",sep=""),width = 9,height=27,useDingbats = FALSE)
+grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],ncol=1)
+dev.off()
+# Change labels of things in the table! --------------------------
+raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type, 
+                                                       'Tim'='Delayed change detection',
+                                                       'AC' = "Autocorrelated"),
+                    HCR = recode(HCR, 'cfp' = 'Stability-favoring',
+                                 'constF' = 'Constant F',
+                                 'C1' = 'C1',
+                                 'C2' = 'C2',
+                                 'C3' = 'C3',
+                                 'trend' = "Trend-based"))
+
+
 
 
 # Zeh plots (e.g. Punt 2015) -----------------------------------------------
