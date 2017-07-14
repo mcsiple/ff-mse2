@@ -2,6 +2,13 @@
 # Functions for calculating performance measures ---------------------------
 library(RcppRoll)
 
+cv <- function(ts){
+  mean = mean(ts)
+  sd = sd(ts)
+  CV <- sd/mean
+  return(CV)
+}
+
 nzeroes <- function(x){         # How many years with zero catch
   #x is a vector
   n <- length(which(x==0))
@@ -155,7 +162,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   # Maximum duration of collapse
   max.duration.collapse = min.duration.collapse = avg.duration.collapse <- vector()
   max.duration.bonanza = min.duration.bonanza = avg.duration.bonanza <- vector()
-  prob.collapse = collapse.severity = vector()
+  prob.collapse = collapse.severity = cv.vec = vector()
   depl <- matrix(nrow=nrow(true.biomass),ncol=ncol(true.biomass))
   for(i in 1:nrow(true.biomass)){ # Each one = 1 simulation
     max.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$longest.collapse
@@ -178,6 +185,9 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
     
     #Depletion based on unfished B0
       depl[i,] <-  true.biomass[i,]/result.list$no.fishing.tb[i,]
+      
+      #CV of catches
+      cv.vec[i] <- cv(catch[i,])
     
     }
   
