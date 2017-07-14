@@ -209,7 +209,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   ltm.depl <- quantile(depl, probs = interval,na.rm=T)                     # Mean depletion
   prob.coll <- quantile(prob.collapse,probs = interval,na.rm=T)
   severity <- quantile(collapse.severity,probs = interval,na.rm=T)
-  
+  cv.catch <- quantile(cv.vec,probs = interval, na.rm=T)
   # Awkward but necessary for when there are NAs in these vectors
   if(all(is.na(max.duration.collapse))){
     overall.max.coll.len <- rep(NA,times=3)
@@ -238,7 +238,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   }
   
   output <- data.frame(PM = performance.measures, loCI = NA, med = NA, hiCI = NA)
-  output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl,overall.max.coll.len,overall.max.bon.len,bon.length,coll.length,prob.coll,severity)
+  output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl,overall.max.coll.len,overall.max.bon.len,bon.length,coll.length,prob.coll,severity,cv.catch)
   sim.output <- list()
   #LTmean catch
   #LTmean nonzero catch
