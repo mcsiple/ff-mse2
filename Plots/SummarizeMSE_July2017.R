@@ -11,17 +11,19 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 
 
 
-# Set path to wherever the simulation results are, load them into a giant dataframe
+# Set path to wherever the simulation results are
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+setwd(path)
+
+# Read all files into a giant list
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text table summary
   files <- files[-rm]
   files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
-  setwd(path)
   results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all the results - ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
 
 nscenarios <- length(results)
@@ -77,6 +79,11 @@ all.summaries2$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Const
 write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 
+
+# Just load the raw table, if you have already run the code below  --------
+
+raw.table <- read.csv(file=paste(Type,"_outputs.csv",sep=""))
+
 # See if performance metrics are correlated -------------------------------
 # sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
 # pairs(sims.all[[33]],pch=19,col=rgb(0,0,0,0.2))
@@ -116,19 +123,14 @@ for (s in 1:nscenarios){
   raw.table[s,performance.measures[5]] <- median.P10 # Mean number of 10-yr closures given a 5-yr closure
   
   ######
-  #scen.table[s,performance.measures[6]] <- ifelse(median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1)) ==0, 1,
-                                           #       1 / median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1)) ) # "nyrs0catch" **N**
   raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
   
-  #scen.table[s,performance.measures[7]] <- 
     raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$biomass.total.true[,calc.ind])) # "meanbiomass"
-  
-  #scen.table[s,performance.measures[8]] <- 
+
     raw.table[s,performance.measures[8]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],
                                                          FUN = good4pred,MARGIN = 1, 
                                                          F0.x = result.to.use$no.fishing.tb[,calc.ind])) # "good4preds" - this is calculated from TOTAL biomass (including age 0)
-  
- # scen.table[s,performance.measures[9]] <- 1 / median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = sd,MARGIN = 1)) # "SDbiomass" **N**
+    
   raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
   
   yrs.bad <- apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are very bad for preds - length of vector is nsims 
@@ -167,7 +169,11 @@ write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 #pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 
 # Put control rules in order so they plot right
+if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
+
+# Don't run this yet;
 raw.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
+
 raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                                             'constF' = 'Constant F',
                                             'C1' = 'C1',
@@ -190,7 +196,7 @@ nice.pms <- data.frame(original = colnames(raw.table[-(1:7)]),
                                     "Collapse severity","CV(Catch)"))
 
 plotnames <- list()
-
+tileplots <- list()
 plots <- data.frame("steepness"=c(0.6,0.9,0.6),"obs.error.type" = c("AC","AC","Tim"))
 
 for(p in 1:3){
@@ -228,11 +234,18 @@ for(p in 1:3){
                                            legend.text.size = 4,
                                            axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors)
+  ftm <- melt(final.tab,id.vars="group")
+  tileplots[[p]] <- ggplot(ftm,aes(x=variable,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="Spectral") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 }
 
 pdf(file = paste(Type,"_KitePlots.pdf",sep=""),width = 9,height=27,useDingbats = FALSE)
 grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],ncol=1)
 dev.off()
+
+pdf(file = paste(Type, "_TilePlots.pdf",sep=""),width = 8,height = 14,useDingbats = FALSE)
+grid.arrange(tileplots[[1]],tileplots[[2]],tileplots[[3]],ncol=1)
+dev.off()
+
 # Change labels of things in the table! --------------------------
 raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type, 
                                                        'Tim'='Delayed change detection',
