@@ -1,3 +1,4 @@
+basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 # Demo figure for control rules
 source(file.path(basedir,"Control Rules/smith_oceana.R"))
 source(file.path(basedir,"Control Rules/cfp.R"))
@@ -17,13 +18,14 @@ C2.vec[i] <- calc.F.oceana(Bt = B[i], Blim = 0.1*B0, Btarget = 0.8*B0, M = m)
 C3.vec[i] <- calc.F.stick(Bt = B[i], Blim = 0.4*B0, Btarget = 0.8*B0, Fmax = Fmsy)
 cfp.vec[i] <- calc.F.cfp(prevCatch = 10,Bt = B[i], Btarget = Bmsy, Fmax = Fmsy,Blim = 0.5*Bmsy)
 }
+constf.vec <- rep(Fmsy,times=length(B))
 
 pdf("ControlRules.pdf",width = 7,height = 7,useDingbats = FALSE)
 lwdp = 3
 par(las=2,mar=c(6,5,4,2)+0.1) # Rotate axis labels 
 # margins: c(5, 4, 4, 2) + 0.1
-plot(C1.vec,type='l',col=hcr.colors[1],lwd=lwdp, ylim=c(0,0.9),
-     axes=FALSE,xlab="Biomass",ylab="Fishing rate (F)") #xaxt="n",yaxt="n"
+plot(C1.vec-0.004,type='l',col=hcr.colors[1],lwd=lwdp, ylim=c(0,0.9),
+     axes=FALSE,xlab="\n \n \n \n Biomass",ylab="Fishing rate (F) \n") #xaxt="n",yaxt="n"
 
 xticks = c(0,0.1*B0,0.5*Bmsy,0.4*B0,0.8*B0,max(B))
 yticks = c(0,0.5*m,Fmsy,0.8)
@@ -31,8 +33,9 @@ axis(side = 1, at = xticks,labels = c(" ","0.1*B0","0.5Bmsy","0.4*B0","0.8*B0","
 axis(side = 2, at = yticks, labels = c("0","0.5*M","Fmsy"," "))
 
 lines(C2.vec, col=hcr.colors[2],lwd=lwdp)
-lines(C3.vec, col=hcr.colors[3],lwd=lwdp)
-lines(cfp.vec,col=hcr.colors[5],lwd=lwdp)
+lines(C3.vec-0.004, col=hcr.colors[3],lwd=lwdp)
+lines(cfp.vec+0.001,col=hcr.colors[5],lwd=lwdp)
+lines(constf.vec+0.005,col=hcr.colors[4],lwd=lwdp)
 #abline(h = 0.5*Fmsy,col=hcr.colors[4],lwd = lwdp)
-legend("bottomright",legend = c("C1","C2","C3","Stability-favoring"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5)])
+legend("bottomright",legend = c("C1","C2","C3","Stability-favoring","Constant F"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4)])
 dev.off()
