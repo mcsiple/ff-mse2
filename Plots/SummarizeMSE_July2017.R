@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Sardine" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 
 
 
@@ -83,6 +83,7 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 # Just load the raw table, if you have already run the code below  --------
 
 raw.table <- read.csv(file=paste(Type,"_outputs.csv",sep=""))
+if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
 
 # See if performance metrics are correlated -------------------------------
 # sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
@@ -169,10 +170,9 @@ write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 #pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 
 # Put control rules in order so they plot right
-if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
 
 # Don't run this yet;
-raw.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
+raw.table$HCR <- factor(raw.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
 
 raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                                             'constF' = 'Constant F',
@@ -235,7 +235,7 @@ for(p in 1:3){
                                            axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors)
   ftm <- melt(final.tab,id.vars="group")
-  tileplots[[p]] <- ggplot(ftm,aes(x=variable,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="Spectral") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  tileplots[[p]] <- ggplot(ftm,aes(x=variable,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="Spectral") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_text(aes(label=round(value,digits = 1)))
 }
 
 pdf(file = paste(Type,"_KitePlots.pdf",sep=""),width = 9,height=27,useDingbats = FALSE)
