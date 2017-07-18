@@ -12,10 +12,9 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
                          rec.dev = rep(1,times=years), F0=x, cr=NULL,R0.traj = NA, 
                          years=years, hcr.type = "constF",const.f.rate = x,
                          equilib=NULL,steepness=steepness,obs.type = "noerror",rec.ram = NA,time.var.m = NA),
-    c(x,tail(biomass.oneplus.true, 2)[1], # B0
-      tail(sp, 3)[1],  # Equilibrium SP. tail(sp, 2)[1] is because the last year of surplus production is NA (because it's calculated from B[t+1]) so it's hacky but it's fine.
-      fishing[years-1],
-      total.catch[years-1])))  # Total catch, for getting msy 
+    c(x,tail(biomass.total.true,1), # B0
+      tail(sp,2)[1],  # Equilibrium SP. tail(sp, 2)[1] is because the last year of surplus production is NA (because it's calculated from B[t+1]) so it's hacky but it's fine.
+      tail(total.catch,1))))  # Total catch, for getting msy 
   #print(equilib)
   #The value of F which maximizes surplus production is Fmsy
   f.msy <- fish[which.max(equilib[3,])]
@@ -31,7 +30,7 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
   
   #Plot equilibrium yield curve
   x.vec <- fish
-  y.vec <- equilib[4,]
+  y.vec <- equilib[3,]
   
   # x.vec <- equilib[2,]/b.inf
   # y.vec <- equilib[4,]
