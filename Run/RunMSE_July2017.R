@@ -7,7 +7,7 @@ library(plyr)
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
 types <- c("Anchovy"="Anchovy",
-           #"Menhaden" = "Menhaden",
+           "Menhaden" = "Menhaden",
            "Sardine" = "Sardine")
 
 # Parallelize so each simulation is on a different core:
@@ -88,7 +88,7 @@ stopCluster()
         h = c(0.9, 0.6)
         obs.error.type = c("AC","Tim")
         HCR = c("cfp","constF","C1","C2","C3","trend")
-        M.type = c("constant","regimeshift")
+        M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity
         
         scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type)
         colnames(scenarios) <- c("h","obs.error.type","HCR","recruit.sd","recruit.rho","M.type")
@@ -168,7 +168,7 @@ stopCluster()
           M.type = scenarios$M.type[s]
         
           equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
-          const.f.rate = equilib$Fmsy * 0.5 # important change from before (5/30/17)! F=0.5Fmsy for constant F and trend scenarios
+          const.f.rate = equilib$Fmsy # important change from before (5/30/17)! F=0.5Fmsy for constant F and trend scenarios
                   no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
                   set.seed(123) # Start each round of sims at same random seed
                   time.var.m <- NA # Base case: M constant 
