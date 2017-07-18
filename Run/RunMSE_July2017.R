@@ -25,7 +25,7 @@ stopCluster()
         years.test = 250
         nsims = 1000
         tim.params = list(sigma0 = 0.2,tau0 = 0.1)
-        sig.s = 0.30
+        sig.s = 0.3 #0.30 (changed to 0.001 to check whether catches were limited at higher F by observation error)
         R0.sens = NA #NO DYNAMIC R0 anymore-- ignore
         
         # Load packages
@@ -38,7 +38,7 @@ stopCluster()
         #toplot=FALSE      # Don't plot examples of rec trajectories
         source(file.path(basedir,"Recruitment/GenerateDevs.R")) 
         source(file.path(basedir,"Estimators/CalcFTrue.R"))
-        source(file.path("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/HCR_Trajectory_NEW.R"))
+        source(file.path(basedir,"Run/HCR_Trajectory_NEW.R"))
         source(file.path(basedir,"Estimators/Estimators.R"))
         source(file.path(basedir,"Run/generate_M.R"))
 
@@ -87,7 +87,7 @@ stopCluster()
         # Scenarios
         h = c(0.9, 0.6)
         obs.error.type = c("AC","Tim")
-        HCR = c("cfp","constF","C1","C2","C3","trend")
+        HCR = c("cfp","constF","C1","C2","C3","constF_HI") # Took out trend because it was unrealistic-- but using trend in CPUE as adjustment (data-poor method) might be a good idea!
         M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity
         
         scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type)
@@ -98,7 +98,7 @@ stopCluster()
         
         write.table(scenarios,file = "Scenario_Table.txt")
         
-        CFP <- C1 <- C2 <- C3 <- constF <- trend <-
+        CFP <- C1 <- C2 <- C3 <- constF <- trend <- constF_HI <- 
                     list(biomass.oneplus.true=matrix(nrow = nsims,ncol = years.test), 
                     total.catch=matrix(nrow = nsims,ncol = years.test),
                     fishing= matrix(nrow = nsims,ncol = years.test),
@@ -156,9 +156,7 @@ stopCluster()
         # SIMULATIONS -------------------------------------------------------------
         ###########################################################################
         
-        
-        #tm <- proc.time()
-        
+        #
         for(s in 1:nscenarios){  #
           steepness = scenarios$h[s]
           obs.type <- scenarios$obs.error.type[s]
@@ -168,7 +166,7 @@ stopCluster()
           M.type = scenarios$M.type[s]
         
           equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
-          const.f.rate = equilib$Fmsy # important change from before (5/30/17)! F=0.5Fmsy for constant F and trend scenarios
+          const.f.rate = 0.5*equilib$Fmsy 
                   no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
                   set.seed(123) # Start each round of sims at same random seed
                   time.var.m <- NA # Base case: M constant 
@@ -192,7 +190,6 @@ stopCluster()
             CFP[["fishing"]][sim,] <- expt.cfp$fishing
             CFP[["intended.f"]][sim,] <- expt.cfp$intended.f    
             CFP[["rec"]][sim,] <- expt.cfp$rec
-            #CFP[["depl"]][sim,] <- expt.cfp$depl
             CFP[["biomass.oneplus.obs"]][sim,] <- expt.cfp$biomass.oneplus.obs        # This is the observed one-plus biomass
             CFP[["biomass.total.true"]][sim,] <- expt.cfp$biomass.total.true          # This is the true total biomass
             CFP[["no.fishing.tb"]] <- no.fishing    # True total biomass with no fishing
@@ -212,7 +209,6 @@ stopCluster()
             constF[["fishing"]][sim,] <- expt.constF$fishing
             constF[["intended.f"]][sim,] <- expt.constF$intended.f   
             constF[["rec"]][sim,] <- expt.constF$rec
-            #constF[["depl"]][sim,] <- expt.constF$depl
             constF[["biomass.oneplus.obs"]][sim,] <- expt.constF$biomass.oneplus.obs
             constF[["biomass.total.true"]][sim,] <- expt.constF$biomass.total.true
             constF[["no.fishing.tb"]] <- no.fishing
@@ -231,7 +227,6 @@ stopCluster()
             C1[["fishing"]][sim,] <- expt.c1$fishing
             C1[["intended.f"]][sim,] <- expt.c1$intended.f    
             C1[["rec"]][sim,] <- expt.c1$rec
-            #C1[["depl"]][sim,] <- expt.c1$depl
             C1[["biomass.oneplus.obs"]][sim,] <- expt.c1$biomass.oneplus.obs
             C1[["biomass.total.true"]][sim,] <- expt.c1$biomass.total.true
             C1[["no.fishing.tb"]] <- no.fishing
@@ -269,7 +264,6 @@ stopCluster()
               C3[["fishing"]][sim,] <- expt.c3$fishing
               C3[["intended.f"]][sim,] <- expt.c3$intended.f    
               C3[["rec"]][sim,] <- expt.c3$rec
-              #C3[["depl"]][sim,] <- expt.c3$depl
               C3[["biomass.oneplus.obs"]][sim,] <- expt.c3$biomass.oneplus.obs
               C3[["biomass.total.true"]][sim,] <- expt.c3$biomass.total.true
               C3[["no.fishing.tb"]] <- no.fishing
@@ -289,13 +283,31 @@ stopCluster()
               trend[["fishing"]][sim,] <- expt.trend$fishing
               trend[["intended.f"]][sim,] <- expt.trend$intended.f    # True total biomass with no fishing
               trend[["rec"]][sim,] <- expt.trend$rec
-              #trend[["depl"]][sim,] <- expt.trend$depl
               trend[["biomass.oneplus.obs"]][sim,] <- expt.trend$biomass.oneplus.obs # Observed one-plus biomass
               trend[["biomass.total.true"]][sim,] <- expt.trend$biomass.total.true
               trend[["no.fishing.tb"]] <- no.fishing
             }
             save(trend,file=paste("All",s,"trend",".RData",sep="_")) 
           }
+                  
+                  if(HCR=="constF_HI"){
+                    const.f.rate = equilib$Fmsy
+                    set.seed(123) # same seed
+                    for (sim in 1:nsims){
+                      rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
+                      expt.constF_HI <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
+                      
+                      constF_HI[["biomass.oneplus.true"]][sim,] <- expt.constF_HI$biomass.oneplus.true
+                      constF_HI[["total.catch"]][sim,] <- expt.constF_HI$total.catch
+                      constF_HI[["fishing"]][sim,] <- expt.constF_HI$fishing
+                      constF_HI[["intended.f"]][sim,] <- expt.constF_HI$intended.f   
+                      constF_HI[["rec"]][sim,] <- expt.constF_HI$rec
+                      constF_HI[["biomass.oneplus.obs"]][sim,] <- expt.constF_HI$biomass.oneplus.obs
+                      constF_HI[["biomass.total.true"]][sim,] <- expt.constF_HI$biomass.total.true
+                      constF_HI[["no.fishing.tb"]] <- no.fishing
+                    }
+                    save(constF_HI,file=paste("All",s,"constF_HI",".RData",sep="_"))
+                  }
         } # end of scenarios loop
         
         #print(proc.time() - tm)
