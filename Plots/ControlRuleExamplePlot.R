@@ -29,8 +29,8 @@ plot(C1.vec-0.004,type='l',col=hcr.colors[1],lwd=lwdp, ylim=c(0,0.9),
 
 xticks = c(0,0.1*B0,0.5*Bmsy,0.4*B0,0.8*B0,max(B))
 yticks = c(0,0.5*m,Fmsy,0.8)
-axis(side = 1, at = xticks,labels = c(" ","0.1*B0","0.5Bmsy","0.4*B0","0.8*B0"," "))
-axis(side = 2, at = yticks, labels = c("0","0.5*M","Fmsy"," "))
+axis(side = 1, at = xticks,labels = c(" ","0.1B0","0.5Bmsy","0.4B0","0.8B0"," "))
+axis(side = 2, at = yticks, labels = c("0","0.5M","Fmsy"," "))
 
 lines(C2.vec, col=hcr.colors[2],lwd=lwdp)
 lines(C3.vec-0.004, col=hcr.colors[3],lwd=lwdp)
