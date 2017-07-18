@@ -11,12 +11,13 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+#path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Anchovy_SavedOutputs/July 13 2017/"
 setwd(path)
 
 # Read all files into a giant list
@@ -34,8 +35,8 @@ nyrs.to.use <- 100 # How many years you want to use to calculate all your metric
 calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
 
 # Add performance measure columns to table
-performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch")
-pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery") # for distinguishing types of PMs (mostly for plotting...)
+performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
+pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") # for distinguishing types of PMs (mostly for plotting...)
 
 #overall.max.coll.len,overall.max.bon.len,bon.length,coll.length
 # Still haven't added : prob(catch falls below a threshold bc what should the threshold be?)
@@ -74,7 +75,7 @@ all.summaries2 <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
                                      'C3' = 'C3',
                                      'trend' = "Trend-based"))
 
-all.summaries2$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
+#all.summaries2$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
 write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
@@ -82,8 +83,8 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 # Just load the raw table, if you have already run the code below  --------
 
-raw.table <- read.csv(file=paste(Type,"_outputs.csv",sep=""))
-if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
+              raw.table <- read.csv(file=paste(Type,"_outputs.csv",sep=""))
+              if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
 
 # See if performance metrics are correlated -------------------------------
 # sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
@@ -152,6 +153,7 @@ for (s in 1:nscenarios){
   raw.table[s,performance.measures[16]] <- sw[16,'med']     # probability of collapse 
   raw.table[s,performance.measures[17]] <- sw[17,'med']   # severity of collapses (1 - fraction of B0)
   raw.table[s,performance.measures[18]] <- sw[18,'med']   # CV(catch)
+  raw.table[s,performance.measures[19]] <- sw[19,'med']   # "Bonafide" collapses
 } # This loop is a hot mess and needs to be optimized - can also take out "scen.table" assignments because they're all done below for the kite plots
 
 write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
@@ -172,7 +174,7 @@ write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 # Put control rules in order so they plot right
 
 # Don't run this yet;
-raw.table$HCR <- factor(raw.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
+#raw.table$HCR <- factor(raw.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
 
 raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                                             'constF' = 'Constant F',
@@ -235,7 +237,8 @@ for(p in 1:3){
                                            axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors)
   ftm <- melt(final.tab,id.vars="group")
-  tileplots[[p]] <- ggplot(ftm,aes(x=variable,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="Spectral") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_text(aes(label=round(value,digits = 1)))
+  tileplots[[p]] <- ggplot(ftm,aes(x=variable,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="Spectral",trans="reverse") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_text(aes(label=round(value,digits = 1)))
+  #pairsplots[[p]] <- ggpairs(final.tab,aes(colour=group)) + scale_colour_manual(values = hcr.colors)
 }
 
 pdf(file = paste(Type,"_KitePlots.pdf",sep=""),width = 9,height=27,useDingbats = FALSE)
