@@ -105,14 +105,15 @@ n.bonafide.collapses <- function(ts.length, coll.yrs){
   starts <- which(d) # indexes rle outputs to get locations where collapses start
   for(l in 1:length(starts)){
     ind.coll <- starts[l]
-    if(c[ind.coll]>2 & ind.coll != 1 & ind.coll != length(c)){
-      if(c[(ind.coll-1)]>4 & c[ind.coll+1]>4){counter <- counter+1} else{
-        if(c[ind.coll+1]<4 & c[ind.coll+2]>2){counter <- counter +1} else{
-        counter=counter}}}
+    if(c[ind.coll]>=2 & ind.coll != 1 & (ind.coll+2) < length(c)){
+      #if the sequence of collapse is preceded and followed by at least 4 yrs non-collapse 
+      if(c[(ind.coll-1)]>=4 & c[ind.coll+1]>=4){counter <- counter+1} else{ 
+        if(c[ind.coll+1]<=4 & c[ind.coll+2]>=2){counter <- counter +1} else{
+        counter=counter}}}else{counter=counter}
     # if the 4 years leading up to the collapse are not-collapsed, and same with the four years after, it's a "bonafide collapse"
   }
   # Last case: if the final years are collapsed, need to count those!
-  if(tail(d,n = 1) & tail(c, n = 1) > 4){counter=counter+1}else{counter=counter}
+  if(tail(d,1) & tail(c,1) > 4){counter=counter+1}else{counter=counter}
   }
   
   return(counter)
@@ -148,7 +149,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   } # Trim results to the years we're using
   LTmeans.list <- lapply(result.list,FUN = rowMeans,na.rm=TRUE) 
   # median and quantiles of LTM of all PMs
-  ltm <- lapply(LTmeans.list,FUN = quantile, probs = c(0.05,0.5,0.95)) 
+  ltm <- lapply(LTmeans.list,FUN = quantile, probs = c(0.05,0.5,0.95),na.rm=TRUE) 
   # mean nonzero catch
   catch <- result.list$total.catch
   nonzero.catch <- ifelse(catch<0.1,NA,catch)
@@ -162,8 +163,8 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   nz1 <- apply(catch,MARGIN = 1,FUN = nzeroes)
   
   #5- and 10-yr closures
-  n.5yrclose <- n.multiyr.closures(catch)$count5 / nz1 # P(5yr closure | closure)
-  n.10yrclose <- n.multiyr.closures(catch)$count10 / n.5yrclose # P(10yr closure | 5yr closure) - this one is depracated
+  n.5yrclose <- n.multiyr.closures(catch,threshold = 0)$count5 / nz1 # P(5yr closure | closure)
+  n.10yrclose <- n.multiyr.closures(catch,threshold = 0)$count10 / n.5yrclose # P(10yr closure | 5yr closure) - this one is depracated
   
   
   # SDbiomass
