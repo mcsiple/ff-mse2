@@ -19,6 +19,7 @@ C3.vec[i] <- calc.F.stick(Bt = B[i], Blim = 0.4*B0, Btarget = 0.8*B0, Fmax = Fms
 cfp.vec[i] <- calc.F.cfp(prevCatch = 10,Bt = B[i], Btarget = Bmsy, Fmax = Fmsy,Blim = 0.5*Bmsy)
 }
 constf.vec <- rep(Fmsy,times=length(B))
+constf.vec_lo <- rep(0.5*Fmsy,times=length(B))
 
 pdf("ControlRules.pdf",width = 7,height = 7,useDingbats = FALSE)
 lwdp = 3
@@ -28,14 +29,27 @@ plot(C1.vec-0.004,type='l',col=hcr.colors[1],lwd=lwdp, ylim=c(0,0.9),
      axes=FALSE,xlab="\n \n \n \n Biomass",ylab="Fishing rate (F) \n") #xaxt="n",yaxt="n"
 
 xticks = c(0,0.1*B0,0.5*Bmsy,0.4*B0,0.8*B0,max(B))
-yticks = c(0,0.5*m,Fmsy,0.8)
+yticks = c(0,0.5*m,0.5*Fmsy,Fmsy,0.8)
 axis(side = 1, at = xticks,labels = c(" ","0.1B0","0.5Bmsy","0.4B0","0.8B0"," "))
-axis(side = 2, at = yticks, labels = c("0","0.5M","Fmsy"," "))
+axis(side = 2, at = yticks, labels = c("0","0.5M","0.5Fmsy","Fmsy"," "))
 
 lines(C2.vec, col=hcr.colors[2],lwd=lwdp)
 lines(C3.vec-0.004, col=hcr.colors[3],lwd=lwdp)
 lines(cfp.vec+0.001,col=hcr.colors[5],lwd=lwdp)
-lines(constf.vec+0.005,col=hcr.colors[4],lwd=lwdp)
-#abline(h = 0.5*Fmsy,col=hcr.colors[4],lwd = lwdp)
-legend("bottomright",legend = c("C1","C2","C3","Stability-favoring","Constant F"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4)])
+lines(constf.vec+0.005,col=add.alpha(hcr.colors[4],alpha = 0.6),lwd=lwdp)
+lines(constf.vec_lo+0.005,col=add.alpha(hcr.colors[6],alpha = 0.6),lwd=lwdp)
+legend("bottomright",legend = c("C1","C2","C3","Stability-favoring","High F","Low F"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4,6)])
 dev.off()
+
+
+
+# functions used ----------------------------------------------------------
+
+add.alpha <- function(col, alpha=1){
+  if(missing(col))
+    stop("Please provide a vector of colours.")
+  apply(sapply(col, col2rgb)/255, 2, 
+        function(x) 
+          rgb(x[1], x[2], x[3], alpha=alpha))  
+}
+
