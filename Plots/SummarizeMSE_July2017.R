@@ -16,8 +16,8 @@ Type = "Anchovy" #FF type to summarize
 
 
 # Set path to wherever the simulation results are
-#path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
-path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Anchovy_SavedOutputs/July 13 2017/"
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+#path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sardine/"
 setwd(path)
 
 # Read all files into a giant list
@@ -91,7 +91,7 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 # pairs(sims.all[[33]],pch=19,col=rgb(0,0,0,0.2))
 
 # Table of summary stats! -----------------------------------------------------------
-
+# 
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
@@ -140,24 +140,24 @@ for (s in 1:nscenarios){
   raw.table[s,performance.measures[10]] <- median(yrs.bad)
   
   sw <- subset(all.summaries,scenario==s)
-    raw.table[s,performance.measures[11]] <- sw[11,'med']  
-    
-    raw.table[s, performance.measures[12]] <- sw[12,'med'] # max collapse length
-  
-  raw.table[s, performance.measures[13]] <- sw[13,'med'] # **N**max bonanza length
-  
-  raw.table[s,performance.measures[14]] <-  sw[14,'med']   # mean bonanza length
-  
-  raw.table[s,performance.measures[15]] <- sw[15,'med']    #mean collapse length
-  #scen.table[s,performance.measures[15]] <- ifelse(is.na(sw[15,'med']),NA, 1 / sw[15,'med'])    # mean collapse length
-  raw.table[s,performance.measures[16]] <- sw[16,'med']     # probability of collapse 
-  raw.table[s,performance.measures[17]] <- sw[17,'med']   # severity of collapses (1 - fraction of B0)
-  raw.table[s,performance.measures[18]] <- sw[18,'med']   # CV(catch)
-  raw.table[s,performance.measures[19]] <- sw[19,'med']   # "Bonafide" collapses
-} # This loop is a hot mess and needs to be optimized - can also take out "scen.table" assignments because they're all done below for the kite plots
+  for(pm in 11:19){
+    select.ind <- which(sw$PM == performance.measures[pm]) 
+    raw.table[s,performance.measures[pm]] <- sw[select.ind,'med'] 
+  }
+    # 1. Depletion
+    # 2. max collapse length
+    # 3. **N**max bonanza length
+    # 4. Mean bonanza length
+    # 5. Mean collapse length
+    # 6. # probability of collapse 
+    # 7. COllapse severity
+    # 8. CV.Catch
+    # 9. Bonafide.collapse
+} # This loop is a hot mess and needs to be optimized
 
 write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
 
+#raw.table[5:8,]
 
 ############################################################################
 # PLOTS AND METRICS TO SHOW OUTPUTS ----------------------------
@@ -462,3 +462,4 @@ lines(dd$total.catch[1,yrs],col='blue')
 
 which(ac$total.catch[1,yrs] > ac$biomass.oneplus.true[1,yrs])
 which(dd$total.catch[1,yrs] > dd$biomass.oneplus.true[1,yrs])
+
