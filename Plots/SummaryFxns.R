@@ -94,6 +94,30 @@ duration.bonanza <- function(x, F0.x){
 }
 
 #mean.duration.bonanza(x=testie$biomass.total.true,F0.x = F0.Type)
+n.bonafide.collapses <- function(ts.length, coll.yrs){
+  binary.coll.vec <- rep(0, times=ts.length)
+  binary.coll.vec[coll.yrs] <- 1 # Turn into vector of 0s and 1s
+  m <- rle(binary.coll.vec==1)
+  c <- m$lengths
+  d <- m$values
+  counter <- 0
+  if(any(d)){
+  starts <- which(d) # indexes rle outputs to get locations where collapses start
+  for(l in 1:length(starts)){
+    ind.coll <- starts[l]
+    if(c[ind.coll]>2 & ind.coll != 1 & ind.coll != length(c)){
+      if(c[(ind.coll-1)]>4 & c[ind.coll+1]>4){counter <- counter+1} else{
+        if(c[ind.coll+1]<4 & c[ind.coll+2]>2){counter <- counter +1} else{
+        counter=counter}}}
+    # if the 4 years leading up to the collapse are not-collapsed, and same with the four years after, it's a "bonafide collapse"
+  }
+  # Last case: if the final years are collapsed, need to count those!
+  if(tail(d,n = 1) & tail(c, n = 1) > 4){counter=counter+1}else{counter=counter}
+  }
+  
+  return(counter)
+}
+
 
 n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows are sims, cols are years
   count1 <- count5 <- count10 <- vector(length=nrow(x))
@@ -139,7 +163,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   
   #5- and 10-yr closures
   n.5yrclose <- n.multiyr.closures(catch)$count5 / nz1 # P(5yr closure | closure)
-  n.10yrclose <- n.multiyr.closures(catch)$count10 / n.5yrclose
+  n.10yrclose <- n.multiyr.closures(catch)$count10 / n.5yrclose # P(10yr closure | 5yr closure) - this one is depracated
   
   
   # SDbiomass
@@ -149,47 +173,50 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   
   #Years that are "good for predators"
   g4p.vec <- vector()
-  for(i in 1:nrow(true.biomass)){
-    g4p.vec[i] <- good4pred(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])
+  for(sim in 1:nrow(true.biomass)){
+    g4p.vec[sim] <- good4pred(x = true.biomass[sim,],F0.x = result.list$no.fishing.tb[sim])
   }
 
   # Number of years that are below a predator threshold
   yrs.bad <- vector()
-  for(i in 1:nrow(true.biomass)){
-    yrs.bad[i] <- bad4pred(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])
+  for(sim in 1:nrow(true.biomass)){
+    yrs.bad[sim] <- bad4pred(x = true.biomass[sim,],F0.x = result.list$no.fishing.tb[sim,])
   }
  
   # Maximum duration of collapse
   max.duration.collapse = min.duration.collapse = avg.duration.collapse <- vector()
   max.duration.bonanza = min.duration.bonanza = avg.duration.bonanza <- vector()
-  prob.collapse = collapse.severity = cv.vec = vector()
+  prob.collapse = collapse.severity = cv.vec = bonafide.collapse = vector()
   depl <- matrix(nrow=nrow(true.biomass),ncol=ncol(true.biomass))
-  for(i in 1:nrow(true.biomass)){ # Each one = 1 simulation
-    max.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$longest.collapse
-    min.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$shortest.collapse
-    avg.duration.collapse[i] <- duration.collapse(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$avg.collapse.length
+  for(sim in 1:nrow(true.biomass)){ # Each one = 1 simulation
+    max.duration.collapse[sim] <- duration.collapse(x = true.biomass[sim,],F0.x = result.list$no.fishing.tb[sim,])$longest.collapse
+    min.duration.collapse[sim] <- duration.collapse(x = true.biomass[sim,],F0.x = result.list$no.fishing.tb[sim,])$shortest.collapse
+    avg.duration.collapse[sim] <- duration.collapse(x = true.biomass[sim,],F0.x = result.list$no.fishing.tb[sim,])$avg.collapse.length
     
-    max.duration.bonanza[i] <- duration.bonanza(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$longest.bonanza
-    min.duration.bonanza[i] <- duration.bonanza(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$shortest.bonanza
-    avg.duration.bonanza[i] <- duration.bonanza(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,])$avg.bonanza.length
+    max.duration.bonanza[sim] <- duration.bonanza(x = true.biomass[sim,],F0.x = result.list$no.fishing.tb[sim,])$longest.bonanza
+    min.duration.bonanza[sim] <- duration.bonanza(x = true.biomass[sim,],F0.x = result.list$no.fishing.tb[sim,])$shortest.bonanza
+    avg.duration.bonanza[sim] <- duration.bonanza(x = true.biomass[sim,],F0.x = result.list$no.fishing.tb[sim,])$avg.bonanza.length
     
     # Probability of collapse
-    coll.yrs <- collapse.index(x = true.biomass[i,],F0.x = result.list$no.fishing.tb[i,]) 
-    prob.collapse[i] <- length(coll.yrs) / length(true.biomass[i,])
+    coll.yrs <- collapse.index(x = true.biomass[sim,],F0.x = result.list$no.fishing.tb[sim,]) 
+    prob.collapse[sim] <- length(coll.yrs) / length(true.biomass[sim,])
     
     # Severity of collapse (as a percentage of mean unfished biomass)
-    coll.thresh <- mean(result.list$no.fishing.tb[i,]) * 0.2
-    collapse.yrs <- true.biomass[i,coll.yrs]
-    collapse.severity[i] <- 1 - (median(collapse.yrs,na.rm=T)/ (median(result.list$no.fishing.tb[i,]))) 
+    coll.thresh <- mean(result.list$no.fishing.tb[sim,]) * 0.2
+    collapse.yrs <- true.biomass[sim,coll.yrs]
+    collapse.severity[sim] <- 1 - (mean(collapse.yrs,na.rm=T) / coll.thresh ) 
     # median biomass at collapse, over the median unfished biomass for that simulation - a higher value of that is "better" (less severe) so substract it from 1 to get higher number == worse severity.
     
     #Depletion based on unfished B0
-      depl[i,] <-  true.biomass[i,]/result.list$no.fishing.tb[i,]
+      depl[sim,] <-  true.biomass[sim,]/result.list$no.fishing.tb[sim,]
       
       #CV of catches
-      cv.vec[i] <- cv(catch[i,])
-    
-    }
+      cv.vec[sim] <- cv(catch[sim,])
+      
+      # N "bonafide" collapse periods (this is different than dipping below 0.2Bbar, you have to have a streak of non-collapse years before and after)
+      bonafide.collapse[sim] <- n.bonafide.collapses(ts.length = length(true.biomass[sim,]),coll.yrs = coll.yrs)           
+                  # 
+    } #end of sim loop
   
   mean.depl <- apply(depl,MARGIN = 1,FUN = mean)
   
@@ -210,6 +237,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   prob.coll <- quantile(prob.collapse,probs = interval,na.rm=T)
   severity <- quantile(collapse.severity,probs = interval,na.rm=T)
   cv.catch <- quantile(cv.vec,probs = interval, na.rm=T)
+  b.collapse <- quantile(bonafide.collapse,probs = interval, na.rm=T)
   # Awkward but necessary for when there are NAs in these vectors
   if(all(is.na(max.duration.collapse))){
     overall.max.coll.len <- rep(NA,times=3)
@@ -238,7 +266,7 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   }
   
   output <- data.frame(PM = performance.measures, loCI = NA, med = NA, hiCI = NA)
-  output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl,overall.max.coll.len,overall.max.bon.len,bon.length,coll.length,prob.coll,severity,cv.catch)
+  output[,-1] <- rbind(ltm.c,ltm.nzc,SDcatch,n5yr,n10yr,nz,ltm.b,g4p,sdB,b4p,ltm.depl,overall.max.coll.len,overall.max.bon.len,bon.length,coll.length,prob.coll,severity,cv.catch,b.collapse)
   sim.output <- list()
   #LTmean catch
   #LTmean nonzero catch
