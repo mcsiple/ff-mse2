@@ -16,7 +16,7 @@ Type = "Anchovy" #FF type to summarize
 
 
 # Set path to wherever the simulation results are
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep="")
 #path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sardine/"
 setwd(path)
 
@@ -73,7 +73,8 @@ all.summaries2 <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
                                      'C1' = 'C1',
                                      'C2' = 'C2',
                                      'C3' = 'C3',
-                                     'trend' = "Trend-based"))
+                                     'trend' = "Trend-based",
+                                     'constF_HI' = "Constant F - High"))
 
 #all.summaries2$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
 
@@ -153,12 +154,18 @@ for (s in 1:nscenarios){
     # 7. COllapse severity
     # 8. CV.Catch
     # 9. Bonafide.collapse
-} # This loop is a hot mess and needs to be optimized
+} 
 
-write.csv(raw.table, file=paste(Type,"_outputs.csv",sep=""))
+write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
 
+str(results)
 #raw.table[5:8,]
+par(mfrow=c(2,1))
+plot(results[[2]]$biomass.total.true[1,],type='l',ylab="Biomass",main="low F",ylim=c(0,25000))
+lines(results[[2]]$total.catch[1,],col='red')
 
+plot(results[[4]]$biomass.total.true[1,],type='l',ylab="Biomass", main = "F=FMSY",ylim=c(0,25000))
+lines(results[[4]]$total.catch[1,],col='red')
 ############################################################################
 # PLOTS AND METRICS TO SHOW OUTPUTS ----------------------------
 ############################################################################
