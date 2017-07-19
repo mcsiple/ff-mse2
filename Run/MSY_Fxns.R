@@ -59,5 +59,5 @@ getEquilibriumConditions<-function(lh, fish, years, steepness){
               # 
 
 # years.test <- 150
-# getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=0.9)
+# getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=0.6)
 # getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=h[1])
