@@ -18,10 +18,13 @@ lh.test <- list(M = 0.4,   #from sardine assessment (Hurtado-Ferro & Punt 2014)
 
 
 #  Plot mat and sel to make sure FMSY values aren’t weird -----------------
-      # plot(ages.test,selectivity.test[,2],type='l',col='red')
-      # lines(ages.test,lh.test$maturity,col='blue')
-      # legend("topleft",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
-      # 
+# setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
+# pdf(file = "Sel_Maturity_Sardine.pdf",width = 6,height=5.25,useDingbats = FALSE)
+# plot(ages.test,selectivity.test[,2],type='l',col='red',xlab="Age",ylab = "Selectivity / Maturity",main="Sardine")
+# lines(ages.test,lh.test$maturity,col='blue')
+# legend("right",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
+# dev.off()
+
       # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
       # plot(equilib$x.vec,equilib$y.vec)
       # 

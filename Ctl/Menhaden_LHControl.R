@@ -14,9 +14,10 @@ lh.test <- list(type = "Menhaden",
                 R0=1e9) # R0 is flexible, and can be changed. I made it up.
 
     #  Plot mat and sel to make sure FMSY values aren’t weird -----------------
-    # plot(ages.test,selectivity.test[,2],type='l',col='red')
-    # lines(ages.test,lh.test$maturity,col='blue')
-    # legend("topleft",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
-    # 
-    # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
-    # plot(equilib$x.vec,equilib$y.vec)
+# setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
+# pdf(file = "Sel_Maturity_Menhaden.pdf",width = 6,height=5.25,useDingbats = FALSE)
+# plot(ages.test,selectivity.test[,2],type='l',col='red',xlab="Age",ylab = "Selectivity / Maturity",main="Menhaden")
+# lines(ages.test,lh.test$maturity,col='blue')
+# legend("topleft",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
+# dev.off()
+
