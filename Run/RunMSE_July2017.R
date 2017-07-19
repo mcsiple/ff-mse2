@@ -81,8 +81,9 @@ stopCluster()
         source(file.path(basedir,"Control Rules/trend-based-rule.R"))
         
         # If a results folder doesn't exist already, create one!
-        dir.create(file.path(resultsdir, subDir))
-        setwd(file.path(resultsdir, subDir))
+        resultsfolder <- paste(subDir,Sys.Date(),sep="")
+        dir.create(file.path(resultsdir, resultsfolder))
+        setwd(file.path(resultsdir, resultsfolder))
         
         # Scenarios
         h = c(0.9, 0.6)
