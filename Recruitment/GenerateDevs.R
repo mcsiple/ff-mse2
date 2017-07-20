@@ -26,6 +26,7 @@ generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
   #Trim off burn-in years (this is so we get the stationary part, if it's stationary)
   dev.ts <- dev.ts[-(1:burnin)]
   dev.ts <- exp(dev.ts) #Since these are log deviations
+  dev.ts <- dev.ts/mean(dev.ts) #Standardize so that mean is 1
   if(plot==TRUE){ plot(1:N, dev.ts, type='l',yaxt="n",ylab='',xlab='Year')
                   title(ylab="Recruit deviations", line=0.4, cex.lab=1.2)
                   CV <- round(cv(dev.ts),digits = 2)
