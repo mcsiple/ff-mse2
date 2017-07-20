@@ -15,12 +15,12 @@ generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
   #' @param sd.devs - standard deviation of the recruitment devs
   
   #Generate noise
-  innov <- rnorm(N+burnin,mean = (-sd.devs^2)/2,sd = sd.devs) # Square root of 1-rho corrects it so it doesn't just wander unidirectionally
+  innov <- rnorm(N+burnin,mean = (-sd.devs^2)/2,sd = sd.devs) 
   
   #Make a vector to hold simulated deviations
   dev.ts <- numeric(length=N+burnin)
   for(yr in 2:(N+burnin)){
-    dev.ts[yr] <- rho * dev.ts[yr-1] + sqrt(1-rho^2) * innov[yr] #The 0.7 just keeps it low... I think this needs to be fixed
+    dev.ts[yr] <- rho * dev.ts[yr-1] + sqrt(1-rho^2) * innov[yr] # Square root of 1-rho corrects it so it doesn't just wander unidirectionally
   }
   
   #Trim off burn-in years (this is so we get the stationary part, if it's stationary)
