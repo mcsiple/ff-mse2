@@ -23,12 +23,26 @@ lh.test <- list(M = 1.05,   #mean between CA value (M = 1.2, from Jacobson et al
 # Ideally the fishery parameters (like selectivity) could be adjusted until FMSY is similar to the estimate in the stock assessment. Howevever, for these stocks they aren't manage using FMSY, so I just looked for clues in the assessment about FMSY or proxy.
 # selectivity.test <- cbind(ages.test, c(0.1,0.8,0.9,1,1,1,1))    
 # 
-# setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-# pdf(file = "Sel_Maturity_Anchovy.pdf",width = 6,height=5.25,useDingbats = FALSE)
-# plot(ages.test,selectivity.test[,2],type='l',col='red',xlab="Age",ylab = "Selectivity / Maturity",main="Anchovy")
-#         lines(ages.test,lh.test$maturity,col='blue')
-#         legend("topleft",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
-# dev.off()
-# 
-# (equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=0.9))
-# plot(equilib$x.vec,equilib$y.vec)
+        # setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
+        # pdf("Anchovy_Sel_Mat_MSY.pdf",width = 8,height = 8,useDingbats = FALSE)
+        # par(mfrow=c(2,2))
+        # plot(ages.test,selectivity.test[,2],type='l',col='red',xlab="Age",ylab = "Selectivity / Maturity") #main="Menhaden"
+        # lines(ages.test,lh.test$maturity,col='blue')
+        # 
+        # ## Empty panel with legends
+        # plot(0,type='n',axes=FALSE,ann=FALSE)
+        # legend("top",lwd=c(1,1),col=c('red','blue'),legend = c("selectivity","maturity"))
+        # legend("center",legend = c("Fmsy","0.5*Fmsy"),pch=c(19,19),col=c("black","blue"))
+        # 
+        # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=0.6)
+        # plot(equilib$x.vec,equilib$y.vec,type='l',xlab="F",ylab="Surplus Production",xlim=c(0,5))
+        # text(x = equilib$Fmsy,y=250,"h = 0.6")
+        # points(x=equilib$Fmsy,y=max(equilib$y.vec), pch=19)
+        # points(x=equilib$Fmsy*0.5,y=equilib$y.vec[which.min(abs(equilib$x.vec - 0.5*equilib$Fmsy))], pch=19,col="blue")
+        # 
+        # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=0.9)
+        # plot(equilib$x.vec,equilib$y.vec,type='l',xlab="F",ylab="Surplus Production",xlim=c(0,5))
+        # text(x = equilib$Fmsy,y=250,"h = 0.9")
+        # points(x=equilib$Fmsy,y=max(equilib$y.vec), pch=19)
+        # points(x=equilib$Fmsy*0.5,y=equilib$y.vec[which.min(abs(equilib$x.vec - 0.5*equilib$Fmsy))], pch=19,col="blue")
+        # dev.off()
