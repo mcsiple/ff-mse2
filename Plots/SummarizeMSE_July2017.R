@@ -11,7 +11,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Sardine" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 
 
 
@@ -84,8 +84,8 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 # Just load the raw table, if you have already run the code below  --------
 
-              raw.table <- read.csv(file=paste(Type,"_outputs.csv",sep=""))
-              if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
+    #  raw.table <- read.csv(file=paste(Type,"_outputs.csv",sep=""))
+    # if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
 
 # See if performance metrics are correlated -------------------------------
 # sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
@@ -188,7 +188,8 @@ raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                                             'C1' = 'C1',
                                             'C2' = 'C2',
                                             'C3' = 'C3',
-                                            'trend' = "Trend-based"))
+                                            'trend' = "Trend-based",
+                                            'constF_HI' = "Constant F - High"))
 
 
 
