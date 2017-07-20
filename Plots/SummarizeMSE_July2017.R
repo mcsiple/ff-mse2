@@ -160,12 +160,12 @@ write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
 
 str(results)
 
-par(mfrow=c(2,1))
-plot(results[[1]]$biomass.oneplus.true[1,],type='l',ylab="Biomass",main="low F") #ylim=c(0,15000)
-lines(results[[1]]$total.catch[1,],col='red')
-
-plot(results[[3]]$biomass.oneplus.true[1,],type='l',ylab="Biomass", main = "F=FMSY") #,ylim=c(0,15000)
-lines(results[[3]]$total.catch[1,],col='red')
+# par(mfrow=c(2,1))
+# plot(results[[1]]$biomass.oneplus.true[1,],type='l',ylab="Biomass",main="low F") #ylim=c(0,15000)
+# lines(results[[1]]$total.catch[1,],col='red')
+# 
+# plot(results[[3]]$biomass.oneplus.true[1,],type='l',ylab="Biomass", main = "F=FMSY") #,ylim=c(0,15000)
+# lines(results[[3]]$total.catch[1,],col='red')
 ############################################################################
 # PLOTS AND METRICS TO SHOW OUTPUTS ----------------------------
 ############################################################################
