@@ -15,7 +15,10 @@ registerDoParallel(4)
 llply(.data=types,.fun = run.mod,.parallel = TRUE)
 stopCluster()
 
-      run.mod <- function(fftype){
+for (f in 1:2){
+  fftype = types[f]
+
+      #run.mod <- function(fftype){
         basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
         resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
         #subDir <- "Anchovy" # Name of ff type
