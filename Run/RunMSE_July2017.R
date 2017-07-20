@@ -15,8 +15,8 @@ registerDoParallel(4)
 llply(.data=types,.fun = run.mod,.parallel = TRUE)
 stopCluster()
 
-# for (f in 1:2){
-#   fftype = types[f]
+ for (f in 1:3){
+  fftype = types[f]
 
       #run.mod <- function(fftype){
         basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
@@ -90,10 +90,10 @@ stopCluster()
         
         # Scenarios
         h = c(0.9, 0.6)
-        obs.error.type = c("AC","Tim")
-        #obs.error.type = "noerror"
-        HCR = c("constF","constF_HI")
-        #HCR = c("cfp","constF","C1","C2","C3","constF_HI") # Took out trend because it was unrealistic-- but using trend in CPUE as adjustment (data-poor method) might be a good idea!
+        obs.error.type = c("AC","Tim","noerror")
+
+        #HCR = c("constF","constF_HI")
+        HCR = c("cfp","constF","C1","C2","C3","constF_HI") # Took out trend because it was unrealistic-- but using trend in CPUE as adjustment (data-poor method) might be a good idea!
         M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity
         
         scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type)
