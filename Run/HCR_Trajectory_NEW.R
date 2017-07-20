@@ -213,9 +213,9 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     if(obs.type=="noerror"){fishing[yr] = imp.rate}else{
         if(imp.rate==0){fishing[yr] = 0} else{
           fishing[yr] <- calc.true.f(tac.fn = tac,M.fn = lh$M,sel.fn = sel.at.age[,yr],Btrue = biomass.true[,yr], w.at.age = sizes$weight.at.age[,1]) # Double check that selectivity shouldn't be zero for age 0 fish
-        } 
+        } }
         intended.f[yr] <- imp.rate
-    }
+    #} end of else loop used to be here...
     ##########
     death.rate <- lh$M + sel.at.age[,yr] * fishing[yr] 
     if(all(!is.na(time.var.m))){death.rate <- time.var.m[yr] + sel.at.age[,yr] * fishing[yr]}
@@ -293,7 +293,7 @@ source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Run/MSY_Fxns.R")
 # # Test values
 # source(file.path(basedir,"Ctl/Menhaden_LHControl.R"))
 # source(file.path(basedir,"Ctl/Menhaden_FisheryControl.R"))
-# # # Menhaden recruitment dev params
+# # # # Menhaden recruitment dev params
 # recruit.sd <- 0.8
 # recruit.rho <- 0.2
 # steepness = 0.6
@@ -316,9 +316,9 @@ source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Run/MSY_Fxns.R")
 #       years = years.test
 #       hcr.type = "constF"
 #       equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
-#       obs.type = "Tim"
+#       obs.type = "noerror"
 #       tim.params = tim.params
-#       const.f.rate=0.6
+#       #const.f.rate=0.6
 #       sig.s = .3
 #       rec.ram=NA
 # 
@@ -332,7 +332,7 @@ source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Run/MSY_Fxns.R")
 #       set.seed(123)
 #       rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
 #       rec.dev = rec.dev.test
-#       testie4 <- calc.trajectory(lh = lh,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0, cr = cr, years = years.test,hcr.type = hcr.type,equilib = equilib,steepness=steepness,obs.type = obs.type, tim.params = tim.params,const.f.rate=0, sig.s = .3,rec.ram=NA,time.var.m = NA)
+#       testie4 <- calc.trajectory(lh = lh,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0, cr = cr, years = years.test,hcr.type = hcr.type,equilib = equilib,steepness=steepness,obs.type = obs.type, tim.params = tim.params,const.f.rate=equilib$Fmsy, sig.s = .3,rec.ram=NA,time.var.m = NA)
 #       #
 # plot(testie4$biomass.oneplus.true,type='l')
 # lines(testie4$total.catch,col='red')
