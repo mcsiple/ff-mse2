@@ -50,7 +50,7 @@ ggplot(dat3, aes(x=name,y=percentdiff)) +
   geom_hline(yintercept=0)+facet_grid(Type~HCR) +
   geom_vline(xintercept=3.5)+
   theme_classic() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust=0.2)) +
   ylab("% change when changes hard to anticipate") +
   xlab("Performance metric") + 
   ylim(c(-100,100))
