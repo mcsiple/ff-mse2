@@ -35,10 +35,10 @@ axis(side = 2, at = yticks, labels = c("0","0.5M","0.5Fmsy","Fmsy"," "))
 
 lines(C2.vec, col=hcr.colors[2],lwd=lwdp)
 lines(C3.vec-0.004, col=hcr.colors[3],lwd=lwdp)
-lines(cfp.vec+0.001,col=hcr.colors[5],lwd=lwdp)
-lines(constf.vec+0.005,col=add.alpha(hcr.colors[4],alpha = 0.6),lwd=lwdp)
-lines(constf.vec_lo+0.005,col=add.alpha(hcr.colors[6],alpha = 0.6),lwd=lwdp)
-legend("bottomright",legend = c("C1","C2","C3","Stability-favoring","High F","Low F"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4,6)])
+lines(cfp.vec+0.001,col=hcr.colors[6],lwd=lwdp)
+lines(constf.vec+0.005,col=add.alpha(hcr.colors[5],alpha = 0.6),lwd=lwdp)
+lines(constf.vec_lo+0.005,col=add.alpha(hcr.colors[4],alpha = 0.6),lwd=lwdp)
+legend("bottomright",legend = c("C1","C2","C3","High F","Low F","Stability-favoring"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4,6)])
 dev.off()
 
 
