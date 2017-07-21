@@ -11,12 +11,12 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep="")
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep="")
 #path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sardine/"
 setwd(path)
 
@@ -52,12 +52,7 @@ raw.table[,performance.measures] <- NA
 
 # Fxns for summarizing and plotting ---------------------------------------
 
-# Colour palette for time series plots - some of these are from iWantHue and some are ColorBrewer
-        #palette <- brewer_pal(type="qual",palette=2)
-        #palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
-palette <- brewer.pal(6,"Spectral")
-hcr.colors <- palette[c(6,5,4,3,1,2)]
-#show_col(hcr.colors) # C1 (Oc), C2 (Len), C3, constF, stability-favoring, trend-based (this is the order of the colors)
+
 all.summaries <- NA
 all.summaries <- lapply(results,FUN = summ.tab)   # This will take a while
 all.summaries <- do.call(rbind.data.frame, all.summaries)
@@ -83,9 +78,9 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 
 # Just load the raw table, if you have already run the code below  --------
-
-    #  raw.table <- read.csv(file=paste(Type,"_outputs.csv",sep=""))
-    # if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
+    opfile <- grep("outputs",x = list.files()) # Find outputs file
+     raw.table <- read.csv(list.files()[opfile])
+    if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
 
 # See if performance metrics are correlated -------------------------------
 # sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
@@ -183,6 +178,13 @@ str(results)
 # Don't run this yet;
 #raw.table$HCR <- factor(raw.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
 
+# Colour palette for time series plots - some of these are from iWantHue and some are ColorBrewer
+#palette <- brewer_pal(type="qual",palette=2)
+#palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
+palette <- brewer.pal(6,"Spectral")
+hcr.colors <- palette[c(6,5,4,3,1,2)]
+#show_col(hcr.colors) # C1 (Oc), C2 (Len), C3, constF, stability-favoring, trend-based (this is the order of the colors)
+
 raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                                             'constF' = 'Constant F',
                                             'C1' = 'C1',
@@ -196,24 +198,25 @@ raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
 # Kite plots showing tradeoffs --------------------------------------------
 
 nice.pms <- data.frame(original = colnames(raw.table[-(1:7)]),
-                       polished = c("LT mean catch","LT mean nonzero catch",
-                                    "SD(Catch)","Probability of \n 5-yr closure",
-                                    "Number of \n 10-yr closures","Number of yrs \n w/ zero catch",
-                                    "LT mean biomass","Number of yrs \n above pred threshold",
+                       polished = c("Mean catch","Mean nonzero catch",
+                                    "Catch stability","Minimize \n P(5-yr closure)",
+                                    "Minimize \n P(10-yr closure)","Minimize years \n w/ zero catch",
+                                    "Mean biomass","Number of yrs \n above pred threshold",
                                     "SD(Biomass)","Number of yrs \n below low pred threshold",
                                     "Mean depletion","Max collapse length","Max bonanza length",
-                                    "Bonanza length","Collapse length", "Probability \n of collapse",
-                                    "Collapse severity","CV(Catch)"))
+                                    "Bonanza length","Minimize \n collapse length", "Minimize \n P(collapse)",
+                                    "Minimize \n collapse severity","CV(Catch)","Minimize \n long collapses"))
 
 plotnames <- list()
 tileplots <- list()
+all.scaled <- vector()
 plots <- data.frame("steepness"=c(0.6,0.9,0.6),"obs.error.type" = c("AC","AC","Tim"))
 
 for(p in 1:3){
-    tab <- subset(raw.table,obs.error.type == plots$obs.error.type[p] & h == plots$steepness[p] & M.type == "constant")
+    tab <- subset(raw.table,obs.error.type == as.character(plots$obs.error.type[p]) & h == plots$steepness[p] & M.type == "constant")
     tab.metrics <- tab[,-(1:7)]
     #Here are the PMs that are NEGATIVES (i.e., a high value for these is bad news)
-    bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV(Catch)")
+    bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV(Catch)","Bonafide.Collapse")
     which.bad <- which(colnames(tab.metrics) %in% bad.pms)
     tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) ifelse(x==0,1,1/x)) # Turn all the "bad" PMs to their inverse
     props <- tab.metrics
@@ -234,28 +237,42 @@ for(p in 1:3){
     }
     
     #legend.presence <- ifelse(p == 1,TRUE,FALSE)
-    legend.presence <- TRUE
+    legend.presence <- FALSE
     remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength")
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
   
-  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=4,
+  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=8,
                                            legend.text.size = 4,
                                            axis.labels = axis.labels,
-                                           plot.legend=legend.presence,palette.vec = hcr.colors)
+                                           plot.legend=legend.presence,palette.vec = hcr.colors) 
   ftm <- melt(final.tab,id.vars="group")
   tileplots[[p]] <- ggplot(ftm,aes(x=variable,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="Spectral",trans="reverse") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + geom_text(aes(label=round(value,digits = 1)))
-  #pairsplots[[p]] <- ggpairs(final.tab,aes(colour=group)) + scale_colour_manual(values = hcr.colors)
+  all.scaled <- rbind(all.scaled,final.tab)
 }
 
-pdf(file = paste(Type,"_KitePlots.pdf",sep=""),width = 9,height=27,useDingbats = FALSE)
+pdf(file = paste(Type,Sys.Date(),"2_KitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
 grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],ncol=1)
 dev.off()
 
-pdf(file = paste(Type, "_TilePlots.pdf",sep=""),width = 8,height = 14,useDingbats = FALSE)
+pdf(file = paste(Type,Sys.Date(),"_TilePlots.pdf",sep=""),width = 8,height = 14,useDingbats = FALSE)
 grid.arrange(tileplots[[1]],tileplots[[2]],tileplots[[3]],ncol=1)
 dev.off()
+
+
+# Try a pairs plot --------------------------------------------------------
+
+all.scaled$scen <- rep(c(1,2,3),each=length(unique(raw.table$HCR)))
+all.scaled$cols <- rep(hcr.colors[c(6,4,1,2,3,5)],times=length(unique(all.scaled$scen)))
+pdf(paste("PAIRS_",Type,".pdf"), width=11,height=8.5,onefile = TRUE)
+for(i in 1:3){
+p1 <- subset(all.scaled,scen==i)
+par(las=1)
+pairs(p1[,-c(1,12,13)],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.labels)
+}
+dev.off()
+
 
 # Change labels of things in the table! --------------------------
 raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type, 
