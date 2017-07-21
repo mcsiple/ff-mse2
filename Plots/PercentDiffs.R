@@ -1,7 +1,12 @@
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(RColorBrewer)
 dat <- read.csv("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/FF_MSE_summary.csv")
-
-dat <- subset(dat, h==0.6)
-remove <- c("scenario","M.type","h")
+head(dat)
+dat <- subset(dat, h==0.6,obs.error.type != "noerror")
+remove <- c("scenario","M.type","h","recruit.rho","recruit.sd")
 dat <- dat[,-which(colnames(dat) %in% remove)]
 mdat <- melt(dat,id.vars=c("Type","obs.error.type","HCR"))
 
@@ -10,17 +15,44 @@ mdat <- melt(dat,id.vars=c("Type","obs.error.type","HCR"))
 dat2 <- dcast(mdat,Type+HCR+variable ~ obs.error.type)
 #dat2 <- dcast(mdat,value ~ Type+variable+obs.error.type+HCR+recruit.sd+recruit.rho)
 dat2$percentdiff <- ((dat2$Tim - dat2$AC) / dat2$Tim) * 100
-dat3 <- subset(dat2,!variable %in% c("n.10yrclose","meanDepl","good4preds","very.bad4preds"))
-dat3 <- subset(dat3,HCR !="constF")
+dat3 <- subset(dat2,!variable %in% c("overallMaxCollapseLength","LTnonzeromeancatch","n.10yrclose","meanDepl","good4preds","very.bad4preds","Bonafide.Collapse","overallMaxBonanzaLength","SDbiomass","CV.Catch"))
+#dat3 <- subset(dat3,HCR !="constF")
 dat3 <- mutate(dat3,HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-                            #'constF' = 'Constant F',
                             'C1' = 'C1',
                             'C2' = 'C2',
                             'C3' = 'C3',
-                            'trend' = "Trend-based"))
-library(ggplot2)
+                            "constF" = "Constant F - low",
+                            'constF_HI' = "Constant F - high"))
+
+palette <- brewer.pal(6,"Spectral")
+hcr.colors <- palette[c(6,5,4,3,1,2)]
+
+# Reorder outputs so the good ones are separate from the bad ones
+unique(dat3$variable)
+dat3$name <- dat3$variable
+dat3$name <- factor(dat3$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity"))
+
+dat3 <- mutate(dat3,name = recode (name, 'LTmeancatch' = "Mean catch",
+                                       "meanbiomass" = "Mean biomass",
+                                       "BonanzaLength" = "Bonanza Length",
+                                       'SDcatch' = "Catch variation",
+                                       'nyrs0catch' = "Years with 0 catch",
+                                       'n.5yrclose' = "P(5 yr closure|closure)",
+                  "CollapseLength" = "Collapse length",
+                  "Prob.Collapse" = "P(collapse)",
+                  "Collapse.Severity" = "Collapse severity"))
+
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = "PercentDiffsErrors.pdf",width = 12,height=10,useDingbats = FALSE)
-ggplot(dat3, aes(x=variable,y=percentdiff),) +geom_bar(stat = "identity") + geom_hline(yintercept=0)+facet_grid(Type~HCR) +theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +ylab("% change when peaks hard to anticipate") +xlab("Performance metric") + ylim(c(-100,100))
+pdf(file = "PercentDiffsErrors.pdf",width = 9,height=6,useDingbats = FALSE)
+ggplot(dat3, aes(x=name,y=percentdiff)) +
+  geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
+  scale_fill_manual(values = hcr.colors[c(1,2,3,6,4,5)]) +
+  geom_hline(yintercept=0)+facet_grid(Type~HCR) +
+  geom_vline(xintercept=3.5)+
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ylab("% change when changes hard to anticipate") +
+  xlab("Performance metric") + 
+  ylim(c(-100,100))
 dev.off()
 #fill=percentdiff
