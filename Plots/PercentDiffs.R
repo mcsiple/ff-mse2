@@ -24,6 +24,7 @@ dat3 <- mutate(dat3,HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                             "constF" = "Constant F - low",
                             'constF_HI' = "Constant F - high"))
 
+write.csv(dat3,"PercentDiffs.csv")
 palette <- brewer.pal(6,"Spectral")
 hcr.colors <- palette[c(6,5,4,3,1,2)]
 
@@ -47,12 +48,12 @@ pdf(file = "PercentDiffsErrors.pdf",width = 9,height=6,useDingbats = FALSE)
 ggplot(dat3, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors[c(1,2,3,6,4,5)]) +
-  geom_hline(yintercept=0)+facet_grid(Type~HCR) +
+  geom_hline(yintercept=0)+facet_grid(HCR~Type) +
   geom_vline(xintercept=3.5)+
   theme_classic() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust=0.2)) +
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust=0.2)) +
   ylab("% change when changes hard to anticipate") +
   xlab("Performance metric") + 
-  ylim(c(-100,100))
+  ylim(c(-100,100)) + coord_flip()
 dev.off()
 #fill=percentdiff
