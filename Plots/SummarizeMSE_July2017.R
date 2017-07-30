@@ -11,12 +11,12 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Sardine" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep="")
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep="")
 #path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sardine/"
 setwd(path)
 
@@ -24,6 +24,7 @@ setwd(path)
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text table summary
   files <- files[-rm]
+  files <- files[grep(files, pattern = ".RData")] #only load rdata files
   files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
   results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all the results - ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
 
@@ -246,7 +247,7 @@ for(p in 1:3){
   plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=8,
                                            legend.text.size = 4,
                                            axis.labels = axis.labels,
-                                           plot.legend=legend.presence,palette.vec = hcr.colors) 
+                                           plot.legend=legend.presence,palette.vec = hcr.colors) #,palette.vec = hcr.colors
   ftm <- melt(final.tab,id.vars="group")
   ftm$name <- ftm$variable
   ftm$name <- factor(ftm$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity","Bonafide.Collapse"))
@@ -254,7 +255,7 @@ for(p in 1:3){
   ftm <- mutate(ftm,name = recode (name, 'LTmeancatch' = "Mean catch",
                                      "meanbiomass" = "Mean biomass",
                                      "BonanzaLength" = "Bonanza Length",
-                                     'SDcatch' = "Catch variation",
+                                     'SDcatch' = "Minimize \n catch variation",
                                      'nyrs0catch' = "Minimize \n years with 0 catch",
                                      'n.5yrclose' = "Minimize \n P(5 yr closure|closure)",
                                      "CollapseLength" = "Minimize \n collapse length",
@@ -286,6 +287,8 @@ pairs(p1[,-c(1,12,13)],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.la
 }
 dev.off()
 
+p2 <- subset(all.scaled,scen != 3)
+pairs(p2[,-c(1,12,13)],col=p2$cols,pch=p2$scen,xlim=c(0,1),ylim=c(0,1),labels=axis.labels)
 
 # Change labels of things in the table! --------------------------
 raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type, 
@@ -487,10 +490,16 @@ dev.off()
 ac <- results[[2]]
 dd <- results[[4]]
 yrs <- 150:250
-par(mfrow=c(2,1))
-plot(ac$biomass.oneplus.true[1,yrs],type='l',ylab="Total biomass",xlab="Year",ylim=c(0,250000))
-lines(ac$biomass.oneplus.obs[1,yrs],col='red')
-lines(dd$biomass.oneplus.obs[1,yrs],col='blue')
+par(mfrow=c(1,1))
+sim <- 5
+yrange <- range(c(0,ac$biomass.total.true[sim,yrs],dd$biomass.total.true[sim,yrs]))
+plot(ac$biomass.oneplus.true[sim,yrs],type='l',ylab="Total biomass",xlab="Year",ylim=yrange,axes=FALSE)
+lines(dd$biomass.oneplus.true[sim,yrs],col='#2b83ba')
+lines(ac$biomass.oneplus.obs[sim,yrs],lty=2)
+lines(dd$biomass.oneplus.obs[sim,yrs],lty=2,col='#2b83ba')
+
+legend("topright",c("Autocorrelated","Delayed detection"),col=c('black','#2b83ba'),lwd=c(1,1),border = "white")
+axis(1)
 
 lines(ac$total.catch[1,yrs],lty=2,col='red')
 lines(dd$total.catch[1,yrs],lty=2,col='blue')
@@ -498,6 +507,17 @@ lines(dd$total.catch[1,yrs],lty=2,col='blue')
 plot(ac$total.catch[1,yrs],type='l',col='red',ylab="Total catches",xlab="Year",ylim=c(0,250000))
 lines(dd$total.catch[1,yrs],col='blue')
 
-which(ac$total.catch[1,yrs] > ac$biomass.oneplus.true[1,yrs])
-which(dd$total.catch[1,yrs] > dd$biomass.oneplus.true[1,yrs])
 
+
+#  Steepness tests --------------------------------------------------------
+
+hiS <- results[[7]]
+loS <- results[[8]]
+yrs <- 150:250
+par(mfrow=c(2,1))
+plot(hiS$biomass.total.true[1,yrs],type='l',ylab="Total biomass",xlab="Year")
+lines(loS$biomass.total.true[1,yrs],col='red')
+#lines(dd$biomass.oneplus.obs[1,yrs],col='blue')
+
+# Why is leading to longer bonanzas for sardine?
+ac <- results[[2]]
