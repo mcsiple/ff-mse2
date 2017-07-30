@@ -31,7 +31,7 @@ hcr.colors <- palette[c(6,5,4,3,1,2)]
 # Reorder outputs so the good ones are separate from the bad ones
 unique(dat3$variable)
 dat3$name <- dat3$variable
-dat3$name <- factor(dat3$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity"))
+dat3$name <- factor(dat3$name, levels=c("SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity","LTmeancatch", "meanbiomass", "BonanzaLength"))
 
 dat3 <- mutate(dat3,name = recode (name, 'LTmeancatch' = "Mean catch",
                                        "meanbiomass" = "Mean biomass",
@@ -44,15 +44,16 @@ dat3 <- mutate(dat3,name = recode (name, 'LTmeancatch' = "Mean catch",
                   "Collapse.Severity" = "Collapse severity"))
 
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = "PercentDiffsErrors.pdf",width = 9,height=6,useDingbats = FALSE)
+pdf(file = "PercentDiffsErrors.pdf",width = 10,height=9,useDingbats = FALSE)
 ggplot(dat3, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors[c(1,2,3,6,4,5)]) +
   geom_hline(yintercept=0)+facet_grid(HCR~Type) +
-  geom_vline(xintercept=3.5)+
-  theme_classic() + 
+  geom_vline(xintercept=6.5)+
+  theme_classic(base_size = 14) + 
+  theme(strip.background = element_blank(),strip.text.y = element_blank()) +
   #theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust=0.2)) +
-  ylab("% change when changes hard to anticipate") +
+  ylab("% change from delayed detection model") +
   xlab("Performance metric") + 
   ylim(c(-100,100)) + coord_flip()
 dev.off()
