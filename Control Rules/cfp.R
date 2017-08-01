@@ -19,7 +19,7 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age =
                                       # adj.constant scales so the CR is linear btwn Blim and Btarget
   if (Bt > Btarget) {f = Fmax }
   #possible.catch <- f*Bt # old possible.catch
-  possible.catch <- Bt *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) # Baranov catch eqn
+  possible.catch <- sum( Bt *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
   if(possible.catch >= prevCatch * 1.15) {newcatch <- prevCatch*1.15 }
   if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch } # This used to say Bt
   else(newcatch <- possible.catch)
@@ -29,7 +29,7 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age =
 
 
 # Test
-# calc.F.cfp(prevCatch = 39.6, Bt = 0,Btarget = 21,Blim = 100,Fmax = 0.6)
+# calc.F.cfp(prevCatch = 39.6, Bt = 40,Btarget = 21,Blim = 100,Fmax = 0.6,lh = lh.test,sel.at.age = lh.test$selectivity)
 # calc.F.cfp(prevCatch = 35.3, Bt = 117.7,Btarget = 21,Blim = 100,Fmax = 0.6)
 
 # test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
@@ -44,7 +44,9 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age =
 #                                      Bt = test.frame$Bcurr[i],
 #                                      Btarget = test.frame$Btarget[i],
 #                                      Blim = test.frame$Blim[i],
-#                                      Fmax = test.frame$Fmax[i])
+#                                      Fmax = test.frame$Fmax[i],lh = lh.test,
+#                                      sel.at.age = lh.test$selectivity)
+#       
 # }
 # plot(test.frame$prevCatch,test.frame$calc.f,type='l')
-# plot(test.frame$Bcurr,test.frame$calc.f*test.frame$Bcurr, type='l')
+
