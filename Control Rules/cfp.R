@@ -7,8 +7,9 @@
 #' @param Btarget Biomass at which Fmax occurs - if B>Btarget, F=Fmax
 #' @param Blim Biomass at which F = 0 - if B<Blim, F=0
 #' @param Fmax Max fishing rate
-
-calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax){
+#' @param lh List of life history traits, used for Baranov catch eqn
+#' @param sel.at.age Matrix of ages, fishery selectivity
+calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA){
   if(Bt==0){f=0}else{
   f <- NA
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
@@ -17,7 +18,8 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax){
   if (Bt > Blim & Bt <= Btarget) {f <- slope * (Bt-Blim) / adj.constant} 
                                       # adj.constant scales so the CR is linear btwn Blim and Btarget
   if (Bt > Btarget) {f = Fmax }
-  possible.catch <- f*Bt
+  #possible.catch <- f*Bt # old possible.catch
+  possible.catch <- Bt *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) # Baranov catch eqn
   if(possible.catch >= prevCatch * 1.15) {newcatch <- prevCatch*1.15 }
   if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch } # This used to say Bt
   else(newcatch <- possible.catch)
