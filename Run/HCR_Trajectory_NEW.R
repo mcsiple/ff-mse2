@@ -7,8 +7,6 @@
 #rm(list=ls()[-which(ls()=="workdir")]) # Clear workspace if you need it
 
 
-
-
 # Calculate SBPR0 to use in stock recruit fn
 getSBPR<-function(nat.mort, maturity, fecun, n.ages){
   #' @description Function to calculate spawners per recruit
@@ -175,13 +173,15 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
        } # true fishing rate based on observed biomass
     if(hcr.type=="cfp"){
       imp.rate <- calc.F.cfp(prevCatch = ifelse(yr==1,F0*sum(biomass[,yr]),catch[yr-1]),   #If it's year 1, use F0. Otherwise, determine f from hockey stick and previous year's catch, à la CFP's rule
-                                Bt = sum(biomass[,yr]), 
+                                Bt = biomass[,yr], 
                                 Blim = 0.5*equilib$Bmsy, 
                                 Btarget = equilib$Bmsy, 
-                                Fmax = equilib$Fmsy)
+                                Fmax = equilib$Fmsy,
+                                lh = lh,
+                                sel.at.age = lh$selelectivity)
       
     }
-    if(hcr.type=="C1"){  # NEED TO FIX ALL THE BELOW ONES
+    if(hcr.type=="C1"){  
       imp.rate <- calc.F.oceana(Bt = sum(biomass[,yr]),
                                    Blim = 0.4*equilib$B0,
                                    Btarget = 0.8*equilib$B0,
