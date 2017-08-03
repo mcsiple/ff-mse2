@@ -9,21 +9,26 @@
 #' @param Fmax Max fishing rate
 #' @param lh List of life history traits, used for Baranov catch eqn
 #' @param sel.at.age Matrix of ages, fishery selectivity
-calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA){
-  if(Bt==0){f=0}else{
+#' 
+#' 
+source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Estimators/CalcFTrue.R") # need this to get F  that gives the proper catch
+calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA, Btrue = NA, sizes = NA){
+  if(sum(Bt)==0){f=0}else{
   f <- NA
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
   adj.constant <- Btarget/Fmax        # scales y axis to max fishing mortality
-  if (Bt <= Blim) {f = 0}
-  if (Bt > Blim & Bt <= Btarget) {f <- slope * (Bt-Blim) / adj.constant} 
+  if (sum(Bt) <= Blim) {f = 0}
+  if (sum(Bt) > Blim & sum(Bt) <= Btarget) {f <- slope * (sum(Bt)-Blim) / adj.constant} 
                                       # adj.constant scales so the CR is linear btwn Blim and Btarget
-  if (Bt > Btarget) {f = Fmax }
+  if (sum(Bt) > Btarget) {f = Fmax }
   #possible.catch <- f*Bt # old possible.catch
   possible.catch <- sum( Bt *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
   if(possible.catch >= prevCatch * 1.15) {newcatch <- prevCatch*1.15 }
   if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch } # This used to say Bt
   else(newcatch <- possible.catch)
-  f <- newcatch / Bt}
+  f <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Btrue, w.at.age = sizes$weight.at.age[,1])
+  #f <- newcatch / Bt
+  }
   return(f)
 }
 
