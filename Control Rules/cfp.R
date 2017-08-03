@@ -12,8 +12,7 @@
 #' 
 #' 
 source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Estimators/CalcFTrue.R") # need this to get F  that gives the proper catch
-calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA, Btrue = NA, sizes = NA){
-  if(sum(Bt)==0){f=0}else{
+calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA, sizes = NA){
   f <- NA
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
   adj.constant <- Btarget/Fmax        # scales y axis to max fishing mortality
@@ -21,20 +20,22 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age =
   if (sum(Bt) > Blim & sum(Bt) <= Btarget) {f <- slope * (sum(Bt)-Blim) / adj.constant} 
                                       # adj.constant scales so the CR is linear btwn Blim and Btarget
   if (sum(Bt) > Btarget) {f = Fmax }
-  #possible.catch <- f*Bt # old possible.catch
-  possible.catch <- sum( Bt *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
-  if(possible.catch >= prevCatch * 1.15) {newcatch <- prevCatch*1.15 }
-  if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch } # This used to say Bt
-  else(newcatch <- possible.catch)
-  f <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Btrue, w.at.age = sizes$weight.at.age[,1])
+  # possible.catch <- f*Bt # old possible.catch
+  # Result of above is F from the basic hockey stick rule. Now find out if catch would change >15%
+  possible.catch <- sum(Bt *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
+  newcatch <- possible.catch
+  if(possible.catch >= prevCatch * 1.15) {newcatch <- prevCatch*1.15 }else{
+  if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch } }
+  # Get the f from the control rule
+  f <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Bt, w.at.age = sizes$weight.at.age[,1])
   #f <- newcatch / Bt
-  }
   return(f)
 }
 
 
 # Test
-# calc.F.cfp(prevCatch = 39.6, Bt = 40,Btarget = 21,Blim = 100,Fmax = 0.6,lh = lh.test,sel.at.age = lh.test$selectivity)
+test.b <- c(7021.0485, 4706.2807, 3154.4495, 2113.8762, 1417.5272,  950.2850,  636.5326)
+ calc.F.cfp(prevCatch = 100, Bt = test.b,Btarget = 1000,Blim = 100,Fmax = 0.6,lh = lh.test,sel.at.age = lh.test$selectivity)
 # calc.F.cfp(prevCatch = 35.3, Bt = 117.7,Btarget = 21,Blim = 100,Fmax = 0.6)
 
 # test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
