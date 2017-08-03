@@ -164,8 +164,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
       if(obs.type == "noerror"){
         biomass[,yr] <- biomass.true[,yr]
       }
-    #print(c(oneplus.biomass[yr],biomass[yr]))
-
+    
     # HARVEST CONTROL RULE ################################
     if(hcr.type=="constF"){ 
       if(is.na(const.f.rate)){print("Constant fishing rate not provided in inputs")}else{
@@ -178,7 +177,9 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
                                 Btarget = equilib$Bmsy, 
                                 Fmax = equilib$Fmsy,
                                 lh = lh,
-                                sel.at.age = lh$selelectivity)
+                                sel.at.age = sel.at.age,
+                                Btrue = biomass.true[,yr],
+                                sizes = sizes)
       
     }
     if(hcr.type=="C1"){  
