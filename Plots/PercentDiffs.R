@@ -53,12 +53,12 @@ dat3.new <- mutate(dat3.new,name = recode(name, 'LTmeancatch' = "Mean catch",
                   "Collapse.Severity" = "Minimize collapse severity"))
 
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = "PercentDiffsErrors.pdf",width = 10,height = 9,useDingbats = FALSE)
+pdf(file = "PercentDiffsErrors.pdf",width = 11,height = 9,useDingbats = FALSE)
 ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors[c(1,2,3,6,4,5)]) +
   geom_hline(yintercept=0)+facet_grid(HCR~Type) +
-  geom_vline(xintercept = 6.5) +
+  #geom_vline(xintercept = 6.5) +
   theme_classic(base_size = 14) + 
   theme(strip.background = element_blank(),strip.text.y = element_blank()) +
   #theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust=0.2)) +
