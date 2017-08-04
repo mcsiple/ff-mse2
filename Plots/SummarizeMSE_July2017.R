@@ -16,7 +16,7 @@ Type = "Anchovy" #FF type to summarize
 
 
 # Set path to wherever the simulation results are
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep="")
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-08-02","/",sep="")
 #path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sardine/"
 setwd(path)
 
@@ -92,7 +92,6 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
-  #scen.table[s,performance.measures[1]] <- 
   raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind],na.rm = TRUE)) #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
   nonzero.catch <- result.to.use$total.catch[,calc.ind]
   nonzero.catch <- ifelse(nonzero.catch<0.1,NA,nonzero.catch)
@@ -156,9 +155,10 @@ write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
 
 str(results)
 
-# par(mfrow=c(2,1))
-# plot(results[[1]]$biomass.oneplus.true[1,],type='l',ylab="Biomass",main="low F") #ylim=c(0,15000)
-# lines(results[[1]]$total.catch[1,],col='red')
+par(mfrow=c(2,1))
+#hist(results[[1]]$intended.f[2,],xlim=c(0,1000))
+plot(results[[1]]$intended.f[2,],type='l',ylab="Biomass") #ylim=c(0,15000)
+lines(results[[2]]$total.catch[1,],col='red')
 # 
 # plot(results[[3]]$biomass.oneplus.true[1,],type='l',ylab="Biomass", main = "F=FMSY") #,ylim=c(0,15000)
 # lines(results[[3]]$total.catch[1,],col='red')
