@@ -3,7 +3,7 @@
 #' \code{calc.F.cfp} returns the fishing rate, given biomass and catch in the previous year.
 #' This function is essentially the same as other "hockey-stick" rules but does not allow the catch to change by more than 15%. It is a rule intended to stabilize catches.
 #' @param prevCatch The catch in the previous year
-#' @param Bt Biomass in the current year
+#' @param Bt Biomass in the current year (vector of B_age - used to be single value)
 #' @param Btarget Biomass at which Fmax occurs - if B>Btarget, F=Fmax
 #' @param Blim Biomass at which F = 0 - if B<Blim, F=0
 #' @param Fmax Max fishing rate
@@ -24,19 +24,17 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age =
   # Result of above is F from the basic hockey stick rule. Now find out if catch would change >15%
   possible.catch <- sum(Bt *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
   newcatch <- possible.catch
-  if(possible.catch >= prevCatch * 1.15) {newcatch <- prevCatch*1.15 }else{
-  if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch } }
+  if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch} # This used to allow catches not to increase either-this was causing issues so I changed it.
   # Get the f from the control rule
-  f <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Bt, w.at.age = sizes$weight.at.age[,1])
+  f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Bt, w.at.age = sizes$weight.at.age[,1])
   #f <- newcatch / Bt
-  return(f)
+  return(f.new)
 }
 
 
 # Test
-test.b <- c(7021.0485, 4706.2807, 3154.4495, 2113.8762, 1417.5272,  950.2850,  636.5326)
- calc.F.cfp(prevCatch = 100, Bt = test.b,Btarget = 1000,Blim = 100,Fmax = 0.6,lh = lh.test,sel.at.age = lh.test$selectivity)
-# calc.F.cfp(prevCatch = 35.3, Bt = 117.7,Btarget = 21,Blim = 100,Fmax = 0.6)
+# test.b <- c(7021.0485, 4706.2807, 3154.4495, 2113.8762, 1417.5272,  950.2850,  636.5326)
+# calc.F.cfp(prevCatch = 100, Bt = test.b,Btarget = 1000,Blim = 100,Fmax = 0.6,lh = lh.test,sel.at.age = lh.test$selectivity)
 
 # test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
 #                          Btarget = 2000,
