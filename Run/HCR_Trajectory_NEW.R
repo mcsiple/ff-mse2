@@ -178,7 +178,6 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
                                 Fmax = equilib$Fmsy,
                                 lh = lh,
                                 sel.at.age = sel.at.age,
-                                Btrue = biomass.true[,yr],
                                 sizes = sizes)
       
     }
@@ -315,9 +314,9 @@ source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Run/MSY_Fxns.R")
 # F0 = F0.test
 # cr = NA
 #       years = years.test
-#       hcr.type = "constF"
+#       hcr.type = "cfp"
 #       equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
-#       obs.type = "noerror"
+#       obs.type = "Tim"
 #       tim.params = tim.params
 #       #const.f.rate=0.6
 #       sig.s = .3
@@ -335,6 +334,10 @@ source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Run/MSY_Fxns.R")
 #       rec.dev = rec.dev.test
 #       testie4 <- calc.trajectory(lh = lh,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0, cr = cr, years = years.test,hcr.type = hcr.type,equilib = equilib,steepness=steepness,obs.type = obs.type, tim.params = tim.params,const.f.rate=equilib$Fmsy, sig.s = .3,rec.ram=NA,time.var.m = NA)
 #       #
-# plot(testie4$biomass.oneplus.true,type='l')
+#       par(mfrow=c(2,1))
+# plot(testie4$biomass.oneplus.true,type='l',ylim=c(0,6e5))
 # lines(testie4$total.catch,col='red')
+# any(testie4$total.catch == 0)
+# plot(testie4$intended.f,type='l')
+# lines(testie4$fishing,col='red')
 # which(testie4$biomass.oneplus.true < testie4$total.catch)
