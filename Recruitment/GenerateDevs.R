@@ -115,16 +115,16 @@ generate.devs.OLD <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
   return(dev.ts)
 }
 
-# 
+
 # pdf("~/Dropbox/Chapter4-HarvestControlRules/Figures/RecruitmentDevsExample.pdf",height = 3, width = 10)
 # par(mfcol=c(1,3))
 # # "Sardine"
 #   generate.devs(N=50,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = TRUE)
 #   mtext(side = 3,text = "Sardine-like",outer = FALSE)
 # 
-# # "Herring/anchovy" 
+# # "Herring/anchovy"
 #   generate.devs(N=50,rho = 0.5,sd.devs = 0.3,burnin = 100,plot = TRUE)
-#   mtext(side = 3,text = "Herring/anchovy-like",outer = FALSE)
+#   mtext(side = 3,text = "Anchovy-like",outer = FALSE)
 # 
 # # "Menhaden"
 # 
