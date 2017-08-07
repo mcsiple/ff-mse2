@@ -30,7 +30,7 @@ generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
   if(plot==TRUE){ plot(1:N, dev.ts, type='l',yaxt="n",ylab='',xlab='Year')
                   title(ylab="Recruit deviations", line=0.4, cex.lab=1.2)
                   CV <- round(cv(dev.ts),digits = 2)
-                  text(x = 46,y = 0.99*max(dev.ts),labels = paste("CV =",CV))
+                  #text(x = 46,y = 0.99*max(dev.ts),labels = paste("CV =",CV))
                   }
   return(dev.ts)
 }
@@ -39,64 +39,54 @@ generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
 
 
 # Test and plot the devs! -------------------------------------------------
-              # if(toplot == TRUE){
-              # 
-              #         par(mfcol=c(3,3))
-              #         # "Sardine"
-              #         for(i in 1:3){
-              #           generate.devs(N=50,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = TRUE)
-              #           if(i==1){mtext(side = 3,text = "Sardine-like",outer = FALSE)}
-              #           }
-              #         
-              #         # "Herring/anchovy" 
-              #         for(i in 1:3){
-              #           generate.devs(N=50,rho = 0.5,sd.devs = 0.3,burnin = 100,plot = TRUE)
-              #           if(i==1){mtext(side = 3,text = "Herring/anchovy-like",outer = FALSE)}
-              #         }
-              #         
-              #         # "Menhaden"
-              #         for(i in 1:3){
-              #           generate.devs(N=50,rho = 0,sd.devs = 0.7,burnin = 100,plot = TRUE)
-              #           if(i==1){mtext(side = 3,text = "Menhaden-like",outer = FALSE)}
-              #         }
-              #   
-              #   # Now plot unfished biomass with the rec devs -- ****fix this part to show biomass over time
-              #           # Load all the contents of the control rules folder:
-              #           setwd("/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Code/Control Rules")
-              #           lapply(list.files(pattern = "[.]R$", recursive = TRUE), source)
-              #           par(mfcol=c(3,3))
-              #         
-              #         
-              #         # "Sardine"
-              #         for(i in 1:3){
-              #           devs <- generate.devs(N=200,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = FALSE)
-              #           biomass <- calc.trajectory(lh = lh.test, obs.cv = NULL, init = init.test, rec.dev = devs, F0, cr, years = years.test, hcr.type = "hockeystick",obs.type="LN",const.f.rate = 0.2,equilib = NULL, buffer = NULL,steepness = 0.9, R0.traj = 0,tim.params=NULL)$biomass
-              #           
-              #           if(i==1){mtext(side = 3,text = "Sardine-like",outer = FALSE)}
-              #         }
-              #         
-              #         # "Herring/anchovy" 
-              #         for(i in 1:3){
-              #           generate.devs(N=200,rho = 0.5,sd.devs = 0.3,burnin = 100,plot = FALSE)
-              #           if(i==1){mtext(side = 3,text = "Herring/anchovy-like",outer = FALSE)}
-              #         }
-              #         
-              #         # "Menhaden"
-              #         for(i in 1:3){
-              #           generate.devs(N=200,rho = 0,sd.devs = 0.7,burnin = 100,plot = FALSE)
-              #           if(i==1){mtext(side = 3,text = "Menhaden-like",outer = FALSE)}
-              #         }
-              # }
+              if(toplot == TRUE){
+
+                      par(mfcol=c(3,3))
+                      # "Sardine"
+                      for(i in 1:3){
+                        generate.devs(N=50,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = TRUE)
+                        if(i==1){mtext(side = 3,text = "Sardine-like",outer = FALSE)}
+                        }
+
+                      # "Anchovy"
+                      for(i in 1:3){
+                        generate.devs(N=50,rho = 0.5,sd.devs = 0.3,burnin = 100,plot = TRUE)
+                        if(i==1){mtext(side = 3,text = "Anchovy-like",outer = FALSE)}
+                      }
+
+                      # "Menhaden"
+                      for(i in 1:3){
+                        generate.devs(N=50,rho = 0,sd.devs = 0.7,burnin = 100,plot = TRUE)
+                        if(i==1){mtext(side = 3,text = "Menhaden-like",outer = FALSE)}
+                      }
+
+                # Now plot unfished biomass with the rec devs -- ****fix this part to show biomass over time
+                        # Load all the contents of the control rules folder:
+                        setwd("/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Code/Control Rules")
+                        lapply(list.files(pattern = "[.]R$", recursive = TRUE), source)
+                        par(mfcol=c(3,3))
 
 
+                      # "Sardine"
+                      for(i in 1:3){
+                        devs <- generate.devs(N=200,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = FALSE)
+                        biomass <- calc.trajectory(lh = lh.test, obs.cv = NULL, init = init.test, rec.dev = devs, F0, cr, years = years.test, hcr.type = "hockeystick",obs.type="LN",const.f.rate = 0.2,equilib = NULL, buffer = NULL,steepness = 0.9, R0.traj = 0,tim.params=NULL)$biomass
 
-# Combine with population model to get time series of recruitment ---------
-# source("~/Dropbox/Chapter 4 - Harvest Control Rules/Code/MSY_Fxns.R")
-# source("~/Dropbox/Chapter 4 - Harvest Control Rules/Code/HCR_Trajectory.R")
-# 
-# 
-# testA <- calc.trajectory(lh = lh.test,obs.cv = 0.75, init = init.test, rec.dev = test1, F0 = 0, cr = NULL, years = 200,hcr.type = "constF", const.f.rate = 0, equilib = NULL, steepness = 0.9,obs.type = "AC")
-# 
+                        if(i==1){mtext(side = 3,text = "Sardine-like",outer = FALSE)}
+                      }
+
+                      # "Herring/anchovy"
+                      for(i in 1:3){
+                        generate.devs(N=200,rho = 0.5,sd.devs = 0.3,burnin = 100,plot = FALSE)
+                        if(i==1){mtext(side = 3,text = "Herring/anchovy-like",outer = FALSE)}
+                      }
+
+                      # "Menhaden"
+                      for(i in 1:3){
+                        generate.devs(N=200,rho = 0,sd.devs = 0.7,burnin = 100,plot = FALSE)
+                        if(i==1){mtext(side = 3,text = "Menhaden-like",outer = FALSE)}
+                      }
+              }
 
 
 
