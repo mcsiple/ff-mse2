@@ -1,15 +1,18 @@
 # Menhaden_LHControl
 # Life history params for the menhaden model, to be used with menhaden-like recruitment patterns
-# These are based on the Atlantic menhaden stock assessment
+# These are based on the Atlantic menhaden stock assessment (SEDAR 40)
 ages.test <- 0:6
 nages.test <- length(ages.test)
 selectivity.test <- cbind(age=ages.test,selectivity = c(0.004,0.143,0.994,0.84,0.191,0.024,0))  # "domed" commercial selectivity from reduction fishery. Used Butterworth 2012 as an example
+# UPDATE: As of August 2017, new selectivity values are available for Atlantic menhaden (selectivity curve published in assessment)
+# selectivity.test <- cbind(age=ages.test,selectivity = c(0, 0.003,0.070,0.997,0.989,0.197,0.003))
+# This is the same "dome-shaped" curve as before but 
 lh.test <- list(type = "Menhaden",
                 M = 0.5,   #from menhaden assessment (http://www.asmfc.org/uploads/file/55089931S40_AtlMenhadenSAR_CombinedFINAL_1.15.2015-reduced.pdf) - mortality is averaged over all ages, from all years (Boudreau & Dickie) - table 3.6.1
                 selectivity = selectivity.test,
                 ages = ages.test,
-                l.at.age = seq(4,28,length.out=nages.test), #http://www.asmfc.org/uploads/file/55089931S40_AtlMenhadenSAR_CombinedFINAL_1.15.2015-reduced.pdf (Table 3.3.2)
-                w.at.age = c(0.0569, 0.1281,0.2317,0.3285,0.3711,0.5371,0.4481)*0.001, #weights at age are in kg  I think, multiply by 0.001 to get mt
+                l.at.age = c(8,16.66,21.74,25.13,26.98,30.22,28.87), #http://www.asmfc.org/uploads/file/55089931S40_AtlMenhadenSAR_CombinedFINAL_1.15.2015-reduced.pdf (Table 3.3.2; 2013 values; Age 0 is interpolated from age-length curve). Lengths are in cm.
+                w.at.age = c(56.9,128.1,231.7,328.5,371.1,537.1,448.1)*1e-6, # 1g = 1e-6 mt; Table 3.3.3 from Atl Menhaden assessment SEDAR 40
                 maturity = c(0,0.13,0.53,0.83,0.98,1,1), # Table 3.4.1
                 R0=1e9) # R0 is flexible, and can be changed. I made it up.
 
