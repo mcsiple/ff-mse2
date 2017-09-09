@@ -10,10 +10,10 @@ types <- c("Anchovy"="Anchovy",
            "Menhaden" = "Menhaden",
            "Sardine" = "Sardine")
 
-# Parallelize so each simulation is on a different core:
-registerDoParallel(4)
-llply(.data=types,.fun = run.mod,.parallel = TRUE)
-stopCluster()
+    # Parallelize so each simulation is on a different core:
+    # registerDoParallel(4)
+    # llply(.data=types,.fun = run.mod,.parallel = TRUE)
+    # stopCluster()
 
  for (f in 1:3){
   fftype = types[f]
@@ -92,7 +92,6 @@ stopCluster()
         h = c(0.9, 0.6)
         obs.error.type = c("AC","Tim","noerror")
 
-        #HCR = c("constF","constF_HI")
         HCR = c("cfp","constF","C1","C2","C3","constF_HI") # Took out trend because it was unrealistic-- but using trend in CPUE as adjustment (data-poor method) might be a good idea!
         M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity
         
