@@ -4,7 +4,7 @@
 ages.test <- 0:6
 nages.test <- length(ages.test)
 selectivity.test <- cbind(age=ages.test,selectivity = c(0.004,0.143,0.994,0.84,0.191,0.024,0))  # "domed" commercial selectivity from reduction fishery. Used Butterworth 2012 as an example
-# UPDATE: As of August 2017, new selectivity values are available for Atlantic menhaden (selectivity curve published in assessment)
+# UPDATE: As of August 2017, new selectivity values are available for Atlantic menhaden (selectivity curve published in assessment). These are:
 # selectivity.test <- cbind(age=ages.test,selectivity = c(0, 0.003,0.070,0.997,0.989,0.197,0.003))
 # This is the same "dome-shaped" curve as before but 
 lh.test <- list(type = "Menhaden",
