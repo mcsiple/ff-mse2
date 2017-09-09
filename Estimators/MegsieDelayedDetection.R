@@ -23,15 +23,17 @@ for (t in 2:length(timelist)) {
 }
 
 setwd('/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures')
-plotfilename <- "DelayedDetection.pdf"
-pdf(file = plotfilename, height = 8, width = 8,useDingbats = FALSE)
-
+plotfilename <- "DelayedDetection_C.pdf"
+pdf(file = plotfilename, height = 7, width = 10,useDingbats = FALSE)
+par(mfrow=c(1,1))
+lotau.col <- "#539E59"
+hitau.col <- "#BBD961"
 plot(timelist,B, type = "l", lwd = 2, col = "black", xlab = "", ylab = " ", ylim = c(0, 220), axes = F)
 box()
 mtext(side = 2, text = "Population Size", line = 1)
 points(timelist, B, pch=21, bg = "black")
-lines(timelist, E, lwd = 2, col = "red")
-points(timelist, E, pch=21, bg = "red")
+lines(timelist, E, lwd = 2, col = lotau.col)
+points(timelist, E, pch=21, bg = lotau.col)
 
 
 tau0 <-  1000
@@ -50,10 +52,10 @@ for (t in 2:length(timelist)) {
   E[t] <- E[t-1] * exp(rnorm(1,mu1.tmp,tau1))
 }
 
-lines(timelist, E, lwd = 2, col = "orange")
-points(timelist, E, pch=21, bg = "orange")
+lines(timelist, E, lwd = 2, col = hitau.col)
+points(timelist, E, pch=21, bg = hitau.col)
 
-legend('topright',pch=rep(21,times=3),pt.bg=c('black','red','orange'),legend=c("Biomass","Large changes \n not expected","Large changes expected"))
+legend('topright',pch=rep(21,times=3),pt.bg=c('black',lotau.col,hitau.col),legend=c("Biomass","Large changes \n not expected","Large changes expected"))
 
 dev.off()
 #system2("open",args=c("-a Skim.app",plotfilename))
