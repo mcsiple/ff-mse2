@@ -215,7 +215,6 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
           fishing[yr] <- calc.true.f(tac.fn = tac,M.fn = lh$M,sel.fn = sel.at.age[,yr],Btrue = biomass.true[,yr], w.at.age = sizes$weight.at.age[,1]) # Double check that selectivity shouldn't be zero for age 0 fish
         } }
         intended.f[yr] <- imp.rate
-    #} end of else loop used to be here...
     ##########
     death.rate <- lh$M + sel.at.age[,yr] * fishing[yr] 
     if(all(!is.na(time.var.m))){death.rate <- time.var.m[yr] + sel.at.age[,yr] * fishing[yr]}
@@ -239,7 +238,6 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     if(is.na(pop.next[1])){   
       print("Recruitment is NA for some reason! Below are parameters")
                                   print(c(yr,next.year.S,sbpr,R0,rec.dev[yr]))
-                                  #print(rec.dev)
                                   }
     
     R[yr] <- pop.next[1]
