@@ -1,4 +1,4 @@
-# This is how 
+source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Estimators/Estimators.R")
 par(mfrow=c(2,1))
 
 # Sine curve example ------------------------------------------------------

@@ -22,8 +22,7 @@ add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho){
 }
 
 
-# “Delay detection” model that mimics delayed detection of big peaks --------
-
+# “Delay detection” model mimics delayed detection of big peaks --------
 
 tim.assessment <- function(B,Eprev,sigma0 = NA, tau0 = NA){
   #' @description This function takes the previous year's biomass estimate (Eprev) and the current biomass (B) and returns an estimate for biomass in the present year. Observation error is described by sigma0, and is just random and lognormal.
