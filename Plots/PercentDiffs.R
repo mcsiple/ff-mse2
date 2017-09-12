@@ -4,6 +4,7 @@ library(dplyr)
 library(reshape2)
 library(ggplot2)
 library(RColorBrewer)
+
 dat <- read.csv("~/Dropbox/Chapter4-HarvestControlRules/Results/FF_MSE_summary.csv")
 head(dat)
 dat <- subset(dat, h==0.6,obs.error.type != "noerror")
@@ -26,6 +27,8 @@ dat3 <- mutate(dat3,HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                             'constF_HI' = "Constant F - high"))
 
 #write.csv(dat3,"PercentDiffs.csv")
+
+# Start here if you’ve already calculated percent differences -------------
 setwd("~/Dropbox/Chapter4-HarvestControlRules/Figures/")
 dat3 <- read.csv("PercentDiffs.csv",header=T)
 palette <- brewer.pal(6,"Spectral")
@@ -66,4 +69,21 @@ ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   xlab("Performance metric") + 
   ylim(c(-100,100)) + coord_flip()
 dev.off()
-#fill=percentdiff
+
+
+
+#  Make a dark-background one for presentations ---------------------------
+pdf(file = "PercentDiffsErrors_black.pdf",width = 11,height = 9,useDingbats = FALSE)
+ggplot(dat3.new, aes(x=name,y=percentdiff)) +
+  geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
+  scale_fill_manual(values = hcr.colors[c(1,2,3,6,4,5)]) +
+  geom_hline(yintercept=0,colour='white')+facet_grid(HCR~Type) +
+  #geom_vline(xintercept = 6.5) +
+  #theme_classic(base_size = 14) + 
+  theme_black(base_size = 14) +
+  theme(strip.background = element_blank(),strip.text.y = element_blank()) +
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust=0.2)) +
+  ylab("% change from delayed detection model") +
+  xlab("Performance metric") + 
+  ylim(c(-100,100)) + coord_flip() 
+dev.off()
