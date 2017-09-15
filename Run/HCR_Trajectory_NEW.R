@@ -187,7 +187,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
                                    Btarget = 0.8*equilib$B0,
                                    M = lh$M)            # This means that the Fmax will be 0.5*lh$M
     }
-    if(hcr.type=="C2"){ # This is C1 but with Low Blim
+    if(hcr.type=="C2"){ # This is C1 but with Low Blim -- Fmax = 0.5M
         imp.rate <- calc.F.oceana(Bt = sum(biomass[,yr]),
                                     Blim = 0.1*equilib$B0, 
                                     Btarget = 0.8*equilib$B0, 
@@ -208,7 +208,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
                                 F.const = const.f.rate)
     }
     
-    # THIS IS NEW: HAVE TO USE BARANOV CATCH EQUATION TO GET *TRUE F*
+    # USE BARANOV CATCH EQUATION TO GET *TRUE F*
     tac <- biomass[,yr] *(1-exp(-(imp.rate*sel.at.age[,1]+lh$M)))*imp.rate*sel.at.age[,1] / (imp.rate*sel.at.age[,1] + lh$M)
     if(obs.type=="noerror"){fishing[yr] = imp.rate}else{
         if(imp.rate==0){fishing[yr] = 0} else{
@@ -282,15 +282,29 @@ return(list(popn=popn[,1:years], biomass.oneplus.obs=apply(biomass[-1,1:years],2
 source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Run/MSY_Fxns.R")
 
 
-# testie2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = "Tim", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA)
+# testie2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA)
 # testie3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA)
 ############################### ############################### ###############################
 ############################### ############################### ###############################
 ############################### ############################### ###############################
 
-# # Test values
-# source(file.path(basedir,"Ctl/Menhaden_LHControl.R"))
-# source(file.path(basedir,"Ctl/Menhaden_FisheryControl.R"))
+# For testing:
+# basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
+# source(file.path(basedir,"Recruitment/GenerateDevs.R")) 
+# source(file.path(basedir,"Estimators/CalcFTrue.R"))
+# source(file.path(basedir,"Estimators/Estimators.R"))
+# source(file.path(basedir,"Run/generate_M.R"))
+# # Load harvest rules
+# source(file.path(basedir,"Control Rules/smith_oceana.R"))
+# source(file.path(basedir,"Control Rules/cfp.R"))
+# source(file.path(basedir,"Control Rules/hockey-stick.R"))
+# source(file.path(basedir,"Control Rules/trend-based-rule.R"))
+# #source(file.path(basedir,"Ctl/Sardine_LHControl.R"))
+# #source(file.path(basedir,"Ctl/Sardine_FisheryControl.R"))
+# source(file.path(basedir,"Ctl/Anchovy_LHControl.R"))
+# source(file.path(basedir,"Ctl/Anchovy_FisheryControl.R"))
+# 
+# 
 # # # # Menhaden recruitment dev params
 # recruit.sd <- 0.8
 # recruit.rho <- 0.2
@@ -298,43 +312,40 @@ source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Run/MSY_Fxns.R")
 # ages.test <- 0:6
 # nages.test <- length(ages.test)
 # time.var.m=NA
-# selectivity.test <- cbind(age=ages.test,selectivity = c(0.004,0.143,0.994,0.84,0.191,0.024,0))
-# lh = list(type = "Menhaden",
-#                M = 0.5,   #from menhaden assessment (http://www.asmfc.org/uploads/file/55089931S40_AtlMenhadenSAR_CombinedFINAL_1.15.2015-reduced.pdf) - mortality is averaged over all ages, from all years (Boudreau & Dickie) - table 3.6.1
-#                selectivity = selectivity.test,
-#                ages = ages.test,
-#                l.at.age = seq(4,28,length.out=nages.test), #http://www.asmfc.org/uploads/file/55089931S40_AtlMenhadenSAR_CombinedFINAL_1.15.2015-reduced.pdf (Table 3.3.2)
-#                w.at.age = c(0.0569, 0.1281,0.2317,0.3285,0.3711,0.5371,0.4481)*0.001, #weights at age are in kg  I think, multiply by 0.001 to get mt
-#                maturity = c(0,0.13,0.53,0.83,0.98,1,1), # Table 3.4.1
-#                R0=1e9) # R0 is flexible, and can be changed. I made it up.
+# toplot = FALSE
+# years.test <- 250
+# tim.params <- list(sigma0 = 0.2,tau0 = 0.1)
 # obs.cv = 1.2
-# init = init.test
-# F0 = F0.test
+# #init = init.test
+# #F0 = F0.test
 # cr = NA
 #       years = years.test
 #       hcr.type = "cfp"
 #       equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
-#       obs.type = "Tim"
+#       obs.type = "AC"
 #       tim.params = tim.params
 #       #const.f.rate=0.6
 #       sig.s = .3
 #       rec.ram=NA
 # 
-#       tot <- sum(c(6.221,4.170,2.795,1.873,1.256,0.842,0.564))
-#       init.prop <- c(6.221,4.170,2.795,1.873,1.256,0.842,0.564)/tot
-#       init.B <- init.prop*200000 # Biomass at age -- 110.54 is the B0 when R0 = 1000
-#       init.test <- init.B / lh.test$w.at.age # These are all the numbers at age (spawning and non-spawning biomass)
-#       init = init.test
-#       F0.test <- 0.3 # This is arbitrary
+#       # tot <- sum(c(6.221,4.170,2.795,1.873,1.256,0.842,0.564))
+#       # init.prop <- c(6.221,4.170,2.795,1.873,1.256,0.842,0.564)/tot
+#       # init.B <- init.prop*200000 # Biomass at age -- 110.54 is the B0 when R0 = 1000
+#       # init.test <- init.B / lh.test$w.at.age # These are all the numbers at age (spawning and non-spawning biomass)
+#       # init = init.test
+#       # F0.test <- 0.3 # This is arbitrary
 # 
-#       set.seed(123)
+#       par(mfrow=c(3,3))
+#       #set.seed(123)
+#       for(i in 1:9){
 #       rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
 #       rec.dev = rec.dev.test
-#       testie4 <- calc.trajectory(lh = lh,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0, cr = cr, years = years.test,hcr.type = hcr.type,equilib = equilib,steepness=steepness,obs.type = obs.type, tim.params = tim.params,const.f.rate=equilib$Fmsy, sig.s = .3,rec.ram=NA,time.var.m = NA)
-#       #
-#       par(mfrow=c(2,1))
-# plot(testie4$biomass.oneplus.true,type='l',ylim=c(0,6e5))
+#       testie4 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0, cr = cr, years = years.test,hcr.type = hcr.type,equilib = equilib,steepness=steepness,obs.type = obs.type, tim.params = tim.params,const.f.rate=equilib$Fmsy, sig.s = .3,rec.ram=NA,time.var.m = NA)
+# #
+# #      par(mfrow=c(2,1))
+# plot(testie4$biomass.oneplus.true,type='l',ylim=c(0,6e4))
 # lines(testie4$total.catch,col='red')
+# }
 # any(testie4$total.catch == 0)
 # plot(testie4$intended.f,type='l')
 # lines(testie4$fishing,col='red')
