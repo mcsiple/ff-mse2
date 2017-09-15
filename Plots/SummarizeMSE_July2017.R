@@ -11,12 +11,13 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
+source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
 Type = "Anchovy" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-08-02","/",sep="")
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep="")
 #path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sardine/"
 setwd(path)
 
@@ -244,10 +245,18 @@ for(p in 1:3){
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
   
-  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=8,
+  plotnames[[p]] <- ggradar_b(final.tab[1,],font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
                                            legend.text.size = 4,
                                            axis.labels = axis.labels,
-                                           plot.legend=legend.presence,palette.vec = hcr.colors) #,palette.vec = hcr.colors
+                                           plot.legend=legend.presence,palette.vec = hcr.colors,plot.black=TRUE) #,palette.vec = hcr.colors
+  
+  pdf("ExampleRadarC3.pdf",width = 14,height = 8,useDingbats = F)
+  ggradar_b(final.tab[5,],font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
+            legend.text.size = 4,
+            axis.labels = axis.labels,
+            plot.legend=legend.presence,palette.vec = hcr.colors[3],plot.black=TRUE)
+  dev.off()
+  
   ftm <- melt(final.tab,id.vars="group")
   ftm$name <- ftm$variable
   ftm$name <- factor(ftm$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity","Bonafide.Collapse"))
@@ -266,7 +275,7 @@ for(p in 1:3){
   all.scaled <- rbind(all.scaled,final.tab)
 }
 
-pdf(file = paste(Type,Sys.Date(),"2_KitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
+pdf(file = paste(Type,Sys.Date(),"2_BlackKitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
 grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],ncol=1)
 dev.off()
 
@@ -354,7 +363,6 @@ ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=sce
               scale_alpha_manual(values = c(0.6,1)) +
               geom_point(size=5,position=dodge)  + 
               geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
-              #geom_text(nudge_x = 0.3) +
               theme_bw(base_size = 18) +
               theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
               facet_wrap(h~PM,scales="free_y")
