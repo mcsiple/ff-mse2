@@ -24,7 +24,10 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age =
   # Result of above is F from the basic hockey stick rule. Now find out if catch would change >15%
   possible.catch <- sum(Bt *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
   newcatch <- possible.catch
-  if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch} # This used to allow catches not to increase either-this was causing issues so I changed it.
+  if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
+  if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}  # THIS LINE IS NEW - TESTING CR 
+  
+  # This used to allow catches not to increase either-this was causing issues so I changed it.
   # Get the f from the control rule
   f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Bt, w.at.age = sizes$weight.at.age[,1])
   #f <- newcatch / Bt
@@ -33,9 +36,11 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age =
 
 
 # Test
-# test.b <- c(7021.0485, 4706.2807, 3154.4495, 2113.8762, 1417.5272,  950.2850,  636.5326)
-# calc.F.cfp(prevCatch = 100, Bt = test.b,Btarget = 1000,Blim = 100,Fmax = 0.6,lh = lh.test,sel.at.age = lh.test$selectivity)
-
+# First: get params from one of the ff types
+# source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Ctl/Menhaden_LHControl.R")
+#  test.b <- c(7021.0485, 4706.2807, 3154.4495, 2113.8762, 1417.5272,  950.2850,  636.5326)
+#  calc.F.cfp(prevCatch = 100, Bt = test.b,Btarget = 1000,Blim = 100,Fmax = 0.6,lh = lh.test,sel.at.age = lh.test$selectivity)
+# 
 # test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
 #                          Btarget = 2000,
 #                          Blim = 100,
@@ -50,7 +55,7 @@ calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age =
 #                                      Blim = test.frame$Blim[i],
 #                                      Fmax = test.frame$Fmax[i],lh = lh.test,
 #                                      sel.at.age = lh.test$selectivity)
-#       
+# 
 # }
 # plot(test.frame$prevCatch,test.frame$calc.f,type='l')
 
