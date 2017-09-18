@@ -61,6 +61,18 @@ generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
                         if(i==1){mtext(side = 3,text = "Menhaden-like",outer = FALSE)}
                       }
 
+# Plot rec devs for presentation ------------------------------------------
+devs <- generate.devs(N=50,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = F)
+df <- data.frame(year=1:length(devs), rec.devs = devs)
+cols <- c("#0C66AC", "#FCEA1B", "#E74690")
+ggplot(df,aes(x=year,y=rec.devs)) + 
+  geom_line(lwd=2,col="lavender") + 
+  theme_black(base_size=14) + 
+  ylab("") + 
+  theme(axis.text.x = element_blank(),
+  axis.text.y = element_blank())
+
+                
                 # Now plot unfished biomass with the rec devs -- ****fix this part to show biomass over time
                         # Load all the contents of the control rules folder:
                         setwd("/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Code/Control Rules")
