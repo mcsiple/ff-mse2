@@ -162,7 +162,8 @@ str(results)
 
 par(mfrow=c(2,1))
 plot(results[[1]]$intended.f[2,],type='l',ylab="Biomass")
-lines(results[[2]]$total.catch[1,],col='red')
+lines(results[[2]]$fishing[1,],col='red')
+
 # 
 # plot(results[[3]]$biomass.oneplus.true[1,],type='l',ylab="Biomass", main = "F=FMSY") #,ylim=c(0,15000)
 # lines(results[[3]]$total.catch[1,],col='red')
@@ -250,12 +251,12 @@ for(p in 1:3){
                                            axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors,plot.black=TRUE) #,palette.vec = hcr.colors
   
-  pdf("ExampleRadarC2.pdf",width = 14,height = 8,useDingbats = F)
-  ggradar_b(final.tab[4,],font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
-            legend.text.size = 4,
-            axis.labels = axis.labels,
-            plot.legend=legend.presence,palette.vec = hcr.colors[2],plot.black=TRUE)
-  dev.off()
+              #pdf("ExampleRadarC2.pdf",width = 14,height = 8,useDingbats = F)
+              #ggradar_b(final.tab[4,],font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
+              #           legend.text.size = 4,
+              #           axis.labels = axis.labels,
+              #           plot.legend=legend.presence,palette.vec = hcr.colors[2],plot.black=TRUE)
+              # dev.off()
   
   ftm <- melt(final.tab,id.vars="group")
   ftm$name <- ftm$variable
