@@ -12,15 +12,19 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep="")
-#path <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sardine/"
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep="")
+# Anchovy: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep=""
+# Menhaden: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
+# Sardine: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
+
 setwd(path)
 
+# NOTE: SKIP TO ~LINE 86 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
 # Read all files into a giant list
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text table summary
@@ -157,17 +161,16 @@ write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
 str(results)
 
 par(mfrow=c(2,1))
-#hist(results[[1]]$intended.f[2,],xlim=c(0,1000))
-plot(results[[1]]$intended.f[2,],type='l',ylab="Biomass") #ylim=c(0,15000)
+plot(results[[1]]$intended.f[2,],type='l',ylab="Biomass")
 lines(results[[2]]$total.catch[1,],col='red')
 # 
 # plot(results[[3]]$biomass.oneplus.true[1,],type='l',ylab="Biomass", main = "F=FMSY") #,ylim=c(0,15000)
 # lines(results[[3]]$total.catch[1,],col='red')
+
+
 ############################################################################
 # PLOTS AND METRICS TO SHOW OUTPUTS ----------------------------
 ############################################################################
-
-
 
 ######################################################################
 ###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
@@ -176,9 +179,6 @@ lines(results[[2]]$total.catch[1,],col='red')
 #pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 
 # Put control rules in order so they plot right
-
-# Don't run this yet;
-#raw.table$HCR <- factor(raw.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
 
 # Colour palette for time series plots - some of these are from iWantHue and some are ColorBrewer
 #palette <- brewer_pal(type="qual",palette=2)
@@ -245,16 +245,16 @@ for(p in 1:3){
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
   
-  plotnames[[p]] <- ggradar_b(final.tab[1,],font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
+  plotnames[[p]] <- ggradar_b(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
                                            legend.text.size = 4,
                                            axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors,plot.black=TRUE) #,palette.vec = hcr.colors
   
-  pdf("ExampleRadarC3.pdf",width = 14,height = 8,useDingbats = F)
-  ggradar_b(final.tab[5,],font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
+  pdf("ExampleRadarC2.pdf",width = 14,height = 8,useDingbats = F)
+  ggradar_b(final.tab[4,],font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
             legend.text.size = 4,
             axis.labels = axis.labels,
-            plot.legend=legend.presence,palette.vec = hcr.colors[3],plot.black=TRUE)
+            plot.legend=legend.presence,palette.vec = hcr.colors[2],plot.black=TRUE)
   dev.off()
   
   ftm <- melt(final.tab,id.vars="group")
