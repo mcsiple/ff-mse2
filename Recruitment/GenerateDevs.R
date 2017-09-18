@@ -7,6 +7,7 @@ cv <- function(ts){
 }
 
 # A la Thorson et al.  ----------------------------------------------------
+toplot = FALSE
 
 generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
   #' @description Function to generate recruitment deviations using the "time series" method 
