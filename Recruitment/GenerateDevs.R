@@ -61,25 +61,25 @@ generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
                         if(i==1){mtext(side = 3,text = "Menhaden-like",outer = FALSE)}
                       }
 
-# Plot rec devs for presentation ------------------------------------------
+              # Plot rec devs for presentation ------------------------------------------
 
-sardine <- generate.devs(N=50,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = F)
-anchovy <- generate.devs(N=50,rho = 0.5,sd.devs = 0.3,burnin = 100,plot = F)
-menhaden <- generate.devs(N=50,rho = 0,sd.devs = 0.7,burnin = 100,plot = F)
-df <- data.frame(year=1:length(devs), s = sardine, a = anchovy, m = menhaden)
-cols <- c("#0C66AC", "#FCEA1B", "#E74690")
-mdf <- melt(df, id.vars="year")
-pdf("~/Dropbox/ChapterX-synthesis/RecruitmentDevExamples.pdf",width=10,height=3,useDingbats = F)
-ggplot(mdf,aes(x=year,y=value,colour=variable)) + 
-  geom_line(lwd=2) + 
-  scale_colour_manual(values = cols) +
-  theme_black(base_size=14) + 
-  ylab("") + xlab("") +
-  facet_wrap(~variable,scales = "free_y") +
-  theme(axis.text.x = element_blank(),
-  axis.text.y = element_blank(),legend.position = "none",strip.background = element_blank(),
-  strip.text.x = element_blank()) # order is: sardine, anchovy, menhaden
-dev.off()
+                    sardine <- generate.devs(N=50,rho = 0.9,sd.devs = 0.1,burnin = 100,plot = F)
+                    anchovy <- generate.devs(N=50,rho = 0.5,sd.devs = 0.3,burnin = 100,plot = F)
+                    menhaden <- generate.devs(N=50,rho = 0,sd.devs = 0.7,burnin = 100,plot = F)
+                    df <- data.frame(year=1:length(devs), s = sardine, a = anchovy, m = menhaden)
+                    cols <- c("#0C66AC", "#FCEA1B", "#E74690")
+                    mdf <- melt(df, id.vars="year")
+                    pdf("~/Dropbox/ChapterX-synthesis/RecruitmentDevExamples.pdf",width=10,height=3,useDingbats = F)
+                    ggplot(mdf,aes(x=year,y=value,colour=variable)) + 
+                      geom_line(lwd=2) + 
+                      scale_colour_manual(values = cols) +
+                      theme_black(base_size=14) + 
+                      ylab("") + xlab("") +
+                      facet_wrap(~variable,scales = "free_y") +
+                      theme(axis.text.x = element_blank(),
+                      axis.text.y = element_blank(),legend.position = "none",strip.background = element_blank(),
+                      strip.text.x = element_blank()) # order is: sardine, anchovy, menhaden
+                    dev.off()
                 
                 # Now plot unfished biomass with the rec devs -- ****fix this part to show biomass over time
                         # Load all the contents of the control rules folder:
