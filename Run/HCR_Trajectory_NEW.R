@@ -117,17 +117,20 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   intended.f[1] <- F0  # This is what the managers THINK the F is (i.e., this is the F from the control rule) - 
   popn[,1] <- pop.curr #NEW
   # Calculate sbpr
-  sbpr <- getSBPR(lh$M, lh$maturity,fecun = lh$w.at.age, n.ages)   #lh$maturity is the maturity at age - it's a vector of length n.ages. Need to remember why fecundity at age is equal to weight at age...
+  sbpr <- getSBPR(lh$M, lh$maturity,fecun = lh$w.at.age, n.ages)   #lh$maturity is the maturity at age - it's a vector of length n.ages. Need to remember why fecundity at age = weight at age...
   if(all(!is.na(time.var.m))){sbpr <- getSBPR(time.var.m[1], lh$maturity,fecun = lh$w.at.age, n.ages)}
   
   # Selectivity
   sel.at.age <- matrix(ncol=years,nrow=nrow(lh$selectivity))
   for(i in 1:years){
-    sel.at.age[,i] <- lh$selectivity[,2]   #lh$selectivity is a nages x 2 matrix, the first column is  ages, 2nd column is selectivity at age. This case is constant selectivity.
+    sel.at.age[,i] <- lh$selectivity[,2]   #lh$selectivity is a nages x 2 matrix, the first column is  ages, 2nd column is selectivity at age. 
+                                            # This case is constant selectivity. 
   }
-  # Generate out all years
+  
+  # Start year loop
   for(yr in 1:(years)){ 
     popn[,yr] <- pop.curr   # pop.curr is a vector of nums at age
+    
     # ESTIMATOR ##########################################
     if(obs.type == "LN"){
       biomass[,yr] <- add.LN.error(biomass.true = biomass.true[,yr], obs.cv = obs.cv, years = 1)$biomass.obs  #determine obs biomass based on true b and cv (this can be any error function)
