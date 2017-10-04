@@ -86,7 +86,7 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 # pairs(sims.all[[33]],pch=19,col=rgb(0,0,0,0.2))
 
 # Table of summary stats! -----------------------------------------------------------
-# 
+ 
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
@@ -153,13 +153,17 @@ write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
 
 str(results)
 
+# Plot a few sample time series (can modify to look at specific issues)
 par(mfrow=c(2,1))
-plot(results[[1]]$intended.f[2,],type='l',ylab="Biomass")
-lines(results[[2]]$fishing[1,],col='red')
+plot(results[[1]]$intended.f[1,],type='l',ylab="Fishing rate")
+lines(results[[1]]$fishing[1,],col='red')
+plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate")
+lines(results[[1]]$fishing[2,],col='red')
 
-# 
-# plot(results[[3]]$biomass.oneplus.true[1,],type='l',ylab="Biomass", main = "F=FMSY") #,ylim=c(0,15000)
-# lines(results[[3]]$total.catch[1,],col='red')
+plot(results[[1]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
+lines(results[[1]]$total.catch[1,],col='red')
+plot(results[[1]]$biomass.oneplus.true[2,],type='l',ylab="Biomass")
+lines(results[[1]]$total.catch[2,],col='red')
 
 
 ############################################################################
