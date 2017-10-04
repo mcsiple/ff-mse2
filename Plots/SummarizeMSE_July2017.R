@@ -17,7 +17,7 @@ Type = "Sardine" #FF type to summarize
 
 
 # Set path to wherever the simulation results are
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep="")
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-09-15","/",sep="")
 # Anchovy: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep=""
 # Menhaden: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
 # Sardine: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
@@ -43,21 +43,14 @@ calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median de
 # Add performance measure columns to table
 performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
 pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") # for distinguishing types of PMs (mostly for plotting...)
-
-#overall.max.coll.len,overall.max.bon.len,bon.length,coll.length
-# Still haven't added : prob(catch falls below a threshold bc what should the threshold be?)
-                #   mean interannual change in catches
-                #   min closure length 
-                #   Others (check notes!)
-
 raw.table[,performance.measures] <- NA
+
 
 # ------------------------------------------------------------------------
 # Summarize everything in one giant "outputs" table - this is ugly, sorry
 # ------------------------------------------------------------------------
 
 # Fxns for summarizing and plotting ---------------------------------------
-
 
 all.summaries <- NA
 all.summaries <- lapply(results,FUN = summ.tab)   # This will take a while
