@@ -12,12 +12,12 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Sardine" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-09-15","/",sep="")
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-10-05","/",sep="")
 # Anchovy: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep=""
 # Menhaden: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
 # Sardine: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
@@ -98,7 +98,7 @@ for (s in 1:nscenarios){
   raw.table[s,performance.measures[3]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = sd,MARGIN = 1)) 
   ######
   five.yr.closure.given1 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5 / 
-    n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1
+                            n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1
   median.P5 <- median(five.yr.closure.given1,na.rm=TRUE) # This is now the # of 5-year closures given a 1-year closure
   if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0) &
      all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1==0)){
@@ -177,13 +177,12 @@ lines(results[[1]]$total.catch[2,],col='red')
 #pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 
 # Put control rules in order so they plot right
-
-# Colour palette for time series plots - some of these are from iWantHue and some are ColorBrewer
+# Colour palette options for plots - some of these are from iWantHue and some are ColorBrewer
 #palette <- brewer_pal(type="qual",palette=2)
 #palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
 palette <- brewer.pal(6,"Spectral")
 hcr.colors <- palette[c(6,5,4,3,1,2)]
-#show_col(hcr.colors) # C1 (Oc), C2 (Len), C3, constF, stability-favoring, trend-based (this is the order of the colors)
+#show_col(hcr.colors) # C1, C2, C3, constF, stability-favoring, trend-based (this is the order of the colors)
 
 raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                                             'constF' = 'Constant F',
@@ -236,24 +235,17 @@ for(p in 1:3){
       axis.labels <- nice.pms[-rm.metrics,'polished']
     }
     
-    #legend.presence <- ifelse(p == 1,TRUE,FALSE)
-    legend.presence <- FALSE
+    legend.presence <- ifelse(p == 1,TRUE,FALSE)
+    #legend.presence <- FALSE
     remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength")
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
   
-  plotnames[[p]] <- ggradar_b(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
+  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, # Add "_b" to fxn name if making w black background
                                            legend.text.size = 4,
                                            axis.labels = axis.labels,
-                                           plot.legend=legend.presence,palette.vec = hcr.colors,plot.black=TRUE) #,palette.vec = hcr.colors
-  
-              #pdf("ExampleRadarC2.pdf",width = 14,height = 8,useDingbats = F)
-              #ggradar_b(final.tab[4,],font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, #remove the "_b" if making w white background (or go back and fix the ggradar function...)
-              #           legend.text.size = 4,
-              #           axis.labels = axis.labels,
-              #           plot.legend=legend.presence,palette.vec = hcr.colors[2],plot.black=TRUE)
-              # dev.off()
+                                           plot.legend=legend.presence,palette.vec = hcr.colors) 
   
   ftm <- melt(final.tab,id.vars="group")
   ftm$name <- ftm$variable
@@ -273,7 +265,7 @@ for(p in 1:3){
   all.scaled <- rbind(all.scaled,final.tab)
 }
 
-pdf(file = paste(Type,Sys.Date(),"2_BlackKitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
+pdf(file = paste(Type,Sys.Date(),"2_KitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
 grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],ncol=1)
 dev.off()
 
