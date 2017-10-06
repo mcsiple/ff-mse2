@@ -175,7 +175,8 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
        } # true fishing rate based on observed biomass
     if(hcr.type=="cfp"){
       imp.rate <- calc.F.cfp(prevCatch = ifelse(yr==1,F0*sum(biomass[,yr]),catch[yr-1]),   #If it's year 1, use F0. Otherwise, determine f from hockey stick and previous year's catch, à la CFP's rule
-                                Bt = biomass[,yr], 
+                                Bobs = biomass[,yr], 
+                                Btru = biomass.true[,yr], #Total biomass
                                 Blim = 0.5*equilib$Bmsy, 
                                 Btarget = equilib$Bmsy, 
                                 Fmax = equilib$Fmsy,
