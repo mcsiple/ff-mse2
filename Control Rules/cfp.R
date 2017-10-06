@@ -3,7 +3,8 @@
 #' \code{calc.F.cfp} returns the fishing rate, given biomass and catch in the previous year.
 #' This function is essentially the same as other "hockey-stick" rules but does not allow the catch to change by more than 15%. It is a rule intended to stabilize catches.
 #' @param prevCatch The catch in the previous year
-#' @param Bt Biomass in the current year (vector of B_age - used to be single value)
+#' @param Btru True biomass in the current year (vector of B_age - used to be single value)
+#' @param Bobs Observed biomass in the current year
 #' @param Btarget Biomass at which Fmax occurs - if B>Btarget, F=Fmax
 #' @param Blim Biomass at which F = 0 - if B<Blim, F=0
 #' @param Fmax Max fishing rate
@@ -12,28 +13,35 @@
 #' 
 #' 
 source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Estimators/CalcFTrue.R") # need this to get F  that gives the proper catch
-calc.F.cfp <- function(prevCatch, Bt, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA, sizes = NA){
+calc.F.cfp <- function(prevCatch, Bobs, Btru, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA, sizes = NA){
   f <- NA
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
   adj.constant <- Btarget/Fmax        # scales y axis to max fishing mortality
-  if (sum(Bt) <= Blim) {f = 0}
-  if (sum(Bt) > Blim & sum(Bt) <= Btarget) {f <- slope * (sum(Bt)-Blim) / adj.constant} 
+  if (sum(Bobs) <= Blim) {f = 0}
+  if (sum(Bobs) > Blim & sum(Bobs) <= Btarget) {f <- slope * (sum(Bobs)-Blim) / adj.constant} 
                                       # adj.constant scales so the CR is linear btwn Blim and Btarget
-  if (sum(Bt) > Btarget) {f = Fmax }
+  if (sum(Bobs) > Btarget) {f = Fmax }
   # possible.catch <- f*Bt # old possible.catch
   # Result of above is F from the basic hockey stick rule. Now find out if catch would change >15%
-  possible.catch <- sum(Bt *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
+  possible.catch <- sum(Bobs *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
   newcatch <- possible.catch
   if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
-  if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}  # THIS LINE IS NEW - TESTING CR 
-  
+  if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}  # THIS LINE IS NEW - checking whether 30% change makes more of a difference.
+  if(newcatch > sum(Btru[-1])){newcatch = sum(Btru[-1]) * 0.5}
   # This used to allow catches not to increase either-this was causing issues so I changed it.
   # Get the f from the control rule
-  f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Bt, w.at.age = sizes$weight.at.age[,1])
+  f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Btru, w.at.age = sizes$weight.at.age[,1])
   #f <- newcatch / Bt
   return(f.new)
 }
 
+# calc.F.cfp(prevCatch = results[[1]]$total.catch[2,190],
+#            Bt = results[[1]]$biomass.oneplus.obs[2,191],
+#            Blim = 0.5*equilib$Bmsy, 
+#            Btarget = equilib$Bmsy, 
+#            Fmax = equilib$Fmsy,lh = lh.test,
+#            sel.at.age = lh.test$selectivity,
+#            sizes = sizes)
 
 # Test
 # First: get params from one of the ff types
