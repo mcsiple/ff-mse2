@@ -1,6 +1,4 @@
 # Libraries
-library(doParallel)
-library(doSNOW)
 library(plyr)
 
 # Set directories
