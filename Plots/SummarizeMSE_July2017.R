@@ -12,11 +12,10 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 
 
-
-# Set path to wherever the simulation results are
+# Set path to wherever the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-10-05","/",sep="")
 # Anchovy: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep=""
 # Menhaden: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
@@ -24,7 +23,8 @@ path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Typ
 
 setwd(path)
 
-# NOTE: SKIP TO ~LINE 86 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
+# NOTE: SKIP TO ~LINE 79 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
+
 # Read all files into a giant list
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text table summary
@@ -33,17 +33,17 @@ setwd(path)
   files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
   results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all the results - ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
 
-nscenarios <- length(results)
-raw.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
-nsims <- nrow(results[[1]]$biomass.oneplus.true) # just count nrows to know how many sims there are
-years.test <- ncol(results[[1]]$biomass.oneplus.true) # just count cols to know how many years there are
-nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
-calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
-
-# Add performance measure columns to table
-performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
-pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") # for distinguishing types of PMs (mostly for plotting...)
-raw.table[,performance.measures] <- NA
+  nscenarios <- length(results)
+  raw.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
+  nsims <- nrow(results[[1]]$biomass.oneplus.true) # just count nrows to know how many sims there are
+  years.test <- ncol(results[[1]]$biomass.oneplus.true) # just count cols to know how many years there are
+  nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
+  calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
+  
+  # Add performance measure columns to table
+  performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
+  pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") # for distinguishing types of PMs (mostly for plotting...)
+  raw.table[,performance.measures] <- NA
 
 
 # ------------------------------------------------------------------------
@@ -90,7 +90,8 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
-  raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind],na.rm = TRUE)) #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
+  raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind],na.rm = TRUE)) 
+  #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
   nonzero.catch <- result.to.use$total.catch[,calc.ind]
   nonzero.catch <- ifelse(nonzero.catch<0.1,NA,nonzero.catch)
   mnz.catches <- rowMeans(nonzero.catch,na.rm=TRUE)
@@ -104,7 +105,7 @@ for (s in 1:nscenarios){
      all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1==0)){
     median.P5 = 0
   }
-  #scen.table[s,performance.measures[4]] <- ifelse(median.P5==0, 1, 1/median.P5)
+
   raw.table[s,performance.measures[4]] <- median.P5 # Mean number of 5-yr closures given a 1-yr closure
   
   ######
@@ -115,9 +116,8 @@ for (s in 1:nscenarios){
      all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0)){
     median.P10 = 0
   }
-  #scen.table[s,performance.measures[5]] <- ifelse(median.P10==0, 1, 1/median.P10)
-  raw.table[s,performance.measures[5]] <- median.P10 # Mean number of 10-yr closures given a 5-yr closure
   
+  raw.table[s,performance.measures[5]] <- median.P10 # Mean number of 10-yr closures given a 5-yr closure
   ######
   raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
   
@@ -144,7 +144,7 @@ for (s in 1:nscenarios){
     # 4. Mean bonanza length
     # 5. Mean collapse length
     # 6. # probability of collapse 
-    # 7. COllapse severity
+    # 7. Collapse severity
     # 8. CV.Catch
     # 9. Bonafide.collapse
 } 
@@ -323,6 +323,7 @@ ggplot(all.summaries,aes(x=HCR,y=med,colour=HCR)) +
   ylab("Median (+/- 90% quantile)")
 
 # Tradeoff figures ---------------------------------------------------
+# *** NOTE: Need to scale these to best (as in kite plots); scen.table depracated
 tradeoff.plot <- subset(scen.table,h==0.9)
 # Scale all performance measures to max
 for(i in 7:ncol(tradeoff.plot)){
