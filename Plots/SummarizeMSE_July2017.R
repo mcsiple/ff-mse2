@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 
 
 
@@ -155,15 +155,21 @@ str(results)
 
 # Plot a few sample time series (can modify to look at specific issues)
 par(mfrow=c(2,1))
-plot(results[[1]]$intended.f[1,],type='l',ylab="Fishing rate")
+plot(results[[1]]$intended.f[1,],type='l',ylab="Fishing rate",ylim=c(0,30))
 lines(results[[1]]$fishing[1,],col='red')
-plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate")
+plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate",ylim=c(0,30))
 lines(results[[1]]$fishing[2,],col='red')
 
 plot(results[[1]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
 lines(results[[1]]$total.catch[1,],col='red')
 plot(results[[1]]$biomass.oneplus.true[2,],type='l',ylab="Biomass")
 lines(results[[1]]$total.catch[2,],col='red')
+
+# ConstF - high
+plot(results[[35]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
+lines(results[[35]]$total.catch[1,],col='red')
+plot(results[[35]]$biomass.oneplus.true[2,],type='l',ylab="Biomass")
+lines(results[[35]]$total.catch[2,],col='red')
 
 
 ############################################################################
@@ -225,6 +231,7 @@ for(p in 1:3){
     }
     final.tab <- cbind(tab[,'HCR'],props)
     colnames(final.tab)[1] <- "group"
+    final.tab[,c("overallMaxCollapseLength","CollapseLength","Collapse.Severity")][is.na(final.tab[,c("overallMaxCollapseLength","CollapseLength","Collapse.Severity")])] <- 1 # If no collapses, HCR will automatically score the best on these metrics of length & severity 
     test.nas <- apply(X = final.tab,FUN = anyNA,MARGIN = 2)
     na.metrics <- names(which(test.nas))
     
@@ -242,7 +249,8 @@ for(p in 1:3){
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
   
-  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",grid.label.size=3,axis.label.size=8, # Add "_b" to fxn name if making w black background
+  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
+                            grid.label.size=3,axis.label.size=8, 
                                            legend.text.size = 4,
                                            axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors) 
