@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Sardine" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 
 
 # Set path to wherever the simulation results are:
@@ -176,10 +176,6 @@ lines(results[[35]]$total.catch[2,],col='red')
 # PLOTS AND METRICS TO SHOW OUTPUTS ----------------------------
 ############################################################################
 
-######################################################################
-###### MAKE A PDF WITH ALL THE OUTPUT FIGURES! #######################
-######################################################################
-
 #pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 
 # Put control rules in order so they plot right
@@ -225,7 +221,7 @@ for(p in 1:3){
     which.bad <- which(colnames(tab.metrics) %in% bad.pms)
     tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) ifelse(x==0,1,1/x)) # Turn all the "bad" PMs to their inverse
     props <- tab.metrics
-    maxes <- apply(X = tab.metrics,MARGIN = 2,FUN = max,na.rm  = T )
+    maxes <- apply(X = tab.metrics,MARGIN = 2,FUN = max,na.rm  = T)
     for(i in 1:nrow(props)){
       props[i,] <- tab.metrics[i,] / maxes
     }
@@ -244,7 +240,8 @@ for(p in 1:3){
     
     legend.presence <- ifelse(p == 1,TRUE,FALSE)
     #legend.presence <- FALSE
-    remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength")
+    remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
+    # Removed Bonafide collapse metric bc all CRs were performing similarly on it
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
@@ -257,7 +254,7 @@ for(p in 1:3){
   
   ftm <- melt(final.tab,id.vars="group")
   ftm$name <- ftm$variable
-  ftm$name <- factor(ftm$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity","Bonafide.Collapse"))
+  ftm$name <- factor(ftm$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity"))
   
   ftm <- mutate(ftm,name = recode (name, 'LTmeancatch' = "Mean catch",
                                      "meanbiomass" = "Mean biomass",
@@ -267,8 +264,7 @@ for(p in 1:3){
                                      'n.5yrclose' = "Minimize \n P(5 yr closure|closure)",
                                      "CollapseLength" = "Minimize \n collapse length",
                                      "Prob.Collapse" = "Minimize P(collapse)",
-                                     "Collapse.Severity" = "Minimize collapse severity",
-                                    "Bonafide.Collapse" = "Minimize no. of \n bonafide collapses"))
+                                     "Collapse.Severity" = "Minimize collapse severity"))
   tileplots[[p]] <- ggplot(ftm,aes(x=name,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="RdYlBu",trans="reverse") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + geom_text(aes(label=round(value,digits = 1)))
   all.scaled <- rbind(all.scaled,final.tab)
 }
