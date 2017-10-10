@@ -7,14 +7,14 @@ library(RColorBrewer)
 
 resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results"
 
-# Before starting: Check to make sure these directories are results you want
+# *** Before starting: Check to make sure these directories are results you want
 aa <- read.csv(file.path(resultsdir,"Anchovy2017-10-05/Anchovy2017-10-05_outputs.csv"))
 aa$Type = "Anchovy"
 mm <-read.csv(file.path(resultsdir,"Menhaden2017-10-05/Menhaden2017-10-09_outputs.csv"))
 mm$Type = "Menhaden"
 ss <- read.csv(file.path(resultsdir,"Sardine2017-10-05/Sardine2017-10-09_outputs.csv"))
 ss$Type = "Sardine"
-dat <- rbind.fill(aa,mm,ss) # This is an amalgamation of all the raw.tables from the results files
+dat <- rbind.fill(aa,mm,ss)     # This is an amalgamation of all the raw.tables from the results files
 
 dat <- dat[,-1] # Remove row numbers
 head(dat)
@@ -24,10 +24,9 @@ dat <- dat[,-which(colnames(dat) %in% remove)]
 mdat <- melt(dat,id.vars=c("Type","obs.error.type","HCR"))
 
 
-#dat2 <- dcast(mdat,variable+value ~ Type+obs.error.type+HCR+recruit.sd+recruit.rho)
 dat2 <- dcast(mdat,Type+HCR+variable ~ obs.error.type)
-#dat2 <- dcast(mdat,value ~ Type+variable+obs.error.type+HCR+recruit.sd+recruit.rho)
-dat2$percentdiff <- ((dat2$Tim - dat2$AC) / dat2$Tim) * 100
+dat2$percentdiff <- ((dat2$Tim - dat2$AC) / dat2$Tim) * 100 # Calc % diff between delay detection and AC 
+
 dat3 <- subset(dat2,!variable %in% c("overallMaxCollapseLength","LTnonzeromeancatch","n.10yrclose","meanDepl","good4preds","very.bad4preds","Bonafide.Collapse","overallMaxBonanzaLength","SDbiomass","CV.Catch"))
 
 dat3 <- mutate(dat3,HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
@@ -67,6 +66,10 @@ dat3.new <- mutate(dat3.new,name = recode_factor(name, 'LTmeancatch' = "Mean cat
 dat3.new$name <- factor(dat3.new$name, levels=rev(c("Bonanza length","Mean biomass","Mean catch", "Minimize collapse severity","Minimize P(collapse)","Minimize collapse length","Minimize P(5 yr closure|closure)","Minimize years with 0 catch","Minimize catch variation")))
 dat3.new$HCR <- factor(dat3.new$HCR, levels=c("C1","C2","C3","Constant F - low","Constant F - high","Stability-favoring"))
 
+#Some metrics have a >100% change and won't show up if you don't set them w/in plot limits
+dat3.new$percentdiff[dat3.new$percentdiff > 100] = 100
+dat3.new$percentdiff[dat3.new$percentdiff < (-100)] = -100
+
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
 pdf(file = "PercentDiffsErrors_101017.pdf",width = 11,height = 9,useDingbats = FALSE)
 ggplot(dat3.new, aes(x=name,y=percentdiff)) +
@@ -88,11 +91,8 @@ ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors[c(1,2,3,6,4,5)]) +
   geom_hline(yintercept=0,colour='white')+facet_grid(HCR~Type) +
-  #geom_vline(xintercept = 6.5) +
-  #theme_classic(base_size = 14) + 
   theme_black(base_size = 14) +
   theme(strip.background = element_blank(),strip.text.y = element_blank()) +
-  #theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust=0.2)) +
   ylab("% change from delayed detection model") +
   xlab("Performance metric") + 
   ylim(c(-100,100)) + coord_flip() 
