@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 
 
 # Set path to wherever the simulation results are:
@@ -23,8 +23,6 @@ path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Typ
 
 setwd(path)
 
-# NOTE: SKIP TO ~LINE 79 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
-
 # Read all files into a giant list
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text table summary
@@ -32,7 +30,9 @@ setwd(path)
   files <- files[grep(files, pattern = ".RData")] #only load rdata files
   files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
   results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all the results - ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
-
+  
+  # NOTE: SKIP TO ~LINE 79 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
+  
   nscenarios <- length(results)
   raw.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
   nsims <- nrow(results[[1]]$biomass.oneplus.true) # just count nrows to know how many sims there are
@@ -165,12 +165,24 @@ lines(results[[1]]$total.catch[1,],col='red')
 plot(results[[1]]$biomass.oneplus.true[2,],type='l',ylab="Biomass")
 lines(results[[1]]$total.catch[2,],col='red')
 
-# ConstF - high
-plot(results[[35]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
-lines(results[[35]]$total.catch[1,],col='red')
-plot(results[[35]]$biomass.oneplus.true[2,],type='l',ylab="Biomass")
-lines(results[[35]]$total.catch[2,],col='red')
+# Compare AC and DD
 
+plot(results[[14]]$total.catch[1,],type='l',ylab="Catches") # 14 is autocorrelated error
+lines(results[[16]]$total.catch[1,],col='red')              # 16 is delayed detection
+plot(results[[14]]$total.catch[2,],type='l',ylab="Catches")
+lines(results[[16]]$total.catch[2,],col='red')
+
+par(mfrow=c(2,1))
+sim = 3
+plot(results[[14]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="C1")
+lines(results[[14]]$total.catch[sim,],col='red')
+lines(results[[16]]$biomass.oneplus.obs[sim,],col="grey")
+lines(results[[16]]$total.catch[sim,],col="pink")
+
+plot(results[[32]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="Hi constF")
+lines(results[[32]]$total.catch[sim,],col='red')
+lines(results[[34]]$biomass.oneplus.obs[sim,],col="grey")
+lines(results[[34]]$total.catch[sim,],col="pink")
 
 ############################################################################
 # PLOTS AND METRICS TO SHOW OUTPUTS ----------------------------
