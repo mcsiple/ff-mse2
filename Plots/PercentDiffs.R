@@ -10,9 +10,9 @@ resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results"
 # *** Before starting: Check to make sure these directories are results you want
 aa <- read.csv(file.path(resultsdir,"Anchovy2017-10-05/Anchovy2017-10-05_outputs.csv"))
 aa$Type = "Anchovy"
-mm <-read.csv(file.path(resultsdir,"Menhaden2017-10-05/Menhaden2017-10-09_outputs.csv"))
+mm <-read.csv(file.path(resultsdir,"Menhaden2017-10-05/Menhaden2017-10-05_outputs.csv"))
 mm$Type = "Menhaden"
-ss <- read.csv(file.path(resultsdir,"Sardine2017-10-05/Sardine2017-10-09_outputs.csv"))
+ss <- read.csv(file.path(resultsdir,"Sardine2017-10-05/Sardine2017-10-05_outputs.csv"))
 ss$Type = "Sardine"
 dat <- rbind.fill(aa,mm,ss)     # This is an amalgamation of all the raw.tables from the results files
 
