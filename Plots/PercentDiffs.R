@@ -67,8 +67,9 @@ dat3.new$name <- factor(dat3.new$name, levels=rev(c("Bonanza length","Mean bioma
 dat3.new$HCR <- factor(dat3.new$HCR, levels=c("C1","C2","C3","Constant F - low","Constant F - high","Stability-favoring"))
 
 #Some metrics have a >100% change and won't show up if you don't set them w/in plot limits
-dat3.new$percentdiff[dat3.new$percentdiff > 100] = 100
-dat3.new$percentdiff[dat3.new$percentdiff < (-100)] = -100
+dat3.new$percentdiff[dat3.new$percentdiff > 100 & dat3.new$percentdiff < 1e6] = 100
+dat3.new$percentdiff[dat3.new$percentdiff < (-100) & dat3.new$percentdiff > (-1e6)] = -100
+dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)] <- NA
 
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
 pdf(file = "PercentDiffsErrors_101017.pdf",width = 11,height = 9,useDingbats = FALSE)
