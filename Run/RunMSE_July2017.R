@@ -1,9 +1,6 @@
 # Libraries
 library(plyr)
 
-# Set directories
-basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
-resultsdir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results"
 types <- c("Anchovy"="Anchovy",
            "Menhaden" = "Menhaden",
            "Sardine" = "Sardine")
@@ -17,6 +14,7 @@ types <- c("Anchovy"="Anchovy",
   fftype = types[f]
 
       #run.mod <- function(fftype){
+        # Set directories
         basedir <- "~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
         resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results"
         #subDir <- "Anchovy" # Name of ff type
