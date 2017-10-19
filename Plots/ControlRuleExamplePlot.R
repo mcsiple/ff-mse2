@@ -21,7 +21,7 @@ cfp.vec[i] <- calc.F.cfp(prevCatch = 10,Bt = B[i], Btarget = Bmsy, Fmax = Fmsy,B
 constf.vec <- rep(Fmsy,times=length(B))
 constf.vec_lo <- rep(0.5*Fmsy,times=length(B))
 
-pdf("ControlRules.pdf",width = 7,height = 7,useDingbats = FALSE)
+pdf("ControlRules_v11.pdf",width = 7,height = 7,useDingbats = FALSE)
 lwdp = 3
 par(las=2,mar=c(6,5,4,2)+0.1) # Rotate axis labels 
 # margins: c(5, 4, 4, 2) + 0.1
@@ -38,7 +38,7 @@ lines(C3.vec-0.004, col=hcr.colors[3],lwd=lwdp)
 lines(cfp.vec+0.001,col=hcr.colors[6],lwd=lwdp)
 lines(constf.vec+0.005,col=add.alpha(hcr.colors[5],alpha = 0.6),lwd=lwdp)
 lines(constf.vec_lo+0.005,col=add.alpha(hcr.colors[4],alpha = 0.6),lwd=lwdp)
-legend("bottomright",legend = c("C1","C2","C3","High F","Low F","Stability-favoring"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4,6)])
+legend("bottomright",legend = c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4,6)])
 dev.off()
 
 
