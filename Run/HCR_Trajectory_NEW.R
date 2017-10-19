@@ -65,7 +65,14 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   #' @return list: obs biomass, true biomass, catches, recruitment, and a bundle of other stuff
   #' IMPORTANT: 
   #' biomass.true - vector of true biomass-at-age
-  #' 
+  #' biomass - vector of observed biomass-at-age
+  #' oneplus.biomass - vector of true one-plus biomass
+  #' ** Function outputs:
+  #'      biomass.oneplus.obs - total observed B1+
+  #'      biomass.total.true - total true B1+
+  #'      biomass.oneplus.true - true B1+
+  #'      biomass.total.obs
+  
   if(is.null(lh$M)){
     print("M is missing")
     break
@@ -158,13 +165,15 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     if(obs.type == "Tim"){
       sigma0 = tim.params$sigma0
       tau0 = tim.params$tau0
-      if(yr==1){biomass[,yr] <- biomass.true[,yr] * exp(rnorm(n.ages,0,sigma0)) #Add random error to first year, bc no prior information (i.e., in the first year, the "estimate" is just the biomass + some LN observation error)
+      # Add random error to first year, bc no prior information 
+      # (i.e., in the first year, the "estimate" is just the biomass + some LN observation error):
+      if(yr==1){biomass[,yr] <- biomass.true[,yr] * exp(rnorm(n.ages,0,sigma0)) 
                 } else{
         biomass[,yr] <- tim.assessment(Eprev = biomass[,yr-1],
                                       B = biomass.true[,yr],
                                       sigma0 = sigma0,
                                       tau0 = tau0)
-                }} # NEED TO FIX FOR AGE_SPECIFIC
+                }} 
           
       if(obs.type == "noerror"){
         biomass[,yr] <- biomass.true[,yr]
@@ -191,7 +200,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
       imp.rate <- calc.F.oceana(Bt = sum(biomass[,yr]),
                                    Blim = 0.4*equilib$B0,
                                    Btarget = 0.8*equilib$B0,
-                                   M = lh$M)            # This means that the Fmax will be 0.5*lh$M
+                                   M = lh$M)            # Fmax will be 0.5*lh$M
     }
     if(hcr.type=="C2"){ # This is C1 but with Low Blim -- Fmax = 0.5M
         imp.rate <- calc.F.oceana(Bt = sum(biomass[,yr]),
@@ -270,8 +279,9 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   if(!is.null(equilib) && length(R0.traj) > 1){B0.traj <- (R0.traj[1:years])*0.110548} # weird linear relationship between R0 and B0
   if(!is.null(equilib) && length(R0.traj) == 1 ){B0.traj <- rep(equilib$B0,times=years)}
   
-return(list(popn=popn[,1:years], biomass.oneplus.obs=apply(biomass[-1,1:years],2,sum,na.rm=T), # changed this
-            sp=sp, # biomass is the observed one plus biomass of the population
+return(list(popn=popn[,1:years], 
+            biomass.oneplus.obs=apply(biomass[-1,1:years],2,sum,na.rm=T), # observed one plus biomass of the population
+            sp=sp, 
             catch.at.age=catch.at.age[,1:years], 
             total.catch=catch, 
             fishing=fishing[1:years], 
