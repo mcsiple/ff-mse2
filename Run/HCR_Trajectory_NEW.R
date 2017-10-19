@@ -63,6 +63,8 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   #' @param tim.params - a list of parameters (sigma0, tau0) describing the level of belief that the assessment or surveyor has in the possibility of large peaks or collapses
   #' @param time.var.m - a time series of natural mortality (M) values for cases where M is time-varying
   #' @return list: obs biomass, true biomass, catches, recruitment, and a bundle of other stuff
+  #' IMPORTANT: 
+  #' biomass.true - vector of true biomass-at-age
   #' 
   if(is.null(lh$M)){
     print("M is missing")
