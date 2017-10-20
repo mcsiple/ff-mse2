@@ -122,9 +122,9 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   # Initialize starting values
   pop.curr <- pop.next <- init
   biomass.true[,1] <- pop.curr*sizes$weight.at.age[,1]
-  fishing[1] <- F0 # This is the true fishing rate (i.e., the total catch / total true biomass)
-  intended.f[1] <- F0  # This is what the managers THINK the F is (i.e., this is the F from the control rule) - 
-  popn[,1] <- pop.curr #NEW
+  fishing[1] <- F0 # This is the true fishing rate
+  intended.f[1] <- F0  # This is what the managers *think* F is (i.e., this is the F from the control rule) - 
+  popn[,1] <- pop.curr 
   # Calculate sbpr
   sbpr <- getSBPR(lh$M, lh$maturity,fecun = lh$w.at.age, n.ages)   #lh$maturity is the maturity at age - it's a vector of length n.ages. Need to remember why fecundity at age = weight at age...
   if(all(!is.na(time.var.m))){sbpr <- getSBPR(time.var.m[1], lh$maturity,fecun = lh$w.at.age, n.ages)}
