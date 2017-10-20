@@ -1,9 +1,14 @@
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
+library(RColorBrewer)
+library(scales)
+
 # Demo figure for control rules
 source(file.path(basedir,"Control Rules/smith_oceana.R"))
 source(file.path(basedir,"Control Rules/cfp.R"))
 source(file.path(basedir,"Control Rules/hockey-stick.R"))
 source(file.path(basedir,"Control Rules/trend-based-rule.R"))
+
+
 
 B <- 1:10000
 B0 <- 7000
@@ -16,10 +21,16 @@ for(i in 1:length(B)){
 C1.vec[i] <- calc.F.oceana(Bt = B[i],Blim = 0.4*B0,Btarget = 0.8*B0, M = m)
 C2.vec[i] <- calc.F.oceana(Bt = B[i], Blim = 0.1*B0, Btarget = 0.8*B0, M = m)
 C3.vec[i] <- calc.F.stick(Bt = B[i], Blim = 0.4*B0, Btarget = 0.8*B0, Fmax = Fmsy)
-cfp.vec[i] <- calc.F.cfp(prevCatch = 10,Bt = B[i], Btarget = Bmsy, Fmax = Fmsy,Blim = 0.5*Bmsy)
+cfp.vec[i] <- calc.F.stick(Bt = B[i],Blim = 0.5*Bmsy, Btarget = 0.4*B0,Fmax = Fmsy)
 }
+
 constf.vec <- rep(Fmsy,times=length(B))
 constf.vec_lo <- rep(0.5*Fmsy,times=length(B))
+
+
+palette <- brewer.pal(6,"Spectral")
+hcr.colors <- palette[c(6,5,4,3,1,2)]
+
 
 pdf("ControlRules_v11.pdf",width = 7,height = 7,useDingbats = FALSE)
 lwdp = 3
