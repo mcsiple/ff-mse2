@@ -146,12 +146,12 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     }   
     
     
-    # Autocorrelated error types ###########################
+    # Autocorrelated error  ###########################
     # Set sig.s and rho: These values are best estimates from Wiedenmann et al. 2015 Table 5: Median estimates of sd and autocorrelated in biomass observation error. For high steepness, slightly lower rho and sig.s
     #sig.s = ifelse(steepness>0.5,0.30,0.38) 
           rho = 0.5 # 0.5 #ifelse(steepness>0.5,0.82,0.87)
         if(is.na(sig.s)){ # if sig.s isn't provided at the beginning of the fxn, provide it here. sig.s=0.51 is for sardine.
-          sig.s = 0.3 # This value comes from running the delay function a bunch of times, getting a target sd(log) 
+          sig.s = 0.3 # This value comes from running the delay function a bunch of times, getting a target sd(log). This matches the sd from the autocorrelated error to the delay detection error.
     }
     if(obs.type == "AC"){
       eps.prev = ifelse(yr==1,1,eps.prev) # Initialize epsilon. Need to do this every time this type of error is used. #2 is NEW
