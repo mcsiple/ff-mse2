@@ -44,12 +44,13 @@ yticks = c(0,0.5*m,0.5*Fmsy,Fmsy,0.8)
 axis(side = 1, at = xticks,labels = c(" ","0.1B0","0.5Bmsy","0.4B0","0.8B0"," "))
 axis(side = 2, at = yticks, labels = c("0","0.5M","0.5Fmsy","Fmsy"," "))
 
-lines(C2.vec, col=hcr.colors[2],lwd=lwdp)
+lines(C2.vec, col=hcr.colors[2],lwd=lwdp, lty=2)
 lines(C3.vec-0.004, col=hcr.colors[3],lwd=lwdp)
 lines(cfp.vec+0.001,col=hcr.colors[6],lwd=lwdp)
-lines(constf.vec+0.005,col=add.alpha(hcr.colors[5],alpha = 0.6),lwd=lwdp)
+abline(h = constf.vec[1]+0.005,col=add.alpha(hcr.colors[5],alpha = 0.6),lwd=lwdp,lty=2)
+#lines(constf.vec+0.005,col=add.alpha(hcr.colors[5],alpha = 0.6),lwd=lwdp,lty=2)
 lines(constf.vec_lo+0.005,col=add.alpha(hcr.colors[4],alpha = 0.6),lwd=lwdp)
-legend("bottomright",legend = c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4,6)])
+legend("bottomright",legend = c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4,6)],lty=c(1,2,1,2,1,1))
 dev.off()
 
 
