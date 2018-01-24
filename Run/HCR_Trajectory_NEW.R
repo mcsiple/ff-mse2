@@ -148,10 +148,14 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     
     # Autocorrelated error  ###########################
     # Set sig.s and rho: These values are best estimates from Wiedenmann et al. 2015 Table 5: Median estimates of sd and autocorrelated in biomass observation error. For high steepness, slightly lower rho and sig.s
-    #sig.s = ifelse(steepness>0.5,0.30,0.38) 
-          rho = 0.5 # 0.5 #ifelse(steepness>0.5,0.82,0.87)
+    
+          rho = 0.5 
         if(is.na(sig.s)){ # if sig.s isn't provided at the beginning of the fxn, provide it here. sig.s=0.51 is for sardine.
-          sig.s = 0.3 # This value comes from running the delay function a bunch of times, getting a target sd(log). This matches the sd from the autocorrelated error to the delay detection error.
+          sig.s = 0.3 # This value comes from running the delay function a bunch of times, getting a target sd(log). 
+                      # This matches the sd from the autocorrelated error to the delay detection error.
+          # There are also values of sig.s and rho that are conditioned on steepness. I don't use these, but they were tested long ago.
+          # sig.s = ifelse(steepness>0.5,0.30,0.38) 
+          # rho = 0.5 #ifelse(steepness>0.5,0.82,0.87)
     }
     if(obs.type == "AC"){
       eps.prev = ifelse(yr==1,1,eps.prev) # Initialize epsilon. Need to do this every time this type of error is used. #2 is NEW
@@ -229,10 +233,13 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     # USE BARANOV CATCH EQUATION TO GET *TRUE F*
     if(obs.type=="noerror"){fishing[yr] = imp.rate}else{
         if(imp.rate==0){fishing[yr] = 0} else{
-          fishing[yr] <- calc.true.f(tac.fn = tac,M.fn = lh$M,sel.fn = sel.at.age[,yr],Btrue = biomass.true[,yr], w.at.age = sizes$weight.at.age[,1]) # Double check that selectivity shouldn't be zero for age 0 fish
+          
+          fishing[yr] <- calc.true.f(tac.fn = tac,M.fn = lh$M,sel.fn = sel.at.age[,yr],Btrue = biomass.true[,yr], w.at.age = sizes$weight.at.age[,1])  # function from CalcFTrue.R
+          
+          # **** TODO: Double check that selectivity shouldn't be zero for age 0 fish
         } }
         intended.f[yr] <- imp.rate # This is what the 'managers' think the F is each year
-    ##########
+        
     death.rate <- lh$M + sel.at.age[,yr] * fishing[yr] 
     if(all(!is.na(time.var.m))){death.rate <- time.var.m[yr] + sel.at.age[,yr] * fishing[yr]}
     
