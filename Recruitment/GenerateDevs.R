@@ -6,36 +6,51 @@ cv <- function(ts){
   return(CV)
 }
 
-# A la Thorson et al.  ----------------------------------------------------
+# Generate recruitment deviations ----------------------------------------------------
+# This is used in Thorson et al. 2014, CJFAS, Eq. 16
+# http://www.nrcresearchpress.com/doi/full/10.1139/cjfas-2013-0645#.Wmo95JM-dR4
 toplot = FALSE
 
-generate.devs <- function(N, rho, sd.devs, burnin=100, plot=FALSE){
+generate.devs <- function(N, rho, sd.devs, plot=FALSE){
   #' @description Function to generate recruitment deviations using the "time series" method 
   #' @param N - number of years for which to generate recruitment deviations 
   #' @param rho - autocorrelation
   #' @param sd.devs - standard deviation of the recruitment devs
+  # This used to have a burn-in, but I checked and it doesn't seem necessary
   
   #Generate noise
-  innov <- rnorm(N+burnin,mean = (-sd.devs^2)/2,sd = sd.devs) 
-  
+  innov <- rnorm(N,mean = (-sd.devs^2)/2,sd = sd.devs) #includes bias correction in mean, as recommended by Thorson et al. (2014)
+
   #Make a vector to hold simulated deviations
-  dev.ts <- numeric(length=N+burnin)
-  for(yr in 2:(N+burnin)){
-    dev.ts[yr] <- rho * dev.ts[yr-1] + sqrt(1-rho^2) * innov[yr] # Square root of 1-rho corrects it so it doesn't just wander unidirectionally
+  dev.ts <- numeric(length=N)
+  dev.ts[1] <- innov[1]
+  
+  for(yr in 2:(N)){
+    dev.ts[yr] <- rho * dev.ts[yr-1] + sqrt(1-rho^2) * innov[yr] # sqrt(1-rho^2) is a correction so it doesn't just wander unidirectionally
   }
   
+  # If you include a burn-in:
+  #innov <- rnorm(N+burnin,mean = (-sd.devs^2)/2,sd = sd.devs) 
+  # dev.ts <- numeric(length=N+burnin)
+  # for(yr in 2:(N+burnin)){
+  #   dev.ts[yr] <- rho * dev.ts[yr-1] + sqrt(1-rho^2) * innov[yr] # sqrt(1-rho^2) is a correction so it doesn't just wander unidirectionally
+  # }
   #Trim off burn-in years (this is so we get the stationary part, if it's stationary)
-  dev.ts <- dev.ts[-(1:burnin)]
+  #dev.ts <- dev.ts[-(1:burnin)]
+  
   dev.ts <- exp(dev.ts) #Since these are log deviations
   dev.ts <- dev.ts/mean(dev.ts) #Standardize so that mean is 1
   if(plot==TRUE){ plot(1:N, dev.ts, type='l',yaxt="n",ylab='',xlab='Year')
                   title(ylab="Recruit deviations", line=0.4, cex.lab=1.2)
-                  CV <- round(cv(dev.ts),digits = 2)
+                  #CV <- round(cv(dev.ts),digits = 2)
                   #text(x = 46,y = 0.99*max(dev.ts),labels = paste("CV =",CV))
                   }
   return(dev.ts)
 }
 
+set.seed(123)
+x <- generate.devs(N = 100,rho = 0.6,sd.devs = .3,burnin = 20,plot = FALSE)
+plot(1:100,x,type='l')
 
 
 
