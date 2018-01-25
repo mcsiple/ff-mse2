@@ -11,12 +11,13 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-Type = "Sardine" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 
 
 
 # Set path to wherever the simulation results are, load them into a giant dataframe
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+date <- "2017-10-05"
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",date,"/",sep="")
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text table summary
   files <- files[-rm]
@@ -215,7 +216,6 @@ nice.pms <- data.frame(original = colnames(scen.table[-(1:7)]),
 steep=2
 obs=1
     
-    #tab <- subset(scen.table, obs.error.type == obs.error.types[obs] & h == steepnesses[steep] & M.type == "constant")
     tab <- subset(raw.table,obs.error.type == obs.error.types[obs] & h == steepnesses[steep] & M.type == "constant")
     tab.metrics <- tab[,-(1:7)]
     #Here are the PMs that are NEGATIVES (i.e., a high value for these is bad news)
