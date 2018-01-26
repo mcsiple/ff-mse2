@@ -158,7 +158,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
           # rho = 0.5 #ifelse(steepness>0.5,0.82,0.87)
     }
     if(obs.type == "AC"){
-      eps.prev = ifelse(yr==1,1,eps.prev) # Initialize epsilon. Need to do this every time this type of error is used. #2 is NEW
+      eps.prev = ifelse(yr==1,1,eps.prev) # Initialize epsilon
       outs <-  add.wied.error(biomass.true = biomass.true[,yr],
                               epsilon.prev = eps.prev, 
                               sig.s =  sig.s, rho = rho)
@@ -234,7 +234,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     if(obs.type=="noerror"){fishing[yr] = imp.rate}else{
         if(imp.rate==0){fishing[yr] = 0} else{
           
-          fishing[yr] <- calc.true.f(tac.fn = tac,M.fn = lh$M,sel.fn = sel.at.age[,yr],Btrue = biomass.true[,yr], w.at.age = sizes$weight.at.age[,1])  # function from CalcFTrue.R
+          fishing[yr] <- calc.true.f(tac.fn = tac,M.fn = lh$M,sel.fn = sel.at.age[,yr],Btrue = biomass.true[,yr], w.at.age = sizes$weight.at.age[,1])  # Determine true fishing rate from TAC and true biomass.
           
           # **** TODO: Double check that selectivity shouldn't be zero for age 0 fish
         } }
