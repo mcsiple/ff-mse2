@@ -21,7 +21,7 @@ generate.devs <- function(N, rho, sd.devs, plot=FALSE){
   # This used to have a burn-in, but I checked and it doesn't seem necessary
   
   #Generate noise
-  innov <- rnorm(N,mean = (-sd.devs^2)/2,sd = sd.devs) #includes bias correction in mean, per Thorson et al. (2014)
+  innov <- rnorm(N,mean = 0,sd = sd.devs) # For bias correction, can use mean = -sd.devs^2)/2 (I didn't see a big difference in devs, so have left mean = 0)
 
   #Make a vector to hold simulated deviations
   dev.ts <- numeric(length=N)
@@ -30,16 +30,7 @@ generate.devs <- function(N, rho, sd.devs, plot=FALSE){
   for(yr in 2:(N)){
     dev.ts[yr] <- rho * dev.ts[yr-1] + sqrt(1-rho^2) * innov[yr] # sqrt(1-rho^2) is a correction so it doesn't just wander unidirectionally
   }
-  
-  # If you include a burn-in:
-  #innov <- rnorm(N+burnin,mean = (-sd.devs^2)/2,sd = sd.devs) 
-  # dev.ts <- numeric(length=N+burnin)
-  # for(yr in 2:(N+burnin)){
-  #   dev.ts[yr] <- rho * dev.ts[yr-1] + sqrt(1-rho^2) * innov[yr] # sqrt(1-rho^2) is a correction so it doesn't just wander unidirectionally
-  # }
-  #Trim off burn-in years (this is so we get the stationary part, if it's stationary)
-  #dev.ts <- dev.ts[-(1:burnin)]
-  
+
   dev.ts <- exp(dev.ts) #Since these are log deviations
   dev.ts <- dev.ts/mean(dev.ts) #Standardize so that mean is 1
   if(plot==TRUE){ plot(1:N, dev.ts, type='l',yaxt="n",ylab='',xlab='Year')
