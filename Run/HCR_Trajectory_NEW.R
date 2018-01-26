@@ -147,7 +147,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     
     
     # Autocorrelated error  ###########################
-    # Set sig.s and rho: These values are best estimates from Wiedenmann et al. 2015 Table 5: Median estimates of sd and autocorrelated in biomass observation error. For high steepness, slightly lower rho and sig.s
+    # Set sig.s and rho: These values are best estimates from Wiedenmann et al. 2015 Table 5: Median estimates of sd and autocorrelated in biomass observation error. For high steepness, slightly lower rho and sig.s.
     
           rho = 0.5 
         if(is.na(sig.s)){ # if sig.s isn't provided at the beginning of the fxn, provide it here. sig.s=0.51 is for sardine.
@@ -212,7 +212,6 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
                                     Btarget = 0.8*equilib$B0, 
                                     M = lh$M)
     }
-    
     if(hcr.type=="C3"){ # This is C1 but with Hi Fmax
         imp.rate <- calc.F.stick(Bt = sum(biomass[,yr]),
                                      Blim = 0.4*equilib$B0, 
@@ -227,28 +226,27 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
                                 F.const = const.f.rate)
     }
     
-    # Get total catches
+    # Get TAC (Baranov eqn with observed biomass)
     tac <- biomass[,yr] *(1-exp(-(imp.rate*sel.at.age[,1]+lh$M)))*imp.rate*sel.at.age[,1] / (imp.rate*sel.at.age[,1] + lh$M) 
     
-    # USE BARANOV CATCH EQUATION TO GET *TRUE F*
+    # Solve Baranov catch equation to get f that results in TAC
     if(obs.type=="noerror"){fishing[yr] = imp.rate}else{
         if(imp.rate==0){fishing[yr] = 0} else{
-          
-          fishing[yr] <- calc.true.f(tac.fn = tac,M.fn = lh$M,sel.fn = sel.at.age[,yr],Btrue = biomass.true[,yr], w.at.age = sizes$weight.at.age[,1])  # Determine true fishing rate from TAC and true biomass.
-          
+          fishing[yr] <- calc.true.f(tac.fn = tac,M.fn = lh$M,sel.fn = sel.at.age[,yr],Btrue = biomass.true[,yr], w.at.age = sizes$weight.at.age[,1])
           # **** TODO: Double check that selectivity shouldn't be zero for age 0 fish
-        } }
-        intended.f[yr] <- imp.rate # This is what the 'managers' think the F is each year
+        }}
+        intended.f[yr] <- imp.rate # This is the "target F" or what the 'managers' think the F is each year
         
     death.rate <- lh$M + sel.at.age[,yr] * fishing[yr] 
     if(all(!is.na(time.var.m))){death.rate <- time.var.m[yr] + sel.at.age[,yr] * fishing[yr]}
     
+    # Get true total catches
     catch.at.age[,yr] <- (sizes$weight.at.age[,yr] * sel.at.age[,yr] * fishing[yr]*(1-exp(-death.rate)) * popn[,yr])/death.rate 
-    catch[yr]<-sum(catch.at.age[,yr])  #Total catch
+    catch[yr] <- sum(catch.at.age[,yr])  # Total catch
     next.year.S <- sum(pop.curr*lh$maturity*sizes$weight.at.age[,yr])
     
-    #Recruitment fed into the model comes from real or simulated recruitment estimates
-    R0 <- ifelse(length(R0.traj)>1 , R0.traj[yr], lh$R0) # R0 is usually set by life history traits. If it's NOT, make it whatever it should be in that year, based on R0.traj 
+    #Recruitment comes from real OR simulated recruitment estimates of R
+    R0 <- ifelse(length(R0.traj)>1 , R0.traj[yr], lh$R0) # R0 usually set by life history traits. If it's NOT, make it whatever it should be in that year, based on R0.traj
     
     pop.next[1] <- bevHolt(h = steepness, S = next.year.S, SBPR0 = sbpr, R0 = R0)*rec.dev[yr]  # Beverton-Holt recruitment * recruitment deviations
     if(!is.na(rec.ram[1])){pop.next[1] <- rec.ram[yr]}
@@ -258,7 +256,6 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
       pop.next[1] <-bevHolt(h = steepness, S = next.year.S, SBPR0 = sbpr, R0 = R0)*rec.dev[yr] 
       if(!is.na(rec.ram[1])){pop.next[1] <- rec.ram[yr]}
       }
-    
     if(is.na(pop.next[1])){   
       print("Recruitment is NA for some reason! Below are parameters")
                                   print(c(yr,next.year.S,sbpr,R0,rec.dev[yr]))
@@ -268,8 +265,9 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     survival <- pop.curr*exp(-death.rate)
     
     pop.next[2:n.ages] <- survival[1:(n.ages-1)]
-    pop.next[n.ages] <- pop.next[n.ages] + survival[n.ages]  #Plus group pop size
-    pop.curr <- pop.next
+    pop.next[n.ages] <- pop.next[n.ages] + survival[n.ages]  # Plus group
+    pop.curr <- pop.next 
+    
     biomass.true[,yr+1] <- pop.curr*sizes$weight.at.age[,yr] # These are from the original model
     oneplus.biomass[-1,yr+1] <- pop.curr[-1]*sizes$weight.at.age[-1,yr] # These are from the original model
     sp.true[yr] <- sum(biomass.true[,yr+1]) - sum(biomass.true[,yr]) + catch[yr]      # Surplus production
