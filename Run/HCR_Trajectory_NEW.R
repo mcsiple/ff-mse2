@@ -8,7 +8,7 @@
 
 
 # Calculate SBPR0 to use in stock recruit fn
-getSBPR<-function(nat.mort, maturity, fecun, n.ages){
+getSBPR <- function(nat.mort, maturity, fecun, n.ages){
   #' @description Function to calculate spawners per recruit
   #' @param nat.mort - natural mortality
   #' @param maturity - maturity ogive
@@ -151,11 +151,11 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     
           rho = 0.5 
         if(is.na(sig.s)){ # if sig.s isn't provided at the beginning of the fxn, provide it here. sig.s=0.51 is for sardine.
-          sig.s = 0.3 # This value comes from running the delay function a bunch of times, getting a target sd(log). 
-                      # This matches the sd from the autocorrelated error to the delay detection error.
-          # There are also values of sig.s and rho that are conditioned on steepness. I don't use these, but they were tested long ago.
-          # sig.s = ifelse(steepness>0.5,0.30,0.38) 
-          # rho = 0.5 #ifelse(steepness>0.5,0.82,0.87)
+          sig.s = 0.3 # This value comes from running the delay function a bunch of times, getting a target sd(log). This matches the sd from the autocorrelated error to the delay detection error.
+                      # It's also very similar to the sigma.s value estimated for species with high recruitment variability in Wied. et al.
+          # There are also values of sig.s and rho that are conditioned on steepness. I don't use these, but they were tested long ago:
+          # sig.s = ifelse(steepness>0.5,0.30,0.38)
+          # rho = ifelse(steepness>0.5,0.82,0.87)
     }
     if(obs.type == "AC"){
       eps.prev = ifelse(yr==1,1,eps.prev) # Initialize epsilon
