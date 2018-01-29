@@ -13,7 +13,7 @@ cv <- function(ts){
   return(CV)
 }
 
-generate.devs <- function(N, rho, sd.devs, plot=FALSE){
+generate.devs <- function(N, rho, sd.devs, plot=FALSE,method=1){
   #' @description Function to generate recruitment deviations using the "time series" method 
   #' @param N - number of years for which to generate recruitment deviations 
   #' @param rho - autocorrelation
@@ -30,9 +30,16 @@ generate.devs <- function(N, rho, sd.devs, plot=FALSE){
   for(yr in 2:(N)){
     dev.ts[yr] <- rho * dev.ts[yr-1] + sqrt(1-rho^2) * innov[yr] # sqrt(1-rho^2) is a correction so it doesn't just wander unidirectionally
   }
+  
+  if(method==1){
+    dev.ts <- exp(dev.ts)         # Since these are log deviations
+    dev.ts <- dev.ts/mean(dev.ts) # Standardize so that mean is 1
+  } 
+    if(method==2){
+    dev.ts <- dev.ts - mean(dev.ts) - 0.5 * var(dev.ts)
+    dev.ts <- exp(dev.ts)
+    }
 
-  dev.ts <- exp(dev.ts) #Since these are log deviations
-  dev.ts <- dev.ts/mean(dev.ts) #Standardize so that mean is 1
   if(plot==TRUE){ plot(1:N, dev.ts, type='l',yaxt="n",ylab='',xlab='Year')
                   title(ylab="Recruit deviations", line=0.4, cex.lab=1.2)
                   #CV <- round(cv(dev.ts),digits = 2)
@@ -46,9 +53,11 @@ generate.devs <- function(N, rho, sd.devs, plot=FALSE){
               if(toplot == TRUE){
                 
                 set.seed(123)
-                x <- generate.devs(N = 100,rho = 0.6,sd.devs = .3,plot = FALSE)
-                plot(1:100,x,type='l')
-                
+                x1 <- generate.devs(N = 1000,rho = 0.9,sd.devs = .3,plot = FALSE,method=1)
+                set.seed(123)
+                x2 <- generate.devs(N = 1000,rho = 0.9,sd.devs = .3,plot = FALSE,method=2)
+                plot(1:1000,x1,type='l')
+                lines(1:1000,x2,col='red')
                       par(mfcol=c(3,3))
                       # "Sardine"
                       for(i in 1:3){
