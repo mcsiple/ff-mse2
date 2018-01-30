@@ -1,4 +1,6 @@
 basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
+figwd <- file.path(basedir,"Plots/")
+
 library(RColorBrewer)
 library(scales)
 
@@ -31,26 +33,25 @@ constf.vec_lo <- rep(0.5*Fmsy,times=length(B))
 palette <- brewer.pal(6,"Spectral")
 hcr.colors <- palette[c(6,5,4,3,1,2)]
 
-
+setwd(figwd)
 pdf("ControlRules_v11.pdf",width = 7,height = 7,useDingbats = FALSE)
 lwdp = 3
 par(las=2,mar=c(6,5,4,2)+0.1) # Rotate axis labels 
 # margins: c(5, 4, 4, 2) + 0.1
-plot(C1.vec-0.004,type='l',col=hcr.colors[1],lwd=lwdp, ylim=c(0,0.9),
+adj = 0.05/4
+plot(C1.vec-adj,type='l',col=hcr.colors[1],lwd=lwdp, ylim=c(0,0.9),
      axes=FALSE,xlab="\n \n \n \n Biomass",ylab="Fishing rate (F) \n") #xaxt="n",yaxt="n"
-
 xticks = c(0,0.1*B0,0.5*Bmsy,0.4*B0,0.8*B0,max(B))
 yticks = c(0,0.5*m,0.5*Fmsy,Fmsy,0.8)
 axis(side = 1, at = xticks,labels = c(" ","0.1B0","0.5Bmsy","0.4B0","0.8B0"," "))
 axis(side = 2, at = yticks, labels = c("0","0.5M","0.5Fmsy","Fmsy"," "))
 
-lines(C2.vec, col=hcr.colors[2],lwd=lwdp, lty=2)
+lines(C2.vec, col=hcr.colors[2],lwd=lwdp) # green line
 lines(C3.vec-0.004, col=hcr.colors[3],lwd=lwdp)
 lines(cfp.vec+0.001,col=hcr.colors[6],lwd=lwdp)
-abline(h = constf.vec[1]+0.005,col=add.alpha(hcr.colors[5],alpha = 0.6),lwd=lwdp,lty=2)
-#lines(constf.vec+0.005,col=add.alpha(hcr.colors[5],alpha = 0.6),lwd=lwdp,lty=2)
-lines(constf.vec_lo+0.005,col=add.alpha(hcr.colors[4],alpha = 0.6),lwd=lwdp)
-legend("bottomright",legend = c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4,6)],lty=c(1,2,1,2,1,1))
+lines(constf.vec+adj,col=add.alpha(hcr.colors[5],alpha = 0.6),lwd=lwdp) # red line, constF.high
+lines(constf.vec_lo,col=add.alpha(hcr.colors[4],alpha = 0.6),lwd=lwdp)
+legend("bottomright",legend = c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"),bty = "n",lwd=rep(lwdp,times=4),col=hcr.colors[c(1,2,3,5,4,6)],lty=rep(1, times=6))
 dev.off()
 
 
