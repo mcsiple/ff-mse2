@@ -12,12 +12,11 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 Type = "Menhaden" #FF type to summarize
-
+Date <- "2017-10-05"
 
 
 # Set path to wherever the simulation results are, load them into a giant dataframe
-date <- "2017-10-05"
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",date,"/",sep="")
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text table summary
   files <- files[-rm]
@@ -30,10 +29,10 @@ scen.table <- read.table("Scenario_Table.txt")  #This empty table is generated w
 nsims <- nrow(results[[1]]$biomass.oneplus.true) # just count nrows to know how many sims there are
 years.test <- ncol(results[[1]]$biomass.oneplus.true) # just count cols to know how many years there are
 nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
-calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
+calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate PMs over (length = nyrs.to.use)
 
 # Add performance measure columns to table
-performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity")
+performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Sustained.collapse")
 pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11)) # for distinguishing types of PMs (mostly for plotting...)
 
 #overall.max.coll.len,overall.max.bon.len,bon.length,coll.length
@@ -80,14 +79,11 @@ all.summaries$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Consta
 write.csv(all.summaries, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 
-# See if performance metrics are correlated -------------------------------
-# sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
-# pairs(sims.all[[33]],pch=19,col=rgb(0,0,0,0.2))
 
 for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
-  scen.table[s,performance.measures[1]] <- raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind])) #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
+  scen.table[s,performance.measures[1]] <- raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind])) # calculate mean B over years to use in the index - the final number is the median (across all simulations) of the mean B
   nonzero.catch <- result.to.use$total.catch[,calc.ind]
   nonzero.catch <- ifelse(nonzero.catch<0.1,NA,nonzero.catch)
   mnz.catches <- rowMeans(nonzero.catch,na.rm=TRUE)
@@ -112,6 +108,7 @@ for (s in 1:nscenarios){
   ten.yr.closure.given5 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10 / 
     n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5
   median.P10 <- median(ten.yr.closure.given5,na.rm=TRUE) 
+  # If both P(5 yr closure|closure) and P(10 yr closure|closure) are 0, then set to zero:
   if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10==0) &
      all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0)){
     median.P10 = 0
@@ -139,7 +136,7 @@ for (s in 1:nscenarios){
   scen.table[s,performance.measures[10]] <-  ifelse (median(yrs.bad)==0, 1, 1 / median(yrs.bad) ) #  **N** Number of years below a very low threshold (<10% of long term unfished biomass) "very.bad4preds" **N**
   raw.table[s,performance.measures[10]] <- median(yrs.bad)
   scen.table[s,performance.measures[11]] <- 
-    raw.table[s,performance.measures[11]] <- median(rowMeans(result.to.use$depl[,calc.ind]))  # Median depletion
+  raw.table[s,performance.measures[11]] <- NA #median(rowMeans(result.to.use$depl[,calc.ind]))  # Median depletion - depracated now because results don't include depletion
   
   sw <- subset(all.summaries,scenario==s)
   raw.table[s, performance.measures[12]] <- sw[12,'med']
@@ -152,6 +149,8 @@ for (s in 1:nscenarios){
   
   raw.table[s,performance.measures[15]] <- sw[15,'med']
   scen.table[s,performance.measures[15]] <- ifelse(is.na(sw[15,'med']),NA, 1 / sw[15,'med'])    # mean collapse length
+  
+  raw.table[]
   
 } # This loop is a hot mess and needs to be optimized - can also take out "scen.table" assignments because they're all done below for the kite plots
 
@@ -191,7 +190,7 @@ raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type,
 pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
 # Put control rules in order so they plot right
 scen.table$HCR <- raw.table$HCR <- factor(scen.table$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based"))
-# Compare each of the CRs together? It would be like pairs()
+
 
 
 
@@ -207,7 +206,7 @@ nice.pms <- data.frame(original = colnames(scen.table[-(1:7)]),
                                     "LT mean biomass","Number of yrs \n above pred threshold",
                                     "SD(Biomass)","Number of yrs \n below low pred threshold",
                                     "Mean depletion","Max collapse length","Max bonanza length",
-                                    "Bonanza length","Collapse length"))
+                                    "Bonanza length","Collapse length","Probability of collapse","Collapse severity"))
 
 #For final version of paper, want to just show one scenario - this is is the basic one!
 
