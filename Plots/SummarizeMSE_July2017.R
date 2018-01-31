@@ -13,23 +13,23 @@ source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/M
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
 Type = "Menhaden" #FF type to summarize
-
+Date <- "2017-10-05"
 
 # Set path to wherever the simulation results are:
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-10-05","/",sep="")
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
 # Anchovy: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-19","/",sep=""
 # Menhaden: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
 # Sardine: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
 
-setwd(path)
+setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
 
-# Read all files into a giant list
+# Read all files into giant list
   files <- list.files(path=path)
   rm <- grep(files,pattern = ".txt") # Don't load the text table summary
   files <- files[-rm]
   files <- files[grep(files, pattern = ".RData")] #only load rdata files
   files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
-  results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all the results - ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
+  results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all results
   
   # NOTE: SKIP TO ~LINE 79 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
   
