@@ -126,7 +126,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   intended.f[1] <- F0  # This is what the managers *think* F is (i.e., this is the F from the control rule) - 
   popn[,1] <- pop.curr 
   # Calculate sbpr
-  sbpr <- getSBPR(lh$M, lh$maturity,fecun = lh$w.at.age, n.ages)   #lh$maturity is the maturity at age - it's a vector of length n.ages. Need to remember why fecundity at age = weight at age...
+  sbpr <- getSBPR(lh$M, lh$maturity,fecun = lh$w.at.age, n.ages)   #lh$maturity is the maturity at age
   if(all(!is.na(time.var.m))){sbpr <- getSBPR(time.var.m[1], lh$maturity,fecun = lh$w.at.age, n.ages)}
   
   # Selectivity
@@ -226,7 +226,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
                                 F.const = const.f.rate)
     }
     
-    # Get TAC (Baranov eqn with observed biomass)
+    # Get total allowable catch (Baranov eqn with observed biomass) - this is structured as a total catch at age
     tac <- biomass[,yr] *(1-exp(-(imp.rate*sel.at.age[,1]+lh$M)))*imp.rate*sel.at.age[,1] / (imp.rate*sel.at.age[,1] + lh$M) 
     
     # Solve Baranov catch equation to get f that results in TAC
@@ -248,7 +248,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     #Recruitment comes from real OR simulated recruitment estimates of R
     R0 <- ifelse(length(R0.traj)>1 , R0.traj[yr], lh$R0) # R0 usually set by life history traits. If it's NOT, make it whatever it should be in that year, based on R0.traj
     
-    pop.next[1] <- bevHolt(h = steepness, S = next.year.S, SBPR0 = sbpr, R0 = R0)*rec.dev[yr]  # Beverton-Holt recruitment * recruitment deviations
+    pop.next[1] <- bevHolt(h = steepness, S = next.year.S, SBPR0 = sbpr, R0 = R0)*rec.dev[yr]  # Beverton-Holt recruitment * recruitment devs
     if(!is.na(rec.ram[1])){pop.next[1] <- rec.ram[yr]}
     
     if(all(!is.na(time.var.m))){
