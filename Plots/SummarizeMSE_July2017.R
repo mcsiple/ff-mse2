@@ -199,14 +199,12 @@ hcr.colors <- palette[c(6,5,4,3,1,2)]
 #show_col(hcr.colors) # C1, C2, C3, constF, stability-favoring, trend-based (this is the order of the colors)
 
 raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-                                            'constF' = 'Constant F',
+                                            'constF' = 'Low F',
                                             'C1' = 'C1',
                                             'C2' = 'C2',
                                             'C3' = 'C3',
                                             'trend' = "Trend-based",
-                                            'constF_HI' = "Constant F - High"))
-
-
+                                            'constF_HI' = "High F"))
 
 # Kite plots showing tradeoffs --------------------------------------------
 
