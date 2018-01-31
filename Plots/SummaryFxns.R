@@ -163,9 +163,8 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   nz1 <- apply(catch,MARGIN = 1,FUN = nzeroes)
   
   #5- and 10-yr closures
-  n.5yrclose <- n.multiyr.closures(catch,threshold = 0)$count5 / nz1 # P(5yr closure | closure)
+  n.5yrclose <- n.multiyr.closures(catch,threshold = 0)$count5 / nz1          # P(5yr closure | closure)
   n.10yrclose <- n.multiyr.closures(catch,threshold = 0)$count10 / n.5yrclose # P(10yr closure | 5yr closure) - this one is depracated
-  
   
   # SDbiomass
   true.biomass <- result.list$biomass.total.true
@@ -284,6 +283,10 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   #max bonanza length (across ALL SIMULATIONS) - do not use in correlations
   #mean bonanza length
   #mean collapse length
+  #probability of a collapse
+  #collapse severity
+  #cv(catch)
+  #sustained collapse
   sim.output[[1]] <- LTmeans.list$total.catch
   sim.output[[2]] <- ltm.nzc1 
   sim.output[[3]] <- sd.catches
@@ -297,7 +300,10 @@ summ.tab <- function(result.list, individual.sim = FALSE){ #result.list is one o
   sim.output[[11]] <- LTmeans.list$depl
   sim.output[[12]] <- avg.duration.bonanza
   sim.output[[13]] <- avg.duration.collapse
-  #names(sim.output) <- performance.measures[-c(12,13)]
+  sim.output[[14]] <- prob.coll
+  sim.output[[15]] <- severity
+  sim.output[[16]] <- cv.catch
+  sim.output[[17]] <- b.collapse
   if(individual.sim==TRUE){return(sim.output)}
   else{return(output)}
     }
