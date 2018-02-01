@@ -287,7 +287,8 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   if(!is.null(equilib) && length(R0.traj) == 1 ){B0.traj <- rep(equilib$B0,times=years)}
   
 return(list(popn=popn[,1:years], 
-            biomass.oneplus.obs=apply(biomass[-1,1:years],2,sum,na.rm=T), # observed one plus biomass of the population
+            biomass.oneplus.obs=apply(biomass[-1,1:years],2,sum,na.rm=T), # Observed one plus biomass of the population
+            biomass.total.obs=apply(biomass[,1:years],2,sum,na.rm=T),     # Observed total biomass, for determining "estimated" reference points
             sp=sp, 
             catch.at.age=catch.at.age[,1:years], 
             total.catch=catch, 
