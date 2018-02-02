@@ -24,7 +24,7 @@ types <- c("Anchovy"="Anchovy",
         years.test = 250
         nsims = 1000
         tim.params = list(sigma0 = 0.2,tau0 = 0.1)
-        sig.s = 0.3 #0.30 (changed to 0.001 to check whether catches were limited at higher F by observation error)
+        sig.s = 0.3 
         R0.sens = NA #NO DYNAMIC R0 anymore-- ignore
         
         # Load packages
@@ -34,7 +34,7 @@ types <- c("Anchovy"="Anchovy",
         library(dplyr)
         
         # Load rev devs generating fxn, MSE main model, estimator fxns
-        #toplot=FALSE      # Don't plot examples of rec trajectories
+        #toplot=FALSE      # Don't plot examples of recruitement trajectories
         source(file.path(basedir,"Recruitment/GenerateDevs.R")) 
         source(file.path(basedir,"Estimators/CalcFTrue.R"))
         source(file.path(basedir,"Run/HCR_Trajectory_NEW.R"))
@@ -89,7 +89,7 @@ types <- c("Anchovy"="Anchovy",
         obs.error.type = c("AC","Tim","noerror")
 
         HCR = c("cfp","constF","C1","C2","C3","constF_HI") # Took out trend because it was unrealistic-- but using trend in CPUE as adjustment (data-poor method) might be a good idea!
-        M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity
+        M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity analyses
         
         scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type)
         colnames(scenarios) <- c("h","obs.error.type","HCR","recruit.sd","recruit.rho","M.type")
