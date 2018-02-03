@@ -172,6 +172,7 @@ for(s in 1:nscenarios){  #
   if(HCR=="constF"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
+      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -190,6 +191,7 @@ for(s in 1:nscenarios){  #
   if(HCR=="C1"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
+      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.c1 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C1",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -208,6 +210,7 @@ for(s in 1:nscenarios){  #
   if(HCR=="C2"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
+      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.c2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -227,6 +230,7 @@ for(s in 1:nscenarios){  #
   if(HCR=="C3"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
+      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.c3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C3",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -246,6 +250,7 @@ for(s in 1:nscenarios){  #
   if(HCR=="trend"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
+      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.trend <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "trend",const.f.rate = 0.6,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -265,6 +270,7 @@ for(s in 1:nscenarios){  #
     const.f.rate = equilib$Fmsy
     set.seed(123) # same seed
     for (sim in 1:nsims){
+      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.constF_HI <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -280,3 +286,9 @@ for(s in 1:nscenarios){  #
     save(constF_HI,file=paste("All",s,"constF_HI",".RData",sep="_"))
   }
 } # end of scenarios loop
+
+
+
+#  Now load data (if needed) and summarize --------------------------------
+
+hist()
