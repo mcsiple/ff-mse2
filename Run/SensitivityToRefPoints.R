@@ -61,8 +61,10 @@ source(file.path(basedir,"Control Rules/trend-based-rule.R"))
 
 
 # Scenarios - for sensitivity, limiting the number of scenarios.
+
+setwd(resultsdir)
 h = c(0.6) #0.9, 
-obs.error.type = c("AC","Tim") #,"noerror"
+obs.error.type = c("AC") #,"noerror","Tim"
 HCR = c("cfp","constF","C1","C2","C3","constF_HI") 
 M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity analyses
 
@@ -130,27 +132,27 @@ for(s in 1:nscenarios){  #
   recruit.sd = scenarios$recruit.sd[s]
   recruit.rho = scenarios$recruit.rho[s]
   M.type = scenarios$M.type[s]
-  
   equilib.true = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
   equilib <- equilib.true
-  equilib$B0 <- rnorm(1,equilib.true$B0,sd = B0.sd)
-  # equilib$Fmsy <- rnorm(1,equilib.true$Fmsy,sd = Fmsy.sd) # Need to make sure error is similar to error in f caused by observations...?
-  const.f.rate = 0.5*equilib$Fmsy 
   no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
   set.seed(123) # Start each round of sims at same random seed
   time.var.m <- NA # Base case: M constant 
-  if(M.type == "timevar"){time.var.m <- rw.M(Mbar = lh.test$M, rho.m = 0.6, sigma.m = 0.2,n = years.test)}
-  if(M.type == "regimeshift"){time.var.m <- regime.M(Mbar = lh.test$M,cutoff.yr = 201,n = years.test)}
+  # if(M.type == "timevar"){time.var.m <- rw.M(Mbar = lh.test$M, rho.m = 0.6, sigma.m = 0.2,n = years.test)}
+  # if(M.type == "regimeshift"){time.var.m <- regime.M(Mbar = lh.test$M,cutoff.yr = 201,n = years.test)}
   for (sim in 1:nsims){
+
     rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
     F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)$biomass.total.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
-    no.fishing[sim,] <- F0.Type
+    no.fishing[sim,] <- F0.Type # This is the time series 
   }
   
+  B0.error <- rnorm(1000,0,sd = B0.sd)
+  const.f.rate = 0.5*equilib$Fmsy
   
   if(HCR=="cfp"){    
     set.seed(123) # Start each round of sims at same random seed
     for (sim in 1:nsims){
+      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim]) # error in B0 will only affect control rules. Error is added here (instead of before with the unfished part) but want unfished dynamics determined with the true equilib #s 
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s,rec.ram = NA)
       
