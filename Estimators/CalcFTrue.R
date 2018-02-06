@@ -17,7 +17,7 @@ calc.true.f <- function(tac.fn = tac, M.fn = M, sel.fn = sel, Btrue.fn = NA, w.a
         #' @param w.at.age - weight at age; drawn from OM
         fn.to.minimize <- function(param,tac = tac.fn, M = M.fn, sel = sel.fn,
                                    w.at.age.fn = w.at.age, Btrue = Btrue.fn){
-          F.true <- param       # solving for F
+          F.true <- param       # solving for F.true
           death_rate <- M + sel * F.true
           catch_age <- (Btrue * sel * F.true * (1-exp(-death_rate))) / death_rate # the biomass at age caught by the fishery
           pred.tac <- sum(catch_age)
