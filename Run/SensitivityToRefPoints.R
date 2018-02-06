@@ -67,9 +67,10 @@ h = c(0.6) #0.9,
 obs.error.type = c("AC") #,"noerror","Tim"
 HCR = c("cfp","constF","C1","C2","C3","constF_HI") 
 M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity analyses
+B0.accuracy = c("over","under","exact")
 
 scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type)
-colnames(scenarios) <- c("h","obs.error.type","HCR","recruit.sd","recruit.rho","M.type")
+colnames(scenarios) <- c("h","obs.error.type","HCR","recruit.sd","recruit.rho","M.type","B0.accuracy")
 nscenarios <- nrow(scenarios)
 scenarios$scenario <- 1:nscenarios #Label them so it's easier to find/index em later
 
@@ -98,30 +99,34 @@ nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
 ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
 
 
-
-# Get appropriate SD for variation in F -----------------------------------
-nsims = 100
-sd.sim = vector(length = nsims)
-set.seed(123)
-for(sim in 1:nsims){
-  rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-  test.F.sd <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0.7, steepness = steepness,obs.type = "AC",equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s)
-  sd.sim[sim] <- sd(test.F.sd$fishing[150:250]) #last 100 years of time series
-}
-median(sd.sim)
-
-# With sig.s = 0.3 and F = 0.7, this is the sd(fishing mortality) that you would expect with AC error
-# F = 1.1    0.5602482
-# F = 0.7    0.2956493
-# F = 0.3   0.1047076
-# F = 0.1   0.03187569
-# So sd of F depends on the constant F rate that you set... I think there's an adjustment but I'm not sure what it is... might as well set sd high and see what happens.
-#Going to use the high value of sd(F) just to be precautionary. sd = 0.56
+                  # Get appropriate SD for variation in F -----------------------------------
+                  nsims = 100
+                  sd.sim = vector(length = nsims)
+                  set.seed(123)
+                  for(sim in 1:nsims){
+                    rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
+                    test.F.sd <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0.7, steepness = steepness,obs.type = "AC",equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s)
+                    sd.sim[sim] <- sd(test.F.sd$fishing[150:250]) #last 100 years of time series
+                  }
+                  median(sd.sim)
+                  
+                  # With sig.s = 0.3 and F = 0.7, this is the sd(fishing mortality) that you would expect with AC error
+                  # F = 1.1    0.5602482
+                  # F = 0.7    0.2956493
+                  # F = 0.3   0.1047076
+                  # F = 0.1   0.03187569
+                  # So sd of F depends on the constant F rate that you set... I think there's an adjustment but I'm not sure what it is... might as well set sd high and see what happens.
+                  #Going to use the high value of sd(F) just to be precautionary. sd = 0.56
 
 Fmsy.sd <- 0.56
 B0.sd <- 0.3
 
-# Plot a normal curve 
+B0.error <- c(rnorm(1000,0,sd = B0.sd), # First 1,000 values are over- or under-estimates
+              rep(0,times=500)) #Last 500 are true values
+
+
+const.f.rate = 0.5*equilib$Fmsy
+
 
 # Test sensitivity to over-or under-estimating B0 ---------------------------------------------------
 
@@ -137,17 +142,13 @@ for(s in 1:nscenarios){  #
   no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
   set.seed(123) # Start each round of sims at same random seed
   time.var.m <- NA # Base case: M constant 
-  # if(M.type == "timevar"){time.var.m <- rw.M(Mbar = lh.test$M, rho.m = 0.6, sigma.m = 0.2,n = years.test)}
-  # if(M.type == "regimeshift"){time.var.m <- regime.M(Mbar = lh.test$M,cutoff.yr = 201,n = years.test)}
+  
   for (sim in 1:nsims){
-
     rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
     F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)$biomass.total.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
     no.fishing[sim,] <- F0.Type # This is the time series 
   }
   
-  B0.error <- rnorm(1000,0,sd = B0.sd)
-  const.f.rate = 0.5*equilib$Fmsy
   
   if(HCR=="cfp"){    
     set.seed(123) # Start each round of sims at same random seed
@@ -219,7 +220,6 @@ for(s in 1:nscenarios){  #
       C2[["fishing"]][sim,] <- expt.c2$fishing
       C2[["intended.f"]][sim,] <- expt.c2$intended.f    
       C2[["rec"]][sim,] <- expt.c2$rec
-      #C2[["depl"]][sim,] <- expt.c2$depl
       C2[["biomass.oneplus.obs"]][sim,] <- expt.c2$biomass.oneplus.obs
       C2[["biomass.total.true"]][sim,] <- expt.c2$biomass.total.true
       C2[["no.fishing.tb"]] <- no.fishing
@@ -327,7 +327,7 @@ raw.table[,performance.measures] <- NA
 
 
 # ------------------------------------------------------------------------
-# Summarize everything in one giant "outputs" table - this is ugly, sorry
+# Summarize everything in one giant "outputs" table
 # ------------------------------------------------------------------------
 
 # Fxns for summarizing and plotting ---------------------------------------
@@ -337,7 +337,12 @@ all.summaries <- NA
 overest.ind <- which(B0.error>0)
 underest.ind <- which(B0.error<=0)
 
-B0.overest <- lapply(results,FUN = summ.tab)   # This will take a while
-all.summaries <- do.call(rbind.data.frame, all.summaries)
-all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
+B0.1 <- lapply(results,FUN = summ.tab,ou.ind = overest.ind)   # This will take a while
+B0.0 <- lapply(results,FUN = summ.tab,ou.ind = underest.ind)
+
+B0.over <- do.call(rbind.data.frame, B0.1)
+B0.under <- do.call(rbind.data.frame, B0.0)
+
+
+#all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
 
