@@ -291,4 +291,53 @@ for(s in 1:nscenarios){  #
 
 #  Now load data (if needed) and summarize --------------------------------
 
-hist()
+length(which(B0.error>0)) / length(B0.error) # about 50/50 over-and over-estimates
+
+library(gtools)
+library(RcppRoll)
+library(plyr); library(dplyr)
+library(scales)
+library(gridExtra)
+library(extrafont)
+library(RColorBrewer)
+library(reshape2)
+library(ggplot2)
+source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
+source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
+source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
+
+path <- "~/Dropbox/Chapter4-HarvestControlRules/Results/Sensitivity"
+files <- list.files(path=path)
+rm <- grep(files,pattern = ".txt") # Don't load the text table summary
+files <- files[-rm]
+files <- files[grep(files, pattern = ".RData")] #only load rdata files
+files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
+results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all results
+nscenarios <- length(results)
+raw.table <- read.table("Scenario_Table.txt") 
+nsims <- nrow(results[[1]]$biomass.oneplus.true) # count nrows to know how many sims there are
+years.test <- ncol(results[[1]]$biomass.oneplus.true) # count cols to know how many years there are
+nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
+calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
+
+# Add performance measure columns to table
+performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
+pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") # for distinguishing types of PMs (mostly for plotting...)
+raw.table[,performance.measures] <- NA
+
+
+# ------------------------------------------------------------------------
+# Summarize everything in one giant "outputs" table - this is ugly, sorry
+# ------------------------------------------------------------------------
+
+# Fxns for summarizing and plotting ---------------------------------------
+
+all.summaries <- NA
+# extract results that are from "overestimate" runs:
+overest.ind <- which(B0.error>0)
+underest.ind <- which(B0.error<=0)
+
+B0.overest <- lapply(results,FUN = summ.tab)   # This will take a while
+all.summaries <- do.call(rbind.data.frame, all.summaries)
+all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
+
