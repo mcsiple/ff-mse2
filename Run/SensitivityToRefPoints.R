@@ -69,7 +69,7 @@ HCR = c("cfp","constF","C1","C2","C3","constF_HI")
 M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity analyses
 B0.accuracy = c("over","under","exact")
 
-scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type)
+scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type, B0.accuracy)
 colnames(scenarios) <- c("h","obs.error.type","HCR","recruit.sd","recruit.rho","M.type","B0.accuracy")
 nscenarios <- nrow(scenarios)
 scenarios$scenario <- 1:nscenarios #Label them so it's easier to find/index em later
@@ -121,11 +121,9 @@ ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free
 Fmsy.sd <- 0.56
 B0.sd <- 0.3
 
-B0.error <- c(rnorm(1000,0,sd = B0.sd), # First 1,000 values are over- or under-estimates
-              rep(0,times=500)) #Last 500 are true values
-
-
-const.f.rate = 0.5*equilib$Fmsy
+# Make vectors of modifier to B0, to test over- and under-estimates of B0 against accurate estimates
+B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) #overestimates
+B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
 
 
 # Test sensitivity to over-or under-estimating B0 ---------------------------------------------------
@@ -137,8 +135,10 @@ for(s in 1:nscenarios){  #
   recruit.sd = scenarios$recruit.sd[s]
   recruit.rho = scenarios$recruit.rho[s]
   M.type = scenarios$M.type[s]
+  B0.acc = scenarios$B0.accuracy[s] #****this is new
   equilib.true = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
   equilib <- equilib.true
+  const.f.rate = 0.5*equilib$Fmsy
   no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
   set.seed(123) # Start each round of sims at same random seed
   time.var.m <- NA # Base case: M constant 
@@ -152,8 +152,11 @@ for(s in 1:nscenarios){  #
   
   if(HCR=="cfp"){    
     set.seed(123) # Start each round of sims at same random seed
-    for (sim in 1:nsims){
-      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim]) # error in B0 will only affect control rules. Error is added here (instead of before with the unfished part) but want unfished dynamics determined with the true equilib #s 
+    for (sim in 1:nsims){    # error in B0 will only affect control rules. Error is added here (instead of before with the unfished part) but want unfished dynamics determined with the true equilib #s 
+      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+      if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+        equilib$B0 <- equilib.true$B0
+      }}
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s,rec.ram = NA)
       
@@ -173,7 +176,10 @@ for(s in 1:nscenarios){  #
   if(HCR=="constF"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
+      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+          equilib$B0 <- equilib.true$B0
+        }}
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -192,7 +198,10 @@ for(s in 1:nscenarios){  #
   if(HCR=="C1"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
+      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+          equilib$B0 <- equilib.true$B0
+        }}
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.c1 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C1",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -211,7 +220,10 @@ for(s in 1:nscenarios){  #
   if(HCR=="C2"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
+      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+          equilib$B0 <- equilib.true$B0
+        }}
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.c2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -230,7 +242,10 @@ for(s in 1:nscenarios){  #
   if(HCR=="C3"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
+      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+          equilib$B0 <- equilib.true$B0
+        }}
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.c3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C3",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -250,7 +265,10 @@ for(s in 1:nscenarios){  #
   if(HCR=="trend"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
+      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+          equilib$B0 <- equilib.true$B0
+        }}
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.trend <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "trend",const.f.rate = 0.6,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
@@ -270,7 +288,10 @@ for(s in 1:nscenarios){  #
     const.f.rate = equilib$Fmsy
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      equilib$B0 <- equilib.true$B0 * exp(B0.error[sim])
+      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+          equilib$B0 <- equilib.true$B0
+        }}
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.constF_HI <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
       
