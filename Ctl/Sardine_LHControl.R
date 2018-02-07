@@ -40,4 +40,15 @@ lh.test <- list(M = 0.4,   #from sardine assessment (Hurtado-Ferro & Punt 2014)
         # points(x=equilib$Fmsy,y=max(equilib$y.vec), pch=19)
         # points(x=equilib$Fmsy*0.5,y=equilib$y.vec[which.min(abs(equilib$x.vec - 0.5*equilib$Fmsy))], pch=19,col="blue")
         # dev.off()
-
+        
+# Tiny plot for Table of LH params
+# par(mfrow=c(1,1),mar=c(2.1,1.1,0,2.1),mai=c(0,0,0,0))
+# setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
+# pdf("Sardine_selmat.pdf",width = 3, height = 3, useDingbats = FALSE)
+# plot(ages.test,selectivity.test[,2],type='l',lty = 2,lwd = 2,col='red',yaxt="n",
+# xlab="Age",ylab = "",ylim=c(0,1)) 
+# lines(ages.test,lh.test$maturity,lwd = 2,col='blue')
+# axis(2,labels=c("0","1"),at=c(0,1),las=1)
+# text(13,0.9,"M",col = 'blue')
+# text(13,0.2,"S",col = 'red')
+# dev.off()
