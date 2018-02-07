@@ -12,7 +12,15 @@ lh.test <- list(M = 0.4,   #from sardine assessment (Hurtado-Ferro & Punt 2014)
                 ages = ages.test,
                 l.at.age = seq(4,28,length.out=nages.test), # (mm) These lengths are not real; not in final model
                 w.at.age = seq(0.014,0.180,length.out=nages.test)*0.001, # Weights at age are in kg; multiplying by 0.001 gives mt
-                maturity = c(0,0.4,0.85,0.99,rep(1,times=12)), # Roughly based on maturity ogives from Silva et al. 2006 ICES JMS
+                #maturity = c(0,0.4,0.85,0.99,rep(1,times=12)), # Roughly based on maturity ogives from Silva et al. 2006 ICES JMS
+                maturity = c(0,0.277,0.682,0.906,0.973,0.988,0.996,rep(1,times=9)),
+                # Age(y) Prop. mature, from Hill et al. 2014 Figure 5b
+                # 0.993	0.277
+                # 2.005	0.682
+                # 3.017	0.906
+                # 4.003	0.973
+                # 5.001	0.988
+                # 6.048	0.996
                 R0=5e9) # R0 is flexible, and can be changed. It was estimated in Hill et al. to be approx. 4.8 billion fish (https://swfsc.noaa.gov/uploadedFiles/Events/Meetings/Meeting_2014/H1b_2014_FULL_Electric_PacificSardine_StockAssmnt_APR2014BB.pdf)
 
 
@@ -41,14 +49,3 @@ lh.test <- list(M = 0.4,   #from sardine assessment (Hurtado-Ferro & Punt 2014)
         # points(x=equilib$Fmsy*0.5,y=equilib$y.vec[which.min(abs(equilib$x.vec - 0.5*equilib$Fmsy))], pch=19,col="blue")
         # dev.off()
         
-# Tiny plot for Table of LH params
-# par(mfrow=c(1,1),mar=c(2.1,1.1,0,2.1),mai=c(0,0,0,0))
-# setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-# pdf("Sardine_selmat.pdf",width = 3, height = 3, useDingbats = FALSE)
-# plot(ages.test,selectivity.test[,2],type='l',lty = 2,lwd = 2,col='red',yaxt="n",
-# xlab="Age",ylab = "",ylim=c(0,1)) 
-# lines(ages.test,lh.test$maturity,lwd = 2,col='blue')
-# axis(2,labels=c("0","1"),at=c(0,1),las=1)
-# text(13,0.9,"M",col = 'blue')
-# text(13,0.2,"S",col = 'red')
-# dev.off()
