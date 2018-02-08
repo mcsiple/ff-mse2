@@ -7,7 +7,7 @@ ages.test <- 0:15
 nages.test <- length(ages.test)
 selectivity.test <- cbind(age=ages.test,selectivity = c(0.263,1.00,1.000,0.669,0.471,0.390,0.358,0.345,0.339,0.335,0.333,0.332,0.332,0.331,0.331,0.331))  #fishery selectivity from sardine assessment; Table App.A.1. in Hurtado-Ferro & Punt 2014 
 #Appendix A.1 caption: "Fleet-averaged selectivity (computed using the output of model X6e of Hill et al. [2012]). Results are shown for 2011, 2007-2011, and 2002-2011."
-lh.test <- list(M = 0.4,   #from sardine assessment (Hurtado-Ferro & Punt 2014)
+lh.test <- list(M = 0.4,   #from sardine assessment (Hurtado-Ferro & Punt 2014 which I think uses values from Hill et al. 2014)
                 selectivity = selectivity.test,
                 ages = ages.test,
                 l.at.age = seq(4,28,length.out=nages.test), # (mm) These lengths are not real; not in final model
