@@ -10,7 +10,7 @@ nages.test <- length(ages.test)
 
 #selectivity.test <- cbind(age=ages.test,selectivity = c(0,0.6,1.000,1.00,1.00,1,1))  # Fishery selectivity-- this is also made up except the part where age 0 
 #aren't in survey or fishery-- that's a fact! 
-selectivity.test <- cbind(age=ages.test,selectivity = c(0.1,0.8,0.99,1.00,1.00,1,1))
+selectivity.test <- cbind(age=ages.test,selectivity = c(0.1,0.6,1,1,1,1,1))
 lh.test <- list(M = 1.05,   #mean between CA value (M = 1.2, from Jacobson et al. 2001, which cites Jacobson et al. (1994), Jacobson et al. (1995), and Methot (1989)), and the South Africa value (M = 0.9, Cunningham & Butterworth 2007) mean(c(1.2,0.9)
                 selectivity = selectivity.test,
                 ages = ages.test,
