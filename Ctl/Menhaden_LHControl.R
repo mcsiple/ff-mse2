@@ -3,9 +3,9 @@
 # These are based on the Atlantic menhaden stock assessment (SEDAR 40)
 ages.test <- 0:6
 nages.test <- length(ages.test)
-# selectivity.test <- cbind(age=ages.test,selectivity = c(0.004,0.143,0.994,0.84,0.191,0.024,0))  # "domed" commercial selectivity from reduction fishery. Used Butterworth 2012 as an example.
-# UPDATE: As of August 2017, new selectivity values are available for Atlantic menhaden (selectivity curve published in assessment). These are:
- selectivity.test <- cbind(age=ages.test,selectivity = c(0, 0.003,0.070,0.997,0.989,0.197,0.003))
+      # selectivity.test <- cbind(age=ages.test,selectivity = c(0.004,0.143,0.994,0.84,0.191,0.024,0))  # "domed" commercial selectivity from reduction fishery. Used Butterworth 2012 as an example.
+# UPDATE: As of August 2017, new selectivity values are available for Atlantic menhaden (selectivity curve published in assessment; based on selectivity for commercial reduction fleet in 2005-2016; Figure 6.2.1.6. p. 111). These are:
+ selectivity.test <- cbind(age=ages.test,selectivity = c(0, 0.19,1,0.6,0.21,0.075,0.02))
 # This is the same "dome-shaped" curve as previous runs but new stock assessment has selectivity values in it
 lh.test <- list(type = "Menhaden",
                 M = 0.5,   #from menhaden assessment (http://www.asmfc.org/uploads/file/55089931S40_AtlMenhadenSAR_CombinedFINAL_1.15.2015-reduced.pdf) - mortality is averaged over all ages, from all years (Boudreau & Dickie) - table 3.6.1
