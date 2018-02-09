@@ -312,8 +312,6 @@ for(s in 1:nscenarios){  #
 
 #  Now load data (if needed) and summarize --------------------------------
 
-length(which(B0.error>0)) / length(B0.error) # about 50/50 over-and over-estimates
-
 library(gtools)
 library(RcppRoll)
 library(plyr); library(dplyr)
@@ -354,15 +352,17 @@ raw.table[,performance.measures] <- NA
 # Fxns for summarizing and plotting ---------------------------------------
 
 all.summaries <- NA
-# extract results that are from "overestimate" runs:
-overest.ind <- which(B0.error>0)
-underest.ind <- which(B0.error<=0)
 
-B0.1 <- lapply(results,FUN = summ.tab,ou.ind = overest.ind)   # This will take a while
-B0.0 <- lapply(results,FUN = summ.tab,ou.ind = underest.ind)
+o.i <- subset(raw.table,B0.accuracy=="over")$scenario
+u.i <- subset(raw.table,B0.accuracy=="under")$scenario
+e.i <- subset(raw.table, B0.accuracy=="exact")$scenario
 
-B0.over <- do.call(rbind.data.frame, B0.1)
-B0.under <- do.call(rbind.data.frame, B0.0)
+B0.overs <- lapply(results[o.i], FUN = summ.tab)
+B0.unders <- lapply(results[u.i], FUN = summ.tab)
+B0.exacts <-lapply(results[e.i], FUN = summ.tab)
+
+# B0.1 <- lapply(results,FUN = summ.tab,ou.ind = overest.ind)   # This will take a while
+# B0.0 <- lapply(results,FUN = summ.tab,ou.ind = )
 
 
 #all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
