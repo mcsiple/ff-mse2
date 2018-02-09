@@ -122,6 +122,8 @@ Fmsy.sd <- 0.56
 B0.sd <- 0.3
 
 # Make vectors of modifier to B0, to test over- and under-estimates of B0 against accurate estimates
+
+library(truncnorm)
 B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) #overestimates
 B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
 
@@ -215,6 +217,13 @@ for(s in 1:nscenarios){  #
       C1[["no.fishing.tb"]] <- no.fishing
     }
     save(C1,file=paste("All",s,"C1",".RData",sep="_")) 
+    #*******
+    # c1.over <- expt.c1
+    # c1.under <- expt.c1
+    # c1.under.2 <- expt.c1
+    # plot(c1.over$biomass.total.true,type='l')
+    # lines(c1.under$biomass.total.true,col='red')
+    # lines(c1.under.2$biomass.total.true,col='blue')
   }
   
   if(HCR=="C2"){
@@ -333,7 +342,7 @@ files <- files[grep(files, pattern = ".RData")] #only load rdata files
 files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
 results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all results
 nscenarios <- length(results)
-raw.table <- read.table("Scenario_Table.txt") 
+scenarios <- raw.table <- read.table("Scenario_Table.txt") 
 nsims <- nrow(results[[1]]$biomass.oneplus.true) # count nrows to know how many sims there are
 years.test <- ncol(results[[1]]$biomass.oneplus.true) # count cols to know how many years there are
 nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
@@ -353,17 +362,30 @@ raw.table[,performance.measures] <- NA
 
 all.summaries <- NA
 
-o.i <- subset(raw.table,B0.accuracy=="over")$scenario
-u.i <- subset(raw.table,B0.accuracy=="under")$scenario
-e.i <- subset(raw.table, B0.accuracy=="exact")$scenario
+#Indices for which results were over- and under-estimates of B0
+o.i <- subset(scenarios,B0.accuracy=="over")$scenario
+u.i <- subset(scenarios,B0.accuracy=="under")$scenario
+e.i <- subset(scenarios, B0.accuracy=="exact")$scenario
 
-B0.overs <- lapply(results[o.i], FUN = summ.tab)
-B0.unders <- lapply(results[u.i], FUN = summ.tab)
-B0.exacts <-lapply(results[e.i], FUN = summ.tab)
+# Summarize data (this takes a little while)
+B0.overs <- lapply(results[o.i], FUN = summ.tab) %>%  # Summarize results (medians and quantiles)
+  rbind.fill() %>% #turn list to dataframe
+  mutate(scenario = rep(o.i, each=length(performance.measures))) %>%     # add column with scenario identifier
+  left_join(scenarios, by = "scenario") #join with scenarios to get info about control rules etc. (tight!!!!)
 
-# B0.1 <- lapply(results,FUN = summ.tab,ou.ind = overest.ind)   # This will take a while
-# B0.0 <- lapply(results,FUN = summ.tab,ou.ind = )
+B0.unders <- lapply(results[u.i], FUN = summ.tab) %>% 
+  rbind.fill() %>% 
+  mutate(scenario = rep(u.i, each=length(performance.measures))) %>%
+  left_join(scenarios, by = "scenario")
 
+B0.exacts <- lapply(results[e.i], FUN = summ.tab) %>% 
+  rbind.fill()%>% 
+  mutate(scenario = rep(e.i, each=length(performance.measures))) %>% 
+  left_join(scenarios, by = "scenario")
+  
+head(B0.exacts)
+head(B0.unders)
+head(B0.overs)
 
-#all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
-
+plot(results[[1]]$biomass.oneplus.true[1,],type='l')
+lines(results[[7]]$biomass.oneplus.true[1,],col='red')
