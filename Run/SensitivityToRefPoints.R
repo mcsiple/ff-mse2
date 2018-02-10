@@ -420,8 +420,39 @@ toplot <- rbind.fill(subset(B0.exacts,HCR %in% c("C1","C2","C3")),
 # Take inverse of the metrics that are "bad" --- i.e., SD(catch)
 bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
 bi <- which(toplot$PM %in% bad.pms)
+toplot[bi,c("loCI","med","hiCI")] <- apply(toplot[bi,c("loCI","med","hiCI")], MARGIN = 2,FUN = function(x) ifelse(x==0,1,1/x))
+# Take out metrics not being used in pairs plots:
+remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
+
+# Remove quantiles because now they're a mess and I don't need em anyway
+toplot <- toplot[,-c(2,4)]
+
+# Scale all performance measures to max (1 = max performance)
+toplot2 <- toplot %>% group_by(PM) %>% mutate(scaled_med = med/max(med)) %>% filter(!PM %in% remove.these) %>% as.data.frame()
+subset(toplot2,PM=="meanbiomass")
+ggplot(toplot2,aes(x=scaled_med,y=scaled_med,shape=B0.accuracy,colour=HCR)) + geom_point() + facet_wrap(~PM)
+toplot2$PM <- factor(toplot2$PM)
+toplot3 <- toplot2[c("PM","HCR","B0.accuracy","scaled_med")]
+
+combo <- read.csv("annoying.csv",header=TRUE)
+combo$color <- rep()
+par(mfrow=c(9,9))
+for(i in 3:ncol(combo)){
+  for(j in 3:ncol(combo)){
+  plot(combo[,i],combo[,j])
+}}
+pairs(combo[3:ncol(combo)],col=combo$HCR,pch=as.numeric(combo$B0.accuracy))
+
+# 
+# toplot4 <- expand(toplot3)
+# #ggpairs(data = toplot2,aes(x=scaled_med,y=scaled_med,shape=B0.accuracy,colour=HCR),columns =c(1,8,ncol(toplot2))) 
+# toplot4 <- dcast(toplot3,formula = PM+HCR+B0.accuracy ~ PM)
+# #ggpairs(data = toplot4,columns =c(1,4:ncol(toplot4)))
+# pairs(x = toplot4[4:ncol(toplot4)])
+# plotmatrix(toplot4)
 
 
+# ggplot(toplot,aes(x=PM,y=PM,))
 
 # Use old code to get raw performance metrics -----------------------------
 
