@@ -35,8 +35,8 @@ setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir, otherwise
   
   nscenarios <- length(results)
   raw.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
-  nsims <- nrow(results[[1]]$biomass.oneplus.true) # just count nrows to know how many sims there are
-  years.test <- ncol(results[[1]]$biomass.oneplus.true) # just count cols to know how many years there are
+  nsims <- nrow(results[[1]]$biomass.oneplus.true) # count nrows to know how many sims there are
+  years.test <- ncol(results[[1]]$biomass.oneplus.true) # count cols to know how many years there are
   nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
   calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
   
@@ -249,7 +249,6 @@ for(p in 1:3){
     }
     
     legend.presence <- ifelse(p == 1,TRUE,FALSE)
-    #legend.presence <- FALSE
     remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
     # Removed Bonafide collapse metric bc all CRs were performing similarly on it
     remove.ind <- which(colnames(final.tab) %in% remove.these)

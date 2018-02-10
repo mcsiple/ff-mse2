@@ -233,9 +233,8 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     if(obs.type=="noerror"){fishing[yr] = imp.rate}else{
         if(imp.rate==0){fishing[yr] = 0} else{
           fishing[yr] <- calc.true.f(tac.fn = tac,M.fn = lh$M,sel.fn = sel.at.age[,yr],Btrue = biomass.true[,yr], w.at.age = sizes$weight.at.age[,1])
-          # **** TODO: Double check that selectivity shouldn't be zero for age 0 fish
         }}
-        intended.f[yr] <- imp.rate # This is the "target F" or what the 'managers' think the F is each year
+        intended.f[yr] <- imp.rate # This is the 'target F' or what the 'managers' think the F is each year
         
     death.rate <- lh$M + sel.at.age[,yr] * fishing[yr] 
     if(all(!is.na(time.var.m))){death.rate <- time.var.m[yr] + sel.at.age[,yr] * fishing[yr]}
@@ -255,7 +254,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
       sbpr <- getSBPR(time.var.m[yr], lh$maturity,fecun = lh$w.at.age, n.ages)  
       pop.next[1] <-bevHolt(h = steepness, S = next.year.S, SBPR0 = sbpr, R0 = R0)*rec.dev[yr] 
       if(!is.na(rec.ram[1])){pop.next[1] <- rec.ram[yr]}
-      }
+    }
     if(is.na(pop.next[1])){   
       print("Recruitment is NA for some reason! Below are parameters")
                                   print(c(yr,next.year.S,sbpr,R0,rec.dev[yr]))
