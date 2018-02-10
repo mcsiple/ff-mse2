@@ -24,7 +24,7 @@ subDir <- fftype
 
 #Set up other simulation params
 years.test = 250
-nsims = 1000
+nsims = 100
 tim.params = list(sigma0 = 0.2,tau0 = 0.1)
 sig.s = 0.3
 R0.sens = NA # NO DYNAMIC R0 anymore-- ignore
@@ -100,15 +100,15 @@ ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free
 
 
                   # Get appropriate SD for variation in F -----------------------------------
-                  nsims = 100
-                  sd.sim = vector(length = nsims)
-                  set.seed(123)
-                  for(sim in 1:nsims){
-                    rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-                    test.F.sd <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0.7, steepness = steepness,obs.type = "AC",equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s)
-                    sd.sim[sim] <- sd(test.F.sd$fishing[150:250]) #last 100 years of time series
-                  }
-                  median(sd.sim)
+                  #nsims = 100
+                  # sd.sim = vector(length = nsims)
+                  # set.seed(123)
+                  # for(sim in 1:nsims){
+                  #   rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
+                  #   test.F.sd <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0.7, steepness = steepness,obs.type = "AC",equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s)
+                  #   sd.sim[sim] <- sd(test.F.sd$fishing[150:250]) #last 100 years of time series
+                  # }
+                  # median(sd.sim)
                   
                   # With sig.s = 0.3 and F = 0.7, this is the sd(fishing mortality) that you would expect with AC error
                   # F = 1.1    0.5602482
@@ -123,9 +123,12 @@ B0.sd <- 0.3
 
 # Make vectors of modifier to B0, to test over- and under-estimates of B0 against accurate estimates
 
-library(truncnorm)
-B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) #overestimates
-B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
+# B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) #overestimates
+# B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
+
+# Think it makes more sense to just draw from a uniform distribution...
+B0.over <- runif(nsims,0,1) #overestimates
+B0.under <- runif(nsims,-1,0) # underestimates
 
 
 # Test sensitivity to over-or under-estimating B0 ---------------------------------------------------
@@ -365,7 +368,7 @@ all.summaries <- NA
 #Indices for which results were over- and under-estimates of B0
 o.i <- subset(scenarios,B0.accuracy=="over")$scenario
 u.i <- subset(scenarios,B0.accuracy=="under")$scenario
-e.i <- subset(scenarios, B0.accuracy=="exact")$scenario
+e.i <- subset(scenarios,B0.accuracy=="exact")$scenario
 
 # Summarize data (this takes a little while)
 B0.overs <- lapply(results[o.i], FUN = summ.tab) %>%  # Summarize results (medians and quantiles)
@@ -387,5 +390,24 @@ head(B0.exacts)
 head(B0.unders)
 head(B0.overs)
 
-plot(results[[1]]$biomass.oneplus.true[1,],type='l')
-lines(results[[7]]$biomass.oneplus.true[1,],col='red')
+plot(results[[15]]$biomass.oneplus.true[100,],type='l')
+lines(results[[3]]$biomass.oneplus.true[100,],col='red')
+lines(results[[9]]$biomass.oneplus.true[100,],col='blue')
+
+plot(results[[15]]$total.catch[100,],type='l')
+lines(results[[3]]$total.catch[100,],col='red')
+lines(results[[9]]$total.catch[100,],col='blue')
+
+plot(results[[15]]$intended.f[100,],type='l')
+lines(results[[3]]$intended.f[100,],col='red')
+lines(results[[9]]$intended.f[100,],col='blue')
+
+plot(apply(results[[17]]$biomass.oneplus.true,MARGIN = 1,FUN = mean,na.rm=TRUE),
+     apply(results[[17]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'black',alpha = 0.5),
+     xlim=c(2e3,9e3),ylim=c(0,2e3),xlab="Biomass",ylab="Catch")
+points(apply(results[[5]]$biomass.oneplus.true,MARGIN = 1,FUN = mean,na.rm=TRUE),
+       apply(results[[5]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'red',alpha = 0.5))     
+points(apply(results[[11]]$biomass.oneplus.true,MARGIN = 1,FUN = mean,na.rm=TRUE),
+       apply(results[[11]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'blue',alpha = 0.5))   
+
+plot(B0.over,apply(results[[17]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'black',alpha = 0.5))
