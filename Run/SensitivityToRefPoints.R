@@ -127,7 +127,7 @@ B0.sd <- 0.3
 # B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
 
 # Think it makes more sense to just draw from a uniform distribution...
-B0.over <- runif(nsims,0,1) #overestimates
+B0.over <- runif(nsims,0,1) # overestimates
 B0.under <- runif(nsims,-1,0) # underestimates
 
 
@@ -411,3 +411,79 @@ points(apply(results[[11]]$biomass.oneplus.true,MARGIN = 1,FUN = mean,na.rm=TRUE
        apply(results[[11]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'blue',alpha = 0.5))   
 
 plot(B0.over,apply(results[[17]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'black',alpha = 0.5))
+
+
+toplot <- rbind.fill(subset(B0.exacts,HCR %in% c("C1","C2","C3")),
+                     subset(B0.overs,HCR %in% c("C1","C2","C3")),
+                     subset(B0.unders,HCR %in% c("C1","C2","C3")))
+
+# Take inverse of the metrics that are "bad" --- i.e., SD(catch)
+bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
+bi <- which(toplot$PM %in% bad.pms)
+
+
+
+# Use old code to get raw performance metrics -----------------------------
+
+for (s in 1:nscenarios){
+  #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
+  result.to.use <- results[[s]]
+  raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind],na.rm = TRUE)) 
+  #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
+  nonzero.catch <- result.to.use$total.catch[,calc.ind]
+  nonzero.catch <- ifelse(nonzero.catch<0.1,NA,nonzero.catch)
+  mnz.catches <- rowMeans(nonzero.catch,na.rm=TRUE)
+  raw.table[s,performance.measures[2]] <- median(mnz.catches,na.rm = TRUE) #"LTnonzeromeancatch"
+  raw.table[s,performance.measures[3]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = sd,MARGIN = 1)) 
+  ######
+  five.yr.closure.given1 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5 / 
+    n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1
+  median.P5 <- median(five.yr.closure.given1,na.rm=TRUE) # This is now the # of 5-year closures given a 1-year closure
+  if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0) &
+     all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1==0)){
+    median.P5 = 0
+  }
+  
+  raw.table[s,performance.measures[4]] <- median.P5 # Mean number of 5-yr closures given a 1-yr closure
+  
+  ######
+  ten.yr.closure.given5 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10 / 
+    n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5
+  median.P10 <- median(ten.yr.closure.given5,na.rm=TRUE) 
+  if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10==0) &
+     all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0)){
+    median.P10 = 0
+  }
+  
+  raw.table[s,performance.measures[5]] <- median.P10 # Mean number of 10-yr closures given a 5-yr closure
+  ######
+  raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
+  
+  raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$biomass.total.true[,calc.ind])) # "meanbiomass"
+  
+  raw.table[s,performance.measures[8]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],
+                                                       FUN = good4pred,MARGIN = 1, 
+                                                       F0.x = result.to.use$no.fishing.tb[,calc.ind])) # "good4preds" - this is calculated from TOTAL biomass (including age 0)
+  
+  raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
+  
+  yrs.bad <- apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are very bad for preds - length of vector is nsims 
+  
+  raw.table[s,performance.measures[10]] <- median(yrs.bad)
+  
+  sw <- subset(all.summaries,scenario==s)
+  for(pm in 11:19){
+    select.ind <- which(sw$PM == performance.measures[pm]) 
+    raw.table[s,performance.measures[pm]] <- sw[select.ind,'med'] 
+  }
+  # 1. Depletion
+  # 2. max collapse length
+  # 3. **N**max bonanza length
+  # 4. Mean bonanza length
+  # 5. Mean collapse length
+  # 6. # probability of collapse 
+  # 7. Collapse severity
+  # 8. CV.Catch
+  # 9. Bonafide.collapse
+} 
+
