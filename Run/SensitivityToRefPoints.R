@@ -24,7 +24,7 @@ subDir <- fftype
 
 #Set up other simulation params
 years.test = 250
-nsims = 100
+nsims = 500
 tim.params = list(sigma0 = 0.2,tau0 = 0.1)
 sig.s = 0.3
 R0.sens = NA # NO DYNAMIC R0 anymore-- ignore
@@ -122,13 +122,13 @@ Fmsy.sd <- 0.56
 B0.sd <- 0.3
 
 # Make vectors of modifier to B0, to test over- and under-estimates of B0 against accurate estimates
-
-# B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) #overestimates
-# B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
+library(truncnorm)
+B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) #overestimates
+B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
 
 # Think it makes more sense to just draw from a uniform distribution...
-B0.over <- runif(nsims,0,1) # overestimates
-B0.under <- runif(nsims,-1,0) # underestimates
+# B0.over <- runif(nsims,0,1) # overestimates
+# B0.under <- runif(nsims,-1,0) # underestimates
 
 
 # Test sensitivity to over-or under-estimating B0 ---------------------------------------------------
