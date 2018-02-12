@@ -441,27 +441,21 @@ subset(toplot2,PM=="SDcatch")
 
 combo <- dcast(toplot2,HCR+B0.accuracy~PM, value.var = "scaled_med")
 
-#One way to do a pairs plot... kind of slow, potentially unnecessary
-ggpairs(combo,columns = 3:11,ggplot2::aes(colour=B0.accuracy,shape=HCR),ggplot2::theme_classic())
+# One way to do a pairs plot... kind of slow, potentially unnecessary
+# ggpairs(combo,columns = 3:11,ggplot2::aes(colour=B0.accuracy,shape=HCR),ggplot2::theme_classic())
 
-combo$color <- rep()
-par(mfrow=c(9,9))
-for(i in 3:ncol(combo)){
-  for(j in 3:ncol(combo)){
-  plot(combo[,i],combo[,j])
-}}
-pairs(combo[3:ncol(combo)],col=combo$HCR,pch=as.numeric(combo$B0.accuracy))
+# An easier way to do a pairs plot:
+palette <- brewer.pal(6,"Spectral")
+hcr.colors <- palette[c(6,5,4,3,1,2)]
+combo$color <- rep(hcr.colors[1:3],each=length(unique(combo$B0.accuracy))) # colours for C1, C2, C3: hcr.colors[1:3]
+    # par(mfrow=c(9,9))
+    # for(i in 3:ncol(combo)){
+    #   for(j in 3:ncol(combo)){
+    #   plot(combo[,i],combo[,j])
+    # }}
 
-# 
-# toplot4 <- expand(toplot3)
-# #ggpairs(data = toplot2,aes(x=scaled_med,y=scaled_med,shape=B0.accuracy,colour=HCR),columns =c(1,8,ncol(toplot2))) 
-# toplot4 <- dcast(toplot3,formula = PM+HCR+B0.accuracy ~ PM)
-# #ggpairs(data = toplot4,columns =c(1,4:ncol(toplot4)))
-# pairs(x = toplot4[4:ncol(toplot4)])
-# plotmatrix(toplot4)
+pairs(combo[4:ncol(combo)-1],pch=rep(c(21,24,25),times=3),bg=alpha(combo$color,alpha = 0.7))
 
-
-# ggplot(toplot,aes(x=PM,y=PM,))
 
 # Use old code to get raw performance metrics -----------------------------
 
