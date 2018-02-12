@@ -390,17 +390,20 @@ head(B0.exacts)
 head(B0.unders)
 head(B0.overs)
 
-plot(results[[15]]$biomass.oneplus.true[100,],type='l')
-lines(results[[3]]$biomass.oneplus.true[100,],col='red')
-lines(results[[9]]$biomass.oneplus.true[100,],col='blue')
+par(mfrow=c(3,1))
+sim = 50
+# These plots are for C1
+plot(results[[15]]$biomass.oneplus.true[sim,],type='l',ylab="True 1+ Biomass")
+lines(results[[3]]$biomass.oneplus.true[sim,],col='red')
+lines(results[[9]]$biomass.oneplus.true[sim,],col='blue')
 
-plot(results[[15]]$total.catch[100,],type='l')
-lines(results[[3]]$total.catch[100,],col='red')
-lines(results[[9]]$total.catch[100,],col='blue')
+plot(results[[15]]$total.catch[sim,],type='l',ylab="Total Catch")
+lines(results[[3]]$total.catch[sim,],col='red')
+lines(results[[9]]$total.catch[sim,],col='blue')
 
-plot(results[[15]]$intended.f[100,],type='l')
-lines(results[[3]]$intended.f[100,],col='red')
-lines(results[[9]]$intended.f[100,],col='blue')
+plot(results[[15]]$intended.f[sim,],type='l',ylab="F_target")
+lines(results[[3]]$intended.f[sim,],col='red')
+lines(results[[9]]$intended.f[sim,],col='blue')
 
 plot(apply(results[[17]]$biomass.oneplus.true,MARGIN = 1,FUN = mean,na.rm=TRUE),
      apply(results[[17]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'black',alpha = 0.5),
@@ -409,9 +412,6 @@ points(apply(results[[5]]$biomass.oneplus.true,MARGIN = 1,FUN = mean,na.rm=TRUE)
        apply(results[[5]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'red',alpha = 0.5))     
 points(apply(results[[11]]$biomass.oneplus.true,MARGIN = 1,FUN = mean,na.rm=TRUE),
        apply(results[[11]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'blue',alpha = 0.5))   
-
-plot(B0.over,apply(results[[17]]$total.catch,MARGIN = 1,FUN = mean,na.rm=TRUE),pch=19,col=alpha(colour = 'black',alpha = 0.5))
-
 
 toplot <- rbind.fill(subset(B0.exacts,HCR %in% c("C1","C2","C3")),
                      subset(B0.overs,HCR %in% c("C1","C2","C3")),
@@ -428,13 +428,22 @@ remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","goo
 toplot <- toplot[,-c(2,4)]
 
 # Scale all performance measures to max (1 = max performance)
-toplot2 <- toplot %>% group_by(PM) %>% mutate(scaled_med = med/max(med)) %>% filter(!PM %in% remove.these) %>% as.data.frame()
-subset(toplot2,PM=="meanbiomass")
-ggplot(toplot2,aes(x=scaled_med,y=scaled_med,shape=B0.accuracy,colour=HCR)) + geom_point() + facet_wrap(~PM)
-toplot2$PM <- factor(toplot2$PM)
-toplot3 <- toplot2[c("PM","HCR","B0.accuracy","scaled_med")]
+toplot2 <- toplot %>% group_by(PM) %>% 
+  mutate(scaled_med = med/max(med,na.rm=T))%>% 
+  select(c(PM,HCR,B0.accuracy,scaled_med)) %>% 
+  filter(!PM %in% remove.these) %>%
+  as.data.frame()
+if(length(which(toplot2$scaled_med==1))<5){print("Stop! Problems with summarizing in plyr!")}
 
-combo <- read.csv("annoying.csv",header=TRUE)
+# These are to check that there are maxes for everything...
+subset(toplot2,PM=="meanbiomass")
+subset(toplot2,PM=="SDcatch")
+
+combo <- dcast(toplot2,HCR+B0.accuracy~PM, value.var = "scaled_med")
+
+#One way to do a pairs plot... kind of slow, potentially unnecessary
+ggpairs(combo,columns = 3:11,ggplot2::aes(colour=B0.accuracy,shape=HCR),ggplot2::theme_classic())
+
 combo$color <- rep()
 par(mfrow=c(9,9))
 for(i in 3:ncol(combo)){
