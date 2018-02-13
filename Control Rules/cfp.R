@@ -27,10 +27,11 @@ calc.F.cfp <- function(prevCatch, Bobs, Btru, Btarget, Blim, Fmax, lh = NA, sel.
   newcatch <- possible.catch
   # if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
   # if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}  # I checked whether 30% change (instead of 15%) works similarly; it didn't make a huge difference in relative performance.
+  
   if(sum(Bobs) > Btarget){ # Per reviewer 2, this catch within 15% of previous catch requirement is sometimes only implemented above Btarget
       if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
       if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}
-      if(newcatch > sum(Btru[-1])){newcatch = sum(Btru[-1]) * 0.5}
+      if(newcatch > sum(Btru[-1])){newcatch = sum(Btru[-1])}
   }else{
     newcatch <- possible.catch
   }
