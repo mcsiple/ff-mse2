@@ -38,7 +38,7 @@ bevHolt <- function(h, R0 = 1000, SBPR0, S){
   return (Rec)
 }
 
-calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr, years, hcr.type = "hockeystick",obs.type="LN",const.f.rate = NULL,equilib = NULL, buffer = NULL,steepness = 0.9, R0.traj = 0,tim.params=NULL,time.var.m=NA, sig.s = NA){
+calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr, years, hcr.type = "hockeystick",obs.type="LN",const.f.rate = NULL,equilib = NULL, buffer = NULL,steepness = 0.9, R0.traj = 0,tim.params = NULL,time.var.m=NA, sig.s = NA, tim.rands = NULL){
   #' @description Function to calculate a trajectory of biomass, catch, and surplus production
   #' @param lh is a list containing the following:
         # M - natural mortality (scalar)
@@ -55,13 +55,15 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   #' @param years - number of years to simulate (should be dictated by length of recruitment time series)
   #' @param hcr.type - type of HCR. Currently there are "hockeystick" and "constF"
   #' @param const.f.rate - constant fishing rate if hcr.type == "constF"
-  
+  #' @param sig.s - 
+  #' @param tim.rands - a matrix of random numbers to be used in the delayed detection function. Rows = ages, columns = years. Need to generate outside calc.trajectory() to preserve random seed during the simulation process. rnorm(n.ages,0,sigma0)
   #' @param equilib - list of equilbrium values for the HCR
   #' @param buffer - the buffer used in the 40-10 rule
   #' @param steepness - h parameter
   #' @param R0.traj - a time series of R0, if you are testing if R0 is time-varying
   #' @param tim.params - a list of parameters (sigma0, tau0) describing the level of belief that the assessment or surveyor has in the possibility of large peaks or collapses
   #' @param time.var.m - a time series of natural mortality (M) values for cases where M is time-varying
+  #' 
   #' @return list: obs biomass, true biomass, catches, recruitment, and a bundle of other stuff
   #' IMPORTANT: 
   #' biomass.true - vector of true biomass-at-age
@@ -171,7 +173,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
       tau0 = tim.params$tau0
       # Add random error to first year, bc no prior information 
       # (i.e., in the first year, the "estimate" is just the biomass + some LN observation error):
-      if(yr==1){biomass[,yr] <- biomass.true[,yr] * exp(rnorm(n.ages,0,sigma0)) 
+      if(yr==1){biomass[,yr] <- biomass.true[,yr] * exp(tim.rands[,yr]) 
                 } else{
         biomass[,yr] <- tim.assessment(Eprev = biomass[,yr-1],
                                       B = biomass.true[,yr],
