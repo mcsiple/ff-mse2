@@ -12,8 +12,8 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Menhaden" #FF type to summarize
-Date <- "2017-10-05"
+Type = "Anchovy" #FF type to summarize
+Date <- "2018-02-12"
 
 # Set path to wherever the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
@@ -164,6 +164,10 @@ plot(results[[1]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
 lines(results[[1]]$total.catch[1,],col='red')
 plot(results[[1]]$biomass.oneplus.true[2,],type='l',ylab="Biomass")
 lines(results[[1]]$total.catch[2,],col='red')
+plot(results[[1]]$biomass.oneplus.true[3,],type='l',ylab="Biomass")
+lines(results[[1]]$total.catch[3,],col='red')
+plot(results[[1]]$biomass.oneplus.true[4,],type='l',ylab="Biomass")
+lines(results[[1]]$total.catch[4,],col='red')
 
 # Compare AC and DD
 
@@ -289,18 +293,21 @@ dev.off()
 
 # Try a pairs plot --------------------------------------------------------
 
-all.scaled$scen <- rep(c(1,2,3),each=length(unique(raw.table$HCR)))
+all.scaled$scen <- rep(c(1,2,3),each=length(unique(raw.table$HCR))) # This is different from "scenario" in tables above
 all.scaled$cols <- rep(hcr.colors[c(6,4,1,2,3,5)],times=length(unique(all.scaled$scen)))
+pairsnames <- c("Base case","High steepness","Delayed detection")
 pdf(paste("PAIRS_",Type,".pdf"), width=11,height=8.5,onefile = TRUE)
 for(i in 1:3){
 p1 <- subset(all.scaled,scen==i)
 par(las=1)
-pairs(p1[,-c(1,12,13)],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.labels)
+rm <- which(colnames(p1) %in% c("group","scen","cols")) # take out cols without performance in them
+pairs(p1[,-rm],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.labels)
+title(paste(pairsnames[i]),line = -19)
 }
 dev.off()
 
 p2 <- subset(all.scaled,scen != 3)
-pairs(p2[,-c(1,12,13)],col=p2$cols,pch=p2$scen,xlim=c(0,1),ylim=c(0,1),labels=axis.labels)
+pairs(p2[,-rm],col=p2$cols,pch=p2$scen,xlim=c(0,1),ylim=c(0,1),labels=axis.labels)
 
 # Change labels of things in the table! --------------------------
 raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type, 
