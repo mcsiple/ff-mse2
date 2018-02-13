@@ -119,7 +119,7 @@ types <- c("Anchovy"="Anchovy",
                 equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
                 rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
                 test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s)
-                nofish <- melt(test.constF[-c(1,4,9,10)])
+                nofish <- melt(test.constF[-c(1,5,10,11)])
                 nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
                 ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
                 
@@ -138,7 +138,7 @@ types <- c("Anchovy"="Anchovy",
               equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
               rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
               test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s)
-              nofish <- melt(test.constF[-c(1,4,9,10)])
+              nofish <- melt(test.constF[-c(1,5,10,11)])
               nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
               vars.to.plot <- subset(nofish, L1 %in% var.to.plot)
               vars.to.plot$rep <- paste(i)
