@@ -250,7 +250,7 @@ for(p in 1:3){
     
     legend.presence <- ifelse(p == 1,TRUE,FALSE)
     remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
-    # Removed Bonafide collapse metric bc all CRs were performing similarly on it
+    # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]

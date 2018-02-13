@@ -44,8 +44,6 @@ getEquilibriumConditions <- function(lh, fish, years, steepness){
 }
 
 
-
-# What is impact of M on the population 
               # 
               # i=1
               # h = c(0.6,0.9)
