@@ -427,12 +427,13 @@ remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","goo
 # Remove quantiles because now they're a mess and I don't need em anyway
 toplot <- toplot[,-c(2,4)]
 
-# Scale all performance measures to max (1 = max performance)
-toplot2 <- toplot %>% group_by(PM) %>% 
+# Scale all performance measures to max (1 = best performance)
+toplot2 <- toplot %>% group_by(PM,B0.accuracy) %>% 
   mutate(scaled_med = med/max(med,na.rm=T))%>% 
   select(c(PM,HCR,B0.accuracy,scaled_med)) %>% 
   filter(!PM %in% remove.these) %>%
   as.data.frame()
+
 if(length(which(toplot2$scaled_med==1))<5){print("Stop! Problems with summarizing in plyr!")}
 
 # These are to check that there are maxes for everything...
@@ -448,76 +449,84 @@ combo <- dcast(toplot2,HCR+B0.accuracy~PM, value.var = "scaled_med")
 palette <- brewer.pal(6,"Spectral")
 hcr.colors <- palette[c(6,5,4,3,1,2)]
 combo$color <- rep(hcr.colors[1:3],each=length(unique(combo$B0.accuracy))) # colours for C1, C2, C3: hcr.colors[1:3]
+
     # par(mfrow=c(9,9))
     # for(i in 3:ncol(combo)){
     #   for(j in 3:ncol(combo)){
     #   plot(combo[,i],combo[,j])
     # }}
 
-pairs(combo[4:ncol(combo)-1],pch=rep(c(21,24,25),times=3),bg=alpha(combo$color,alpha = 0.7))
+pairs(combo[4:ncol(combo)-1],pch=rep(c(21,24,25),times=3),bg=combo$color)
 
 
-# Use old code to get raw performance metrics -----------------------------
+#  Test fitting a 1/x function to the exact estimates ---------------------
 
-for (s in 1:nscenarios){
-  #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
-  result.to.use <- results[[s]]
-  raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind],na.rm = TRUE)) 
-  #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
-  nonzero.catch <- result.to.use$total.catch[,calc.ind]
-  nonzero.catch <- ifelse(nonzero.catch<0.1,NA,nonzero.catch)
-  mnz.catches <- rowMeans(nonzero.catch,na.rm=TRUE)
-  raw.table[s,performance.measures[2]] <- median(mnz.catches,na.rm = TRUE) #"LTnonzeromeancatch"
-  raw.table[s,performance.measures[3]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = sd,MARGIN = 1)) 
-  ######
-  five.yr.closure.given1 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5 / 
-    n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1
-  median.P5 <- median(five.yr.closure.given1,na.rm=TRUE) # This is now the # of 5-year closures given a 1-year closure
-  if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0) &
-     all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1==0)){
-    median.P5 = 0
-  }
-  
-  raw.table[s,performance.measures[4]] <- median.P5 # Mean number of 5-yr closures given a 1-yr closure
-  
-  ######
-  ten.yr.closure.given5 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10 / 
-    n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5
-  median.P10 <- median(ten.yr.closure.given5,na.rm=TRUE) 
-  if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10==0) &
-     all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0)){
-    median.P10 = 0
-  }
-  
-  raw.table[s,performance.measures[5]] <- median.P10 # Mean number of 10-yr closures given a 5-yr closure
-  ######
-  raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
-  
-  raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$biomass.total.true[,calc.ind])) # "meanbiomass"
-  
-  raw.table[s,performance.measures[8]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],
-                                                       FUN = good4pred,MARGIN = 1, 
-                                                       F0.x = result.to.use$no.fishing.tb[,calc.ind])) # "good4preds" - this is calculated from TOTAL biomass (including age 0)
-  
-  raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
-  
-  yrs.bad <- apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are very bad for preds - length of vector is nsims 
-  
-  raw.table[s,performance.measures[10]] <- median(yrs.bad)
-  
-  sw <- subset(all.summaries,scenario==s)
-  for(pm in 11:19){
-    select.ind <- which(sw$PM == performance.measures[pm]) 
-    raw.table[s,performance.measures[pm]] <- sw[select.ind,'med'] 
-  }
-  # 1. Depletion
-  # 2. max collapse length
-  # 3. **N**max bonanza length
-  # 4. Mean bonanza length
-  # 5. Mean collapse length
-  # 6. # probability of collapse 
-  # 7. Collapse severity
-  # 8. CV.Catch
-  # 9. Bonafide.collapse
-} 
+test <- subset(combo,B0.accuracy=="exact") %>% arrange(nyrs0catch)
+x = test$nyrs0catch
+y = test$LTmeancatch
+fit <- lm(data = test,y~I(1/x))
+plot(x,y,xlim=c(0,1),ylim=c(0,1))
+newdata <- data.frame(x = seq(0.05,1,by=0.1))
+pt <- predict(fit,newdata=newdata)
+lines(newdata$x,pt,col="blue")
+
+
+# Try a new thing: quantify tradeoffs with 1/x fitting --------------------
+
+toplot.raw <- toplot %>% group_by(PM,B0.accuracy) %>% 
+  #mutate(scaled_med = med/max(med,na.rm=T))%>% 
+  select(c(PM,HCR,B0.accuracy,med)) %>% 
+  filter(!PM %in% remove.these) %>%
+  as.data.frame()
+
+test2 <- subset(toplot.raw,B0.accuracy=="under")
+x = subset(test2,PM=="BonanzaLength")$med
+y = subset(test2,PM=="LTmeancatch")$med
+fit <- lm(data = test2,y~I(1/x))
+plot(x,y,xlim=c(0,max(x)*2),ylim=c(0,max(y)*2))
+newdata <- data.frame(x = seq(0.05,max(x)*4,by=1))
+pt <- predict(fit,newdata=newdata)
+lines(newdata$x,pt,col="blue")
+fit$coefficients
+
+
+#  using raw outputs instead of tplot - think I will keep this one --------
+# use B0.overs, B0.unders, B0.exacts
+par(mfrow=c(1,1))
+raw <- B0.overs %>% group_by(PM,B0.accuracy) %>%
+  select(c(PM,HCR,B0.accuracy,med)) %>% 
+  filter(!PM %in% remove.these) %>%
+  as.data.frame()
+x = subset(raw,PM=="BonanzaLength")$med
+y = subset(raw,PM=="meanbiomass")$med
+fit <- lm(y~I(1/x))
+plot(x,y,xlim=c(0,max(x)*2),ylim=c(0,max(y)*2))
+newdata <- data.frame(x = seq(0.05,max(x)*4,by=1))
+pt <- predict(fit,newdata=newdata)
+lines(newdata$x,pt,col="blue")
+fit$coefficients
+
+
+# Maybe later transfer for summary code: quantify tradeoffs, redo tileplot --------
+# using B0.exacts as a test case for now
+totile <- B0.exacts %>% group_by(PM,B0.accuracy) %>%
+  select(c(PM,HCR,B0.accuracy,med)) %>% 
+  filter(!PM %in% remove.these) %>%
+  as.data.frame()
+totile <- dcast(totile,HCR~PM, value.var = "med")
+
+# Need to get inverse of "bad.pms"
+bi <- which(colnames(totile) %in% bad.pms)
+totile[,bi] <- 1/totile[,bi]
+
+
+to.mat <- matrix(NA,nrow=ncol(totile),ncol=ncol(totile))
+for(i in 2:ncol(totile)){
+  x <- totile[,i]
+  for(j in 2:ncol(totile)){
+  y <- totile[,j]
+  if(any(is.na(c(x,y)))){next}
+  fit <- lm(y~I(1/x))
+  to.mat[i,j] <- fit$coefficients[2]
+}}
 
