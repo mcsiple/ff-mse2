@@ -38,7 +38,7 @@ bevHolt <- function(h, R0 = 1000, SBPR0, S){
   return (Rec)
 }
 
-calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr, years, hcr.type = "hockeystick",obs.type="LN",const.f.rate = NULL,equilib = NULL, buffer = NULL,steepness = 0.9, R0.traj = 0,tim.params = NULL,time.var.m=NA, sig.s = NA, tim.rands = NULL){
+calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr, years, hcr.type = "hockeystick",obs.type="LN",const.f.rate = NULL,equilib = NULL, buffer = NULL,steepness = 0.9, R0.traj = 0,tim.params = NULL,time.var.m=NA, sig.s = NA, tim.rand.inits = NULL, tim.rands = NULL, curly.phi.vec = NULL){
   #' @description Function to calculate a trajectory of biomass, catch, and surplus production
   #' @param lh is a list containing the following:
         # M - natural mortality (scalar)
@@ -56,14 +56,15 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   #' @param hcr.type - type of HCR. Currently there are "hockeystick" and "constF"
   #' @param const.f.rate - constant fishing rate if hcr.type == "constF"
   #' @param sig.s - 
-  #' @param tim.rands - a matrix of random numbers to be used in the delayed detection function. Rows = ages, columns = years. Need to generate outside calc.trajectory() to preserve random seed during the simulation process. rnorm(n.ages,0,sigma0)
+  #' @param tim.rand.inits - a vector of random numbers to be used in the delayed detection function for the starting error. Length=nages. Need to generate outside calc.trajectory() to preserve random seed during the simulation process. rnorm(n.ages,0,sigma0)
+  #' @param tim.rands - a matrix of random numbers used in the following years of each simulation. rows=nages, cols = nyears
   #' @param equilib - list of equilbrium values for the HCR
   #' @param buffer - the buffer used in the 40-10 rule
   #' @param steepness - h parameter
   #' @param R0.traj - a time series of R0, if you are testing if R0 is time-varying
   #' @param tim.params - a list of parameters (sigma0, tau0) describing the level of belief that the assessment or surveyor has in the possibility of large peaks or collapses
   #' @param time.var.m - a time series of natural mortality (M) values for cases where M is time-varying
-  #' 
+  #' @param curly.phi.vec a vector of random errors for the autocorrelated error: rnorm(years,0,sig.s)
   #' @return list: obs biomass, true biomass, catches, recruitment, and a bundle of other stuff
   #' IMPORTANT: 
   #' biomass.true - vector of true biomass-at-age
@@ -163,7 +164,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
       eps.prev = ifelse(yr==1,1,eps.prev) # Initialize epsilon
       outs <-  add.wied.error(biomass.true = biomass.true[,yr],
                               epsilon.prev = eps.prev, 
-                              sig.s =  sig.s, rho = rho)
+                              sig.s =  sig.s, rho = rho, curly.phi = curly.phi.vec[yr] )
       biomass[,yr] <- outs$biomass.est
       eps.prev <- outs$epsilon.curr
     }
@@ -171,14 +172,28 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     if(obs.type == "Tim"){
       sigma0 = tim.params$sigma0
       tau0 = tim.params$tau0
+      # tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
+      # OPTION 1 (old)
       # Add random error to first year, bc no prior information 
       # (i.e., in the first year, the "estimate" is just the biomass + some LN observation error):
-      if(yr==1){biomass[,yr] <- biomass.true[,yr] * exp(tim.rands[,yr]) 
-                } else{
-        biomass[,yr] <- tim.assessment(Eprev = biomass[,yr-1],
-                                      B = biomass.true[,yr],
-                                      sigma0 = sigma0,
-                                      tau0 = tau0)
+      # if(yr==1){biomass[,yr] <- biomass.true[,yr] * exp(tim.rands[,yr]) 
+      #           } else{
+      #   biomass[,yr] <- tim.assessment(Eprev = biomass[,yr-1],
+      #                                 B = biomass.true[,yr],
+      #                                 sigma0 = sigma0,
+      #                                 tau0 = tau0,
+      #                                 tau1 = tau1)
+      
+      # OPTION 2
+      # Add random error to first year, bc no prior information 
+        if(yr==1){biomass[,yr] <- biomass.true[,yr] * exp(tim.rand.inits) 
+        } else{
+          biomass[,yr] <- tim.assessment(Eprev = biomass[,yr-1],
+                                         B = biomass.true[,yr],
+                                         sigma0 = sigma0,
+                                         tau0 = tau0,
+                                         tau1 = tau1,
+                                         err_a = tim.rands[,yr]) #tim.rands[,yr] = rnorm(n.ages,0,tau1)
                 }} 
           
       if(obs.type == "noerror"){
@@ -306,9 +321,11 @@ return(list(popn=popn[,1:years],
 # The function for calculating MSY (uses getTrajectory, so has to be loaded last)
 source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Run/MSY_Fxns.R")
 
-
-# testie2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA)
-# testie3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA)
+# W sardine
+# tim.inits.vec = c(0.12, 0.06, 0.1, -0.22, -0.03, 0.12, -0.06, 0.42, -0.23, 0.07, -0.02, 0.23, -0.02, -0.02, 0.06, 0.12)
+# tim.rands <- tim.rands.list[[1]]
+# testie2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[1]])
+# testie3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA, curly.phi.vec = curly.phi.mat[1,])
 ############################### ############################### ###############################
 ############################### ############################### ###############################
 ############################### ############################### ###############################
