@@ -7,14 +7,14 @@ plot.examples = FALSE
 
 
 # Autocorrelated errors with parameters from Wiedenmann 2015 ------------------------------------------
-add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho){
+add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho, curly.phi){
   #' @description adds autocorrelated obervation error with lag 1, as in Wiedenmann 2015
   #' @param biomass.true - the true biomass in year y
   #' @param epsilon.prev - observation error in previous year
   #' @param sig.s - sd of observation errors 
   #' @param rho - degree of autocorrelation in obs error
   #' @return list: "observed" biomass, and epsilon (observation error) in the current year
-  curly.phi <- rnorm(1,0,sig.s) # random deviations on top of the autocorrelation
+  #curly.phi #= rnorm(1,0,sig.s) # random deviations on top of the autocorrelation
   epsilon.curr <- rho * epsilon.prev + sqrt(1-(rho^2)) * curly.phi # error in the current year
   err <- epsilon.curr-(0.5*sig.s^2)
   biomass.est <- biomass.true*exp(err)
@@ -71,7 +71,7 @@ tim.assessment <- function(B,Eprev,sigma0, tau0, tau1, err = NULL, err_a = NULL)
           mu1.tmp <- yt * (1-sigma0^2/(tau0^2+sigma0^2))
           #err2 <- rnorm(length(B),mu1.tmp,tau1) # add error to each age class
           err2 <- mu1.tmp + err_a   # err_a is rnorm(n.ages,0,tau1) - add error to each age class
-          Ecurr <- Eprev * exp(err)}}
+          Ecurr <- Eprev * exp(err2)}}
   return(Ecurr)
 }
 
