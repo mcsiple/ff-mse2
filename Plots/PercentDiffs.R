@@ -8,11 +8,11 @@ library(RColorBrewer)
 resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results"
 
 # *** Before starting: Check to make sure these directories are results you want
-aa <- read.csv(file.path(resultsdir,"Anchovy2017-10-05/Anchovy2017-10-05_outputs.csv"))
+aa <- read.csv(file.path(resultsdir,"Anchovy2018-02-13/Anchovy2018-02-14_outputs.csv"))
 aa$Type = "Anchovy"
-mm <-read.csv(file.path(resultsdir,"Menhaden2017-10-05/Menhaden2017-10-05_outputs.csv"))
+mm <-read.csv(file.path(resultsdir,"Menhaden2018-02-13/Menhaden2018-02-14_outputs.csv"))
 mm$Type = "Menhaden"
-ss <- read.csv(file.path(resultsdir,"Sardine2017-10-05/Sardine2017-10-05_outputs.csv"))
+ss <- read.csv(file.path(resultsdir,"Sardine2018-02-13/Sardine2018-02-14_outputs.csv"))
 ss$Type = "Sardine"
 dat <- rbind.fill(aa,mm,ss)     # This is an amalgamation of all the raw.tables from the results files
 
@@ -66,7 +66,7 @@ dat3.new <- mutate(dat3.new,name = recode_factor(name, 'LTmeancatch' = "Mean cat
 dat3.new$name <- factor(dat3.new$name, levels=rev(c("Bonanza length","Mean biomass","Mean catch", "Minimize collapse severity","Minimize P(collapse)","Minimize collapse length","Minimize P(5 yr closure|closure)","Minimize years with 0 catch","Minimize catch variation")))
 dat3.new$HCR <- factor(dat3.new$HCR, levels=c("C1","C2","C3","Constant F - low","Constant F - high","Stability-favoring"))
 
-#Some metrics have a >100% change and won't show up if you don't set them w/in plot limits
+#Some metrics have a >100% change and won't show up if you don't set them w/in plot limits. 
 dat3.new$percentdiff[dat3.new$percentdiff > 100 & dat3.new$percentdiff < 1e6] = 100
 dat3.new$percentdiff[dat3.new$percentdiff < (-100) & dat3.new$percentdiff > (-1e6)] = -100
 dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)] <- NA
