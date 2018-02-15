@@ -170,7 +170,6 @@ plot(results[[1]]$biomass.oneplus.true[4,],type='l',ylab="Biomass")
 lines(results[[1]]$total.catch[4,],col='red')
 
 # Compare AC and DD
-
 plot(results[[14]]$total.catch[1,],type='l',ylab="Catches") # 14 is autocorrelated error
 lines(results[[16]]$total.catch[1,],col='red')              # 16 is delayed detection
 plot(results[[14]]$total.catch[2,],type='l',ylab="Catches")
@@ -301,7 +300,7 @@ for(i in 1:3){
 p1 <- subset(all.scaled,scen==i)
 par(las=1)
 rm <- which(colnames(p1) %in% c("group","scen","cols")) # take out cols without performance in them
-pairs(p1[,-rm],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.labels)
+pairs(p1[,-rm],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.labels,upper.panel = NULL) #, upper.panel = panel.cor
 title(paste(pairsnames[i]),line = 0)
 }
 dev.off()
