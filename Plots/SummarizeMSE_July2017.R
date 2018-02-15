@@ -295,13 +295,13 @@ dev.off()
 all.scaled$scen <- rep(c(1,2,3),each=length(unique(raw.table$HCR))) # This is different from "scenario" in tables above
 all.scaled$cols <- rep(hcr.colors[c(6,4,1,2,3,5)],times=length(unique(all.scaled$scen)))
 pairsnames <- c("Base case","High steepness","Delayed detection")
-pdf(paste("PAIRS_",Type,".pdf"), width=11,height=8.5,onefile = TRUE)
+pdf(paste("PAIRS_",Type,".pdf",sep=""), width=11,height=8.5,onefile = TRUE)
 for(i in 1:3){
 p1 <- subset(all.scaled,scen==i)
 par(las=1)
 rm <- which(colnames(p1) %in% c("group","scen","cols")) # take out cols without performance in them
-pairs(p1[,-rm],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.labels,upper.panel = NULL) #, upper.panel = panel.cor
-title(paste(pairsnames[i]),line = 0)
+pairs(p1[,-rm],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.labels,lower.panel = NULL)
+#title(paste(pairsnames[i]),line = 0)
 }
 dev.off()
 
@@ -320,20 +320,7 @@ raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type,
                                  'trend' = "Trend-based"))
 
 
-# Plot just pred ones for paper -------------------------------------------
-pred2.df <- subset(all.summaries, PM %in% c("good4preds","very.bad4preds") &
-                     h ==0.9)
-dodge <- position_dodge(.8)
-ggplot(pred2.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type)) +
-  scale_colour_manual(values = hcr.colors) +
-  scale_alpha_manual(values = c(0.6,1)) +
-  geom_point(size=5,position=dodge)  +
-  geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
-  theme_bw(base_size = 18) +
-  theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
-  ylab("Median number of years") +
-  facet_wrap(~PM,scales="free_y")
-dev.off()
+
 
 
 # Plot DD scenarios & check random seeds to make sure they match ------------
@@ -369,6 +356,32 @@ plot(ac$total.catch[1,yrs],type='l',col='red',ylab="Total catches",xlab="Year",y
 lines(dd$total.catch[1,yrs],col='blue')
 
 
+# Why the increase in catches with the stability-favoring rule ------------
+#... when there is delayed detection?
+ac <- results[[2]]
+dd <- results[[4]]
+# OR (high steepness):
+# ac <- results[[1]]
+# dd <- results[[3]]
+
+yrs <- 1:250
+par(mfrow=c(1,1))
+sim <- 5
+plot(ac$total.catch[sim,yrs],col=hcr.colors[6],type='l',lwd=2)
+lines(dd$total.catch[sim,yrs],col=hcr.colors[6],lwd=2,lty=2)
+
+ac.means <- apply(ac$total.catch[,yrs],MARGIN = 1,FUN = mean)
+dd.means <- apply(dd$total.catch[,yrs],MARGIN = 1,FUN = mean)
+
+median(ac.means)
+median(dd.means)
+
+
+###########################################################################
+###########################################################################
+# Everything below this line can be used but isn’t really necessary -------
+###########################################################################
+###########################################################################
 
 # Zeh plots (e.g. Punt 2015) -----------------------------------------------
 ggplot(all.summaries,aes(x=HCR,y=med,colour=HCR)) +
@@ -544,7 +557,19 @@ yrs <- 150:250
 par(mfrow=c(2,1))
 plot(hiS$biomass.total.true[1,yrs],type='l',ylab="Total biomass",xlab="Year")
 lines(loS$biomass.total.true[1,yrs],col='red')
-#lines(dd$biomass.oneplus.obs[1,yrs],col='blue')
 
-# Why is leading to longer bonanzas for sardine?
-ac <- results[[2]]
+
+# Plot just pred ones for paper -------------------------------------------
+pred2.df <- subset(all.summaries, PM %in% c("good4preds","very.bad4preds") &
+                     h ==0.9)
+dodge <- position_dodge(.8)
+ggplot(pred2.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type)) +
+  scale_colour_manual(values = hcr.colors) +
+  scale_alpha_manual(values = c(0.6,1)) +
+  geom_point(size=5,position=dodge)  +
+  geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
+  ylab("Median number of years") +
+  facet_wrap(~PM,scales="free_y")
+dev.off()
