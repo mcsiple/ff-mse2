@@ -179,7 +179,7 @@ types <- c("Anchovy"="Anchovy",
         ###########################################################################
         
         #
-        for(s in 1:6){  #
+        for(s in 1:nscenarios){  #
           steepness = scenarios$h[s]
           obs.type <- scenarios$obs.error.type[s]
           HCR <- scenarios$HCR[s]
