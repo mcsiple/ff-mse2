@@ -12,8 +12,8 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Anchovy" #FF type to summarize
-Date <- "2018-02-12"
+Type = "Sardine" #FF type to summarize
+Date <- "2018-02-13"
 
 # Set path to wherever the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
@@ -302,7 +302,7 @@ p1 <- subset(all.scaled,scen==i)
 par(las=1)
 rm <- which(colnames(p1) %in% c("group","scen","cols")) # take out cols without performance in them
 pairs(p1[,-rm],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.labels)
-title(paste(pairsnames[i]),line = -19)
+title(paste(pairsnames[i]),line = 0)
 }
 dev.off()
 
@@ -321,10 +321,57 @@ raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type,
                                  'trend' = "Trend-based"))
 
 
+# Plot just pred ones for paper -------------------------------------------
+pred2.df <- subset(all.summaries, PM %in% c("good4preds","very.bad4preds") &
+                     h ==0.9)
+dodge <- position_dodge(.8)
+ggplot(pred2.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type)) +
+  scale_colour_manual(values = hcr.colors) +
+  scale_alpha_manual(values = c(0.6,1)) +
+  geom_point(size=5,position=dodge)  +
+  geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
+  theme_bw(base_size = 18) +
+  theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
+  ylab("Median number of years") +
+  facet_wrap(~PM,scales="free_y")
+dev.off()
+
+
+# Plot DD scenarios & check random seeds to make sure they match ------------
+# For plotting the differences between AC error and delayed detection
+# First, for menhaden, try scenario 2 (AC) vs. 4 (DD)-- biggest change in p(closure)
+ac <- results[[2]]
+dd <- results[[4]]
+yrs <- 1:250
+par(mfrow=c(1,1))
+sim <- 5
+
+# True biomass
+yrange <- range(c(0,ac$biomass.total.true[sim,yrs],dd$biomass.total.true[sim,yrs]))
+plot(ac$biomass.oneplus.true[sim,yrs],type='l',ylab="Total biomass",xlab="Year",ylim=yrange,axes=FALSE)
+lines(dd$biomass.oneplus.true[sim,yrs],col='#2b83ba')
+
+# Observations
+lines(ac$biomass.oneplus.obs[sim,yrs],lty=2)
+lines(dd$biomass.oneplus.obs[sim,yrs],lty=2,col='#2b83ba')
+
+legend("topright",c("Autocorrelated","Delayed detection"),col=c('black','#2b83ba'),lwd=c(1,1),border = "white")
+axis(1)
+
+plot(ac$biomass.oneplus.true[5,yrs],type='l')
+lines(ac$no.fishing.tb[5,yrs],col='green')
+lines(dd$no.fishing.tb[5,yrs],col='green',lty=2)
+
+
+lines(ac$total.catch[1,yrs],lty=2,col='red')
+lines(dd$total.catch[1,yrs],lty=2,col='blue')
+
+plot(ac$total.catch[1,yrs],type='l',col='red',ylab="Total catches",xlab="Year",ylim=c(0,250000))
+lines(dd$total.catch[1,yrs],col='blue')
+
 
 
 # Zeh plots (e.g. Punt 2015) -----------------------------------------------
-
 ggplot(all.summaries,aes(x=HCR,y=med,colour=HCR)) +
   geom_point(size=3,shape=20) +
   geom_pointrange(aes(ymin=loCI,ymax=hiCI)) +
@@ -487,44 +534,6 @@ for (scenario in 1:length(results)){
 dev.off()
 
 pdf(paste(Type,"ErrorPlots",Sys.Date(),".pdf",sep=""),width=9.5,height=5)
-# Plot just pred ones for paper -------------------------------------------
-pred2.df <- subset(all.summaries, PM %in% c("good4preds","very.bad4preds") &
-                     h ==0.9)
-dodge <- position_dodge(.8)
-ggplot(pred2.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type)) +
-  scale_colour_manual(values = hcr.colors) +
-  scale_alpha_manual(values = c(0.6,1)) +
-  geom_point(size=5,position=dodge)  +
-  geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
-  theme_bw(base_size = 18) +
-  theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
-  ylab("Median number of years") +
-  facet_wrap(~PM,scales="free_y")
-dev.off()
-
-
-# Plot DD scenarios - for paper! ------------------------------------------
-# For plotting the differences between AC error and delayed detection
-# First, for menhaden, try scenario 2 (AC) vs. 4 (DD)-- biggest change in p(closure)
-ac <- results[[2]]
-dd <- results[[4]]
-yrs <- 150:250
-par(mfrow=c(1,1))
-sim <- 5
-yrange <- range(c(0,ac$biomass.total.true[sim,yrs],dd$biomass.total.true[sim,yrs]))
-plot(ac$biomass.oneplus.true[sim,yrs],type='l',ylab="Total biomass",xlab="Year",ylim=yrange,axes=FALSE)
-lines(dd$biomass.oneplus.true[sim,yrs],col='#2b83ba')
-lines(ac$biomass.oneplus.obs[sim,yrs],lty=2)
-lines(dd$biomass.oneplus.obs[sim,yrs],lty=2,col='#2b83ba')
-
-legend("topright",c("Autocorrelated","Delayed detection"),col=c('black','#2b83ba'),lwd=c(1,1),border = "white")
-axis(1)
-
-lines(ac$total.catch[1,yrs],lty=2,col='red')
-lines(dd$total.catch[1,yrs],lty=2,col='blue')
-
-plot(ac$total.catch[1,yrs],type='l',col='red',ylab="Total catches",xlab="Year",ylim=c(0,250000))
-lines(dd$total.catch[1,yrs],col='blue')
 
 
 
