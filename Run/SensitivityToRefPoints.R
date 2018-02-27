@@ -123,10 +123,10 @@ B0.sd <- 0.3
 
 # Make vectors of modifier to B0, to test over- and under-estimates of B0 against accurate estimates
 library(truncnorm)
-B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) #overestimates
+B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) # overestimates
 B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
 
-# Think it makes more sense to just draw from a uniform distribution...
+# Does it makes more sense to just draw from a uniform distribution?
 # B0.over <- runif(nsims,0,1) # overestimates
 # B0.under <- runif(nsims,-1,0) # underestimates
 
@@ -372,7 +372,7 @@ e.i <- subset(scenarios,B0.accuracy=="exact")$scenario
 
 # Summarize data (this takes a little while)
 B0.overs <- lapply(results[o.i], FUN = summ.tab) %>%  # Summarize results (medians and quantiles)
-  rbind.fill() %>% #turn list to dataframe
+  rbind.fill() %>% # turn list to dataframe
   mutate(scenario = rep(o.i, each=length(performance.measures))) %>%     # add column with scenario identifier
   left_join(scenarios, by = "scenario") #join with scenarios to get info about control rules etc. (tight!!!!)
 
@@ -389,6 +389,18 @@ B0.exacts <- lapply(results[e.i], FUN = summ.tab) %>%
 head(B0.exacts)
 head(B0.unders)
 head(B0.overs)
+
+
+# Compare the performance metrics between exact and over- or under --------
+all.results <- rbind.fill(B0.exacts,B0.unders,B0.overs)
+plot.results <- subset(all.results, HCR %in% c("C1","C2","C3"))
+ggplot(plot.results,aes(x=HCR,y=med,fill=HCR,shape=B0.accuracy,colour=HCR)) + 
+  geom_point(size=3,position = position_dodge(1.1)) + 
+  geom_pointrange(aes(ymin=loCI,ymax=hiCI),position = position_dodge(1.1)) +
+  facet_wrap(~PM,scales="free_y") + 
+  scale_colour_manual(values = hcr.colors[1:3]) + 
+  theme_classic()
+
 
 par(mfrow=c(3,1))
 sim = 50
@@ -449,17 +461,14 @@ combo <- dcast(toplot2,HCR+B0.accuracy~PM, value.var = "scaled_med")
 palette <- brewer.pal(6,"Spectral")
 hcr.colors <- palette[c(6,5,4,3,1,2)]
 combo$color <- rep(hcr.colors[1:3],each=length(unique(combo$B0.accuracy))) # colours for C1, C2, C3: hcr.colors[1:3]
-
-    # par(mfrow=c(9,9))
-    # for(i in 3:ncol(combo)){
-    #   for(j in 3:ncol(combo)){
-    #   plot(combo[,i],combo[,j])
-    # }}
-
 pairs(combo[4:ncol(combo)-1],pch=rep(c(21,24,25),times=3),bg=combo$color)
 
 
-#  Test fitting a 1/x function to the exact estimates ---------------------
+
+
+
+
+# DEPRACATED: Test fitting a 1/x function to the exact estimates ---------------------
 
 test <- subset(combo,B0.accuracy=="exact") %>% arrange(nyrs0catch)
 x = test$nyrs0catch
@@ -491,7 +500,6 @@ fit$coefficients
 
 
 #  using raw outputs instead of tplot - think I will keep this one --------
-# use B0.overs, B0.unders, B0.exacts
 par(mfrow=c(1,1))
 raw <- B0.overs %>% group_by(PM,B0.accuracy) %>%
   select(c(PM,HCR,B0.accuracy,med)) %>% 
