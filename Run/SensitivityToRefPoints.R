@@ -19,7 +19,7 @@ fftype = types[1] # Test with anchovy
 
 # Set directories
 basedir <- "~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
-metric = "Fmsy" # Choose which rp to test sensitivity
+metric = "B0" # Choose which rp to test sensitivity
 resultsdir <- paste("~/Dropbox/Chapter4-HarvestControlRules/Results/Sensitivity/",metric,sep="")
 subDir <- fftype
 
@@ -36,6 +36,7 @@ library(reshape2)
 library(ggplot2)
 library(plyr)
 library(dplyr)
+library(truncnorm) #For truncated normal (adding bias)
 
 # Load rev devs generating fxn, MSE main model, estimator fxns
 #toplot=FALSE      # Don't plot examples of recruitement trajectories
@@ -56,24 +57,24 @@ if(subDir == "Anchovy"){
 }
 
 # Create list of matrices with error for the delayed detection scenario. This is important because the random seed will offset otherwise - this is new
-set.seed(123)
-tim.rands.list <- list() #for all ensuring random values
-tim.inits.vec <- rnorm(n.ages,0,tim.params$sigma0)  # just for initial values
-n.ages = length(lh.test$ages)
-for(sim in 1:nsims){
-  tim.mat <- matrix(NA,nrow=n.ages,ncol=years.test)
-  for(i in 1:years.test){
-    tim.mat[,i] <- rnorm(n.ages,0,tau1)
-  }
-  tim.rands.list[[sim]] <- tim.mat
-}
-
-# Create errors for AC scenario
-set.seed(123)
-curly.phi.mat <- matrix(NA, nrow = nsims,ncol = years.test)
-for(sim in 1:nsims){
-  curly.phi.mat[sim,] <- rnorm(years.test,0,sig.s)
-}
+        set.seed(123)
+        tim.rands.list <- list() #for all ensuring random values
+        tim.inits.vec <- rnorm(n.ages,0,tim.params$sigma0)  # just for initial values
+        n.ages = length(lh.test$ages)
+        for(sim in 1:nsims){
+          tim.mat <- matrix(NA,nrow=n.ages,ncol=years.test)
+          for(i in 1:years.test){
+            tim.mat[,i] <- rnorm(n.ages,0,tau1)
+          }
+          tim.rands.list[[sim]] <- tim.mat
+        }
+        
+        # Create errors for AC scenario
+        set.seed(123)
+        curly.phi.mat <- matrix(NA, nrow = nsims,ncol = years.test)
+        for(sim in 1:nsims){
+          curly.phi.mat[sim,] <- rnorm(years.test,0,sig.s)
+        }
 
 # Load harvest rules
 source(file.path(basedir,"Control Rules/smith_oceana.R"))
@@ -146,16 +147,13 @@ Fmsy.sd <- 0.56
 B0.sd <- 0.3
 
 # Make vectors of modifier to B0, to test over- and under-estimates of B0 against accurate estimates
-library(truncnorm)
 B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) # overestimates
 B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
 
-Fmsy.over <- rtruncnorm(nsims,mean = 0,sd = Fmsy.sd,a = 0.0001, b = Inf) # overestimates
-Fmsy.under <- rtruncnorm(nsims,mean = 0,sd = Fmsy.sd,a = -Inf, b = -0.001) # underestimates
-
+Fmsy.over <- rtruncnorm(nsims,mean = 0,sd = Fmsy.sd,a = 0.0001, b = Inf) 
+Fmsy.under <- rtruncnorm(nsims,mean = 0,sd = Fmsy.sd,a = -Inf, b = -0.001) 
 # Does it makes more sense to just draw from a uniform distribution?
-# B0.over <- runif(nsims,0,1) # overestimates
-# B0.under <- runif(nsims,-1,0) # underestimates
+
 
 
 # Test sensitivity to over-or under-estimating B0 ---------------------------------------------------
@@ -167,7 +165,7 @@ for(s in 1:nscenarios){  #
   recruit.sd = scenarios$recruit.sd[s]
   recruit.rho = scenarios$recruit.rho[s]
   M.type = scenarios$M.type[s]
-  acc = scenarios$accuracy[s] #****this is new
+  acc = scenarios$accuracy[s] # ****this is new****
   equilib.true = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
   equilib <- equilib.true
   const.f.rate = 0.5*equilib$Fmsy
@@ -418,7 +416,7 @@ library(reshape2)
 library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
-source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
+#source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
 
 path <- paste("~/Dropbox/Chapter4-HarvestControlRules/Results/Sensitivity/",metric,sep="")
 files <- list.files(path=path)
@@ -476,15 +474,20 @@ head(overs)
 
 # Compare the performance metrics between exact and over- or under --------
 all.results <- rbind.fill(exacts,unders,overs)
-plot.results <- subset(all.results, HCR %in% c("C1","C2","C3"))
+# Subset to the control rules that use metric m:
+if(metric == "B0"){plot.results <- subset(all.results, HCR %in% c("C1","C2","C3"))
+                    col.to.use <- hcr.colors[1:3]}
+if(metric == "Fmsy"){plot.results <- subset(all.results, HCR %in% c("constF","constF_HI","cfp","C3"))
+                    col.to.use <- hcr.colors[c(3,6,4,5)]}
+
 # Recode performance measures for plotting and take out PMs that aren't used in the paper
 remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
 plot.results <- plot.results %>% filter(!PM %in% remove.these) %>%
   mutate(HCR = recode(HCR, 'cfp' = 'Stability-favoring',
              'constF' = 'Constant F',
-             'C1' = 'C1',
-             'C2' = 'C2',
-             'C3' = 'C3',
+             'C1' = 'Basichockey',
+             'C2' = 'Low Blim',
+             'C3' = 'High Fmax',
              'trend' = "Trend-based",
              'constF_HI' = "Constant F - High"),
              PM = recode(PM, 'LTmeancatch' = "Mean catch", # These are slightly different than in the Summarize_MSE file, because these aren't re-scaled for "negative metrics" or scaled to max
@@ -502,8 +505,9 @@ plots <- ggplot(plot.results,aes(x=HCR,y=med,fill=HCR,shape=accuracy,colour=HCR)
   geom_pointrange(aes(ymin=loCI,ymax=hiCI),position = position_dodge(1.1)) +
   facet_wrap(~PM,scales="free_y") + 
   ylab("Value") +
-  scale_colour_manual(values = hcr.colors[1:3]) + 
-  theme_classic()
+  scale_colour_manual(values = col.to.use) + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 pdf(paste(metric,"Sensitivity.pdf",sep="_"),width = 10,height = 6,useDingbats = FALSE)
 plots
