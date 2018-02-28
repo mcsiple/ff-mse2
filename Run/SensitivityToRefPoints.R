@@ -19,15 +19,17 @@ fftype = types[1] # Test with anchovy
 
 # Set directories
 basedir <- "~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
-resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results/Sensitivity"
+metric = "Fmsy" # Choose which rp to test sensitivity
+resultsdir <- paste("~/Dropbox/Chapter4-HarvestControlRules/Results/Sensitivity/",metric,sep="")
 subDir <- fftype
 
 #Set up other simulation params
 years.test = 250
 nsims = 500
-tim.params = list(sigma0 = 0.2,tau0 = 0.1)
-sig.s = 0.3
 R0.sens = NA # NO DYNAMIC R0 anymore-- ignore
+tim.params = list(sigma0 = 0.2,tau0 = 0.1)
+tau1 = (1/tim.params$tau0^2 + 1/tim.params$sigma0^2)^(-0.5)
+sig.s = 0.3 
 
 # Load packages
 library(reshape2)
@@ -53,6 +55,26 @@ if(subDir == "Anchovy"){
   recruit.rho <- 0.5
 }
 
+# Create list of matrices with error for the delayed detection scenario. This is important because the random seed will offset otherwise - this is new
+set.seed(123)
+tim.rands.list <- list() #for all ensuring random values
+tim.inits.vec <- rnorm(n.ages,0,tim.params$sigma0)  # just for initial values
+n.ages = length(lh.test$ages)
+for(sim in 1:nsims){
+  tim.mat <- matrix(NA,nrow=n.ages,ncol=years.test)
+  for(i in 1:years.test){
+    tim.mat[,i] <- rnorm(n.ages,0,tau1)
+  }
+  tim.rands.list[[sim]] <- tim.mat
+}
+
+# Create errors for AC scenario
+set.seed(123)
+curly.phi.mat <- matrix(NA, nrow = nsims,ncol = years.test)
+for(sim in 1:nsims){
+  curly.phi.mat[sim,] <- rnorm(years.test,0,sig.s)
+}
+
 # Load harvest rules
 source(file.path(basedir,"Control Rules/smith_oceana.R"))
 source(file.path(basedir,"Control Rules/cfp.R"))
@@ -67,10 +89,12 @@ h = c(0.6) #0.9,
 obs.error.type = c("AC") #,"noerror","Tim"
 HCR = c("cfp","constF","C1","C2","C3","constF_HI") 
 M.type = c("constant") # took out "regimeshift" and "time-varying" to save time but can be added back in for sensitivity analyses
-B0.accuracy = c("over","under","exact")
 
-scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type, B0.accuracy)
-colnames(scenarios) <- c("h","obs.error.type","HCR","recruit.sd","recruit.rho","M.type","B0.accuracy")
+# FIRST: make sure you chose which metric you want sensitivity for!
+accuracy = c("over","under","exact")
+
+scenarios <- expand.grid(h,obs.error.type,HCR,recruit.sd,recruit.rho,M.type, accuracy)
+colnames(scenarios) <- c("h","obs.error.type","HCR","recruit.sd","recruit.rho","M.type","accuracy")
 nscenarios <- nrow(scenarios)
 scenarios$scenario <- 1:nscenarios #Label them so it's easier to find/index em later
 
@@ -88,16 +112,16 @@ CFP <- C1 <- C2 <- C3 <- constF <- trend <- constF_HI <-
        no.fishing.tb = matrix(nrow = nsims,ncol = years.test))
 
 # Test params and runs to make sure they look good ------------------------
-steepness = scenarios$h[1]
-obs.type <- scenarios$obs.error.type[1]
-HCR <- scenarios$HCR[1]
-equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
-rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s)
-nofish <- melt(test.constF[c("biomass.oneplus.obs","biomass.total.obs","total.catch","fishing","biomass.total.true","rec","biomass.oneplus.true")])
-nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
-ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
-
+      # steepness = scenarios$h[1]
+      # obs.type <- scenarios$obs.error.type[1]
+      # HCR <- scenarios$HCR[1]
+      # equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
+      # rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
+      # test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,]) # Need to fix the rest of these
+      # nofish <- melt(test.constF[c("biomass.oneplus.obs","biomass.total.obs","total.catch","fishing","biomass.total.true","rec","biomass.oneplus.true")])
+      # nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
+      # ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
+      # 
 
                   # Get appropriate SD for variation in F -----------------------------------
                   #nsims = 100
@@ -126,6 +150,9 @@ library(truncnorm)
 B0.over <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = 0.0001, b = Inf) # overestimates
 B0.under <- rtruncnorm(nsims,mean = 0,sd = B0.sd,a = -Inf, b = -0.001) # underestimates
 
+Fmsy.over <- rtruncnorm(nsims,mean = 0,sd = Fmsy.sd,a = 0.0001, b = Inf) # overestimates
+Fmsy.under <- rtruncnorm(nsims,mean = 0,sd = Fmsy.sd,a = -Inf, b = -0.001) # underestimates
+
 # Does it makes more sense to just draw from a uniform distribution?
 # B0.over <- runif(nsims,0,1) # overestimates
 # B0.under <- runif(nsims,-1,0) # underestimates
@@ -140,7 +167,7 @@ for(s in 1:nscenarios){  #
   recruit.sd = scenarios$recruit.sd[s]
   recruit.rho = scenarios$recruit.rho[s]
   M.type = scenarios$M.type[s]
-  B0.acc = scenarios$B0.accuracy[s] #****this is new
+  acc = scenarios$accuracy[s] #****this is new
   equilib.true = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
   equilib <- equilib.true
   const.f.rate = 0.5*equilib$Fmsy
@@ -150,7 +177,7 @@ for(s in 1:nscenarios){  #
   
   for (sim in 1:nsims){
     rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-    F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)$biomass.total.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
+    F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])$biomass.total.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
     no.fishing[sim,] <- F0.Type # This is the time series 
   }
   
@@ -158,12 +185,20 @@ for(s in 1:nscenarios){  #
   if(HCR=="cfp"){    
     set.seed(123) # Start each round of sims at same random seed
     for (sim in 1:nsims){    # error in B0 will only affect control rules. Error is added here (instead of before with the unfished part) but want unfished dynamics determined with the true equilib #s 
-      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
-      if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+      if(metric=="B0"){
+      if(acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+      if(acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
         equilib$B0 <- equilib.true$B0
       }}
+      }
+      if(metric=="Fmsy"){
+        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+            equilib$Fmsy <- equilib.true$Fmsy
+      }}
+      }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-      expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s,rec.ram = NA)
+      expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
       CFP[["biomass.oneplus.true"]][sim,] <- expt.cfp$biomass.oneplus.true # This is the true one-plus biomass
       CFP[["total.catch"]][sim,] <- expt.cfp$total.catch  
@@ -181,12 +216,20 @@ for(s in 1:nscenarios){  #
   if(HCR=="constF"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
-        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
-          equilib$B0 <- equilib.true$B0
-        }}
+      if(metric=="B0"){
+        if(acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+          if(acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+            equilib$B0 <- equilib.true$B0
+          }}
+      }
+      if(metric=="Fmsy"){
+        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+            equilib$Fmsy <- equilib.true$Fmsy
+          }}
+      }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-      expt.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
+      expt.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
       constF[["biomass.oneplus.true"]][sim,] <- expt.constF$biomass.oneplus.true
       constF[["total.catch"]][sim,] <- expt.constF$total.catch
@@ -203,12 +246,20 @@ for(s in 1:nscenarios){  #
   if(HCR=="C1"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
-        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
-          equilib$B0 <- equilib.true$B0
-        }}
+      if(metric=="B0"){
+        if(acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+          if(acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+            equilib$B0 <- equilib.true$B0
+          }}
+      }
+      if(metric=="Fmsy"){
+        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+            equilib$Fmsy <- equilib.true$Fmsy
+          }}
+      }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-      expt.c1 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C1",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
+      expt.c1 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C1",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
       C1[["biomass.oneplus.true"]][sim,] <- expt.c1$biomass.oneplus.true
       C1[["total.catch"]][sim,] <- expt.c1$total.catch
@@ -232,12 +283,20 @@ for(s in 1:nscenarios){  #
   if(HCR=="C2"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
-        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
-          equilib$B0 <- equilib.true$B0
-        }}
+      if(metric=="B0"){
+        if(acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+          if(acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+            equilib$B0 <- equilib.true$B0
+          }}
+      }
+      if(metric=="Fmsy"){
+        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+            equilib$Fmsy <- equilib.true$Fmsy
+          }}
+      }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-      expt.c2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
+      expt.c2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
       C2[["biomass.oneplus.true"]][sim,] <- expt.c2$biomass.oneplus.true
       C2[["total.catch"]][sim,] <- expt.c2$total.catch
@@ -254,12 +313,20 @@ for(s in 1:nscenarios){  #
   if(HCR=="C3"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
-        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
-          equilib$B0 <- equilib.true$B0
-        }}
+      if(metric=="B0"){
+        if(acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+          if(acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+            equilib$B0 <- equilib.true$B0
+          }}
+      }
+      if(metric=="Fmsy"){
+        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+            equilib$Fmsy <- equilib.true$Fmsy
+          }}
+      }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-      expt.c3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C3",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
+      expt.c3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C3",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
       C3[["biomass.oneplus.true"]][sim,] <- expt.c3$biomass.oneplus.true
       C3[["total.catch"]][sim,] <- expt.c3$total.catch
@@ -277,12 +344,20 @@ for(s in 1:nscenarios){  #
   if(HCR=="trend"){
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
-        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
-          equilib$B0 <- equilib.true$B0
-        }}
+      if(metric=="B0"){
+        if(acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+          if(acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+            equilib$B0 <- equilib.true$B0
+          }}
+      }
+      if(metric=="Fmsy"){
+        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+            equilib$Fmsy <- equilib.true$Fmsy
+          }}
+      }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-      expt.trend <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "trend",const.f.rate = 0.6,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
+      expt.trend <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "trend",const.f.rate = 0.6,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
       trend[["biomass.oneplus.true"]][sim,] <- expt.trend$biomass.oneplus.true
       trend[["total.catch"]][sim,] <- expt.trend$total.catch
@@ -300,12 +375,20 @@ for(s in 1:nscenarios){  #
     const.f.rate = equilib$Fmsy
     set.seed(123) # same seed
     for (sim in 1:nsims){
-      if(B0.acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
-        if(B0.acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
-          equilib$B0 <- equilib.true$B0
-        }}
+      if(metric=="B0"){
+        if(acc=="over"){equilib$B0 <- equilib.true$B0 * exp(B0.over[sim])}else{
+          if(acc=="under"){equilib$B0 <- equilib.true$B0 * exp(B0.under[sim])}else{
+            equilib$B0 <- equilib.true$B0
+          }}
+      }
+      if(metric=="Fmsy"){
+        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+            equilib$Fmsy <- equilib.true$Fmsy
+          }}
+      }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-      expt.constF_HI <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s)
+      expt.constF_HI <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
       constF_HI[["biomass.oneplus.true"]][sim,] <- expt.constF_HI$biomass.oneplus.true
       constF_HI[["total.catch"]][sim,] <- expt.constF_HI$total.catch
@@ -394,12 +477,44 @@ head(B0.overs)
 # Compare the performance metrics between exact and over- or under --------
 all.results <- rbind.fill(B0.exacts,B0.unders,B0.overs)
 plot.results <- subset(all.results, HCR %in% c("C1","C2","C3"))
-ggplot(plot.results,aes(x=HCR,y=med,fill=HCR,shape=B0.accuracy,colour=HCR)) + 
+# Recode performance measures for plotting and take out PMs that aren't used in the paper
+remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
+plot.results <- plot.results %>% filter(!PM %in% remove.these) %>%
+  mutate(HCR = recode(HCR, 'cfp' = 'Stability-favoring',
+             'constF' = 'Constant F',
+             'C1' = 'C1',
+             'C2' = 'C2',
+             'C3' = 'C3',
+             'trend' = "Trend-based",
+             'constF_HI' = "Constant F - High"),
+             PM = recode(PM, 'LTmeancatch' = "Mean catch", # These are slightly different than in the Summarize_MSE file, because these aren't re-scaled for "negative metrics" or scaled to max
+                             "meanbiomass" = "Mean biomass",
+                             "BonanzaLength" = "Bonanza length",
+                             'SDcatch' = "Catch variation (SD)",
+                             'nyrs0catch' = "Years with 0 catch",
+                             'n.5yrclose' = "P(5 yr closure|closure)",
+                             "CollapseLength" = "Collapse length",
+                             "Prob.Collapse" = "P(collapse)",
+                             "Collapse.Severity" = "Collapse severity"))
+
+B0.plots <- ggplot(plot.results,aes(x=HCR,y=med,fill=HCR,shape=B0.accuracy,colour=HCR)) + 
   geom_point(size=3,position = position_dodge(1.1)) + 
   geom_pointrange(aes(ymin=loCI,ymax=hiCI),position = position_dodge(1.1)) +
   facet_wrap(~PM,scales="free_y") + 
+  ylab("Value") +
   scale_colour_manual(values = hcr.colors[1:3]) + 
   theme_classic()
+
+pdf("B0Sensitivity.pdf",width = 10,height = 6,useDingbats = FALSE)
+B0.plots
+dev.off()
+
+
+
+# Can do the same for FMSY ------------------------------------------------
+
+
+
 
 
 par(mfrow=c(3,1))
