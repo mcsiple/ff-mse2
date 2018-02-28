@@ -420,7 +420,7 @@ source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/M
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
 
-path <- "~/Dropbox/Chapter4-HarvestControlRules/Results/Sensitivity"
+path <- paste("~/Dropbox/Chapter4-HarvestControlRules/Results/Sensitivity/",metric,sep="")
 files <- list.files(path=path)
 rm <- grep(files,pattern = ".txt") # Don't load the text table summary
 files <- files[-rm]
@@ -449,33 +449,33 @@ raw.table[,performance.measures] <- NA
 all.summaries <- NA
 
 #Indices for which results were over- and under-estimates of B0
-o.i <- subset(scenarios,B0.accuracy=="over")$scenario
-u.i <- subset(scenarios,B0.accuracy=="under")$scenario
-e.i <- subset(scenarios,B0.accuracy=="exact")$scenario
+o.i <- subset(scenarios,accuracy=="over")$scenario
+u.i <- subset(scenarios,accuracy=="under")$scenario
+e.i <- subset(scenarios,accuracy=="exact")$scenario
 
 # Summarize data (this takes a little while)
-B0.overs <- lapply(results[o.i], FUN = summ.tab) %>%  # Summarize results (medians and quantiles)
+overs <- lapply(results[o.i], FUN = summ.tab) %>%  # Summarize results (medians and quantiles)
   rbind.fill() %>% # turn list to dataframe
   mutate(scenario = rep(o.i, each=length(performance.measures))) %>%     # add column with scenario identifier
   left_join(scenarios, by = "scenario") #join with scenarios to get info about control rules etc. (tight!!!!)
 
-B0.unders <- lapply(results[u.i], FUN = summ.tab) %>% 
+unders <- lapply(results[u.i], FUN = summ.tab) %>% 
   rbind.fill() %>% 
   mutate(scenario = rep(u.i, each=length(performance.measures))) %>%
   left_join(scenarios, by = "scenario")
 
-B0.exacts <- lapply(results[e.i], FUN = summ.tab) %>% 
+exacts <- lapply(results[e.i], FUN = summ.tab) %>% 
   rbind.fill()%>% 
   mutate(scenario = rep(e.i, each=length(performance.measures))) %>% 
   left_join(scenarios, by = "scenario")
   
-head(B0.exacts)
-head(B0.unders)
-head(B0.overs)
+head(exacts)
+head(unders)
+head(overs)
 
 
 # Compare the performance metrics between exact and over- or under --------
-all.results <- rbind.fill(B0.exacts,B0.unders,B0.overs)
+all.results <- rbind.fill(exacts,unders,overs)
 plot.results <- subset(all.results, HCR %in% c("C1","C2","C3"))
 # Recode performance measures for plotting and take out PMs that aren't used in the paper
 remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
@@ -497,7 +497,7 @@ plot.results <- plot.results %>% filter(!PM %in% remove.these) %>%
                              "Prob.Collapse" = "P(collapse)",
                              "Collapse.Severity" = "Collapse severity"))
 
-B0.plots <- ggplot(plot.results,aes(x=HCR,y=med,fill=HCR,shape=B0.accuracy,colour=HCR)) + 
+plots <- ggplot(plot.results,aes(x=HCR,y=med,fill=HCR,shape=accuracy,colour=HCR)) + 
   geom_point(size=3,position = position_dodge(1.1)) + 
   geom_pointrange(aes(ymin=loCI,ymax=hiCI),position = position_dodge(1.1)) +
   facet_wrap(~PM,scales="free_y") + 
@@ -505,8 +505,8 @@ B0.plots <- ggplot(plot.results,aes(x=HCR,y=med,fill=HCR,shape=B0.accuracy,colou
   scale_colour_manual(values = hcr.colors[1:3]) + 
   theme_classic()
 
-pdf("B0Sensitivity.pdf",width = 10,height = 6,useDingbats = FALSE)
-B0.plots
+pdf(paste(metric,"Sensitivity.pdf",sep="_"),width = 10,height = 6,useDingbats = FALSE)
+plots
 dev.off()
 
 
@@ -518,11 +518,15 @@ dev.off()
 
 
 par(mfrow=c(3,1))
-sim = 50
+sim = 150
 # These plots are for C1
-plot(results[[15]]$biomass.oneplus.true[sim,],type='l',ylab="True 1+ Biomass")
-lines(results[[3]]$biomass.oneplus.true[sim,],col='red')
-lines(results[[9]]$biomass.oneplus.true[sim,],col='blue')
+plot(results[[15]]$biomass.oneplus.true[sim,],type='l',ylab="True 1+ Biomass") #exact
+lines(results[[3]]$biomass.oneplus.true[sim,],col='red') #over
+lines(results[[9]]$biomass.oneplus.true[sim,],col='blue') #under
+
+plot(results[[15]]$biomass.oneplus.obs[sim,],type='l',ylab="Observed 1+ Biomass") #exact
+lines(results[[3]]$biomass.oneplus.obs[sim,],col='red') #over
+lines(results[[9]]$biomass.oneplus.obs[sim,],col='blue') #under
 
 plot(results[[15]]$total.catch[sim,],type='l',ylab="Total Catch")
 lines(results[[3]]$total.catch[sim,],col='red')
