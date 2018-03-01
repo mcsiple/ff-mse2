@@ -19,7 +19,7 @@ fftype = types[1] # Test with anchovy
 
 # Set directories
 basedir <- "~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
-metric = "B0" # Choose which rp to test sensitivity
+metric = "Fmsy" # Choose which rp to test sensitivity
 resultsdir <- paste("~/Dropbox/Chapter4-HarvestControlRules/Results/Sensitivity/",metric,sep="")
 subDir <- fftype
 
@@ -191,7 +191,7 @@ for(s in 1:nscenarios){  #
       }
       if(metric=="Fmsy"){
         if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
-          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.under[sim])}else{
             equilib$Fmsy <- equilib.true$Fmsy
       }}
       }
@@ -222,7 +222,7 @@ for(s in 1:nscenarios){  #
       }
       if(metric=="Fmsy"){
         if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
-          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.under[sim])}else{
             equilib$Fmsy <- equilib.true$Fmsy
           }}
       }
@@ -250,12 +250,12 @@ for(s in 1:nscenarios){  #
             equilib$B0 <- equilib.true$B0
           }}
       }
-      if(metric=="Fmsy"){
-        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
-          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
-            equilib$Fmsy <- equilib.true$Fmsy
-          }}
-      }
+      # if(metric=="Fmsy"){
+      #   if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+      #     if(acc=="under"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.under[sim])}else{
+      #       equilib$Fmsy <- equilib.true$Fmsy
+      #     }}
+      # }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.c1 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C1",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
@@ -287,12 +287,12 @@ for(s in 1:nscenarios){  #
             equilib$B0 <- equilib.true$B0
           }}
       }
-      if(metric=="Fmsy"){
-        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
-          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
-            equilib$Fmsy <- equilib.true$Fmsy
-          }}
-      }
+      # if(metric=="Fmsy"){
+      #   if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+      #     if(acc=="under"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.under[sim])}else{
+      #       equilib$Fmsy <- equilib.true$Fmsy
+      #     }}
+      # }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.c2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
@@ -319,7 +319,7 @@ for(s in 1:nscenarios){  #
       }
       if(metric=="Fmsy"){
         if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
-          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.under[sim])}else{
             equilib$Fmsy <- equilib.true$Fmsy
           }}
       }
@@ -348,12 +348,12 @@ for(s in 1:nscenarios){  #
             equilib$B0 <- equilib.true$B0
           }}
       }
-      if(metric=="Fmsy"){
-        if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
-          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
-            equilib$Fmsy <- equilib.true$Fmsy
-          }}
-      }
+      # if(metric=="Fmsy"){
+      #   if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
+      #     if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+      #       equilib$Fmsy <- equilib.true$Fmsy
+      #     }}
+      # }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
       expt.trend <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "trend",const.f.rate = 0.6,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
@@ -381,7 +381,7 @@ for(s in 1:nscenarios){  #
       }
       if(metric=="Fmsy"){
         if(acc=="over"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.over[sim])}else{
-          if(acc=="under"){equilib$Fmsy <- equilib.true$B0 * exp(Fmsy.under[sim])}else{
+          if(acc=="under"){equilib$Fmsy <- equilib.true$Fmsy * exp(Fmsy.under[sim])}else{
             equilib$Fmsy <- equilib.true$Fmsy
           }}
       }
@@ -515,11 +515,8 @@ dev.off()
 
 
 
-# Can do the same for FMSY ------------------------------------------------
 
-
-
-
+# Individual plots/notes/messy stuff --------------------------------------------------------
 
 par(mfrow=c(3,1))
 sim = 150
@@ -575,10 +572,7 @@ if(length(which(toplot2$scaled_med==1))<5){print("Stop! Problems with summarizin
 subset(toplot2,PM=="meanbiomass")
 subset(toplot2,PM=="SDcatch")
 
-combo <- dcast(toplot2,HCR+B0.accuracy~PM, value.var = "scaled_med")
-
-# One way to do a pairs plot... kind of slow, potentially unnecessary
-# ggpairs(combo,columns = 3:11,ggplot2::aes(colour=B0.accuracy,shape=HCR),ggplot2::theme_classic())
+combo <- dcast(toplot2,HCR+B0.accuracy~PM, value.var = "scaled_med") # Can use ggplot if you want
 
 # An easier way to do a pairs plot:
 palette <- brewer.pal(6,"Spectral")
