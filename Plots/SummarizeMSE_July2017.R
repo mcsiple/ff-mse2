@@ -79,7 +79,7 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 # Just load the raw table, if you have already run the code below  --------
     opfile <- grep("outputs",x = list.files()) # Find outputs file
      raw.table <- read.csv(list.files()[opfile])
-    if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } #if you use read.csv you need this
+    if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } # if you use read.csv you need this
 
 # See if performance metrics are correlated -------------------------------
 # sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
@@ -203,9 +203,9 @@ hcr.colors <- palette[c(6,5,4,3,1,2)]
 
 raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
                                             'constF' = 'Low F',
-                                            'C1' = 'C1',
-                                            'C2' = 'C2',
-                                            'C3' = 'C3',
+                                            'C1' = 'Basic hockey stick',
+                                            'C2' = 'Low Blim',
+                                            'C3' = 'High Fmax',
                                             'trend' = "Trend-based",
                                             'constF_HI' = "High F"))
 
@@ -257,7 +257,6 @@ for(p in 1:3){
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
-  
   plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
                             grid.label.size=3,axis.label.size=8, 
                                            legend.text.size = 4,
