@@ -245,7 +245,7 @@ for(p in 1:3){
     na.metrics <- names(which(test.nas))
     
     if(length(na.metrics>0)){
-      print(paste("The following performance metrics had NAs and was removed from the figure: ",na.metrics))
+      print(paste("The following performance metrics had NAs and were removed from the figure: ",na.metrics))
       final.tab <- final.tab[,-which(test.nas)]
       rm.metrics <- which(nice.pms$original %in% na.metrics)
       axis.labels <- nice.pms[-rm.metrics,'polished']
@@ -257,16 +257,18 @@ for(p in 1:3){
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
+    final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","Low F","High F","Stability-favoring"))
   plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
                             grid.label.size=3,axis.label.size=8, 
                                            legend.text.size = 4,
-                                           axis.labels = axis.labels,
-                                           plot.legend=legend.presence,palette.vec = hcr.colors) 
+                                            axis.labels = axis.labels,
+                                           plot.legend=legend.presence,palette.vec = hcr.colors,
+                            manual.levels = levels(final.tab$group))
   
   ftm <- melt(final.tab,id.vars="group")
   ftm$name <- ftm$variable
   ftm$name <- factor(ftm$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity"))
-  
+  ftm$group <- factor(ftm$group,c("Basic hockey stick","Low Blim","High Fmax","Low F","High F","Stability-favoring"))
   ftm <- mutate(ftm,name = recode (name, 'LTmeancatch' = "Mean catch",
                                      "meanbiomass" = "Mean biomass",
                                      "BonanzaLength" = "Bonanza Length",
