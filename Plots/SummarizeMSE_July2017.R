@@ -9,11 +9,10 @@ library(extrafont)
 library(RColorBrewer)
 library(reshape2)
 library(ggplot2)
-source("/Users/Megsie Siple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 Date <- "2018-02-13"
 
 # Set path to wherever the simulation results are:
@@ -64,14 +63,12 @@ all.summaries2 <- mutate(all.summaries, obs.error.type = recode(obs.error.type,
                                                                'Tim'='Delayed change detection',
                                                                'AC' = "Autocorrelated"),
                         HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-                                     'constF' = 'Constant F',
-                                     'C1' = 'C1',
-                                     'C2' = 'C2',
-                                     'C3' = 'C3',
+                                     'constF' = 'Low F',
+                                     'C1' = 'Basic hockey stick',
+                                     'C2' = 'Low Blim',
+                                     'C3' = 'High Fmax',
                                      'trend' = "Trend-based",
-                                     'constF_HI' = "Constant F - High"))
-
-#all.summaries2$HCR <- factor(all.summaries$HCR, levels = c("C1","C2","C3","Constant F","Stability-favoring","Trend-based")) # Reorder factors so they plot in alphabetical order, the way they were intended to be!
+                                     'constF_HI' = "High F"))
 
 write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
@@ -199,15 +196,14 @@ lines(results[[34]]$total.catch[sim,],col="pink")
 #palette <- brewer_pal(type="qual",palette=2)
 #palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
 palette <- brewer.pal(6,"Spectral")
-hcr.colors <- palette[c(6,5,4,3,1,2)]
+hcr.colors <- palette[c(6,5,4,1,3,2)]
 #show_col(hcr.colors) # C1, C2, C3, constF, stability-favoring, trend-based (this is the order of the colors)
 
-raw.table <- mutate(raw.table, HCR = recode(HCR, 'cfp' = 'Stability-favoring',
+raw.table <- mutate(raw.table, HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
                                             'constF' = 'Low F',
                                             'C1' = 'Basic hockey stick',
                                             'C2' = 'Low Blim',
                                             'C3' = 'High Fmax',
-                                            'trend' = "Trend-based",
                                             'constF_HI' = "High F"))
 
 # Kite plots showing tradeoffs --------------------------------------------
@@ -258,7 +254,7 @@ for(p in 1:3){
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
     axis.labels <- nice.pms$polished[-(remove.ind-1)]
-    final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","Low F","High F","Stability-favoring"))
+    final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
   plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
                             grid.label.size=3,axis.label.size=8, 
                                            legend.text.size = 4,
@@ -270,7 +266,7 @@ for(p in 1:3){
   ftm$name <- ftm$variable
   ftm$name <- factor(ftm$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity"))
   ftm$group <- factor(ftm$group,c("Basic hockey stick","Low Blim","High Fmax","Low F","High F","Stability-favoring"))
-  ftm <- mutate(ftm,name = recode (name, 'LTmeancatch' = "Mean catch",
+  ftm <- mutate(ftm,name = recode_factor(name, 'LTmeancatch' = "Mean catch",
                                      "meanbiomass" = "Mean biomass",
                                      "BonanzaLength" = "Bonanza Length",
                                      'SDcatch' = "Minimize \n catch variation",
