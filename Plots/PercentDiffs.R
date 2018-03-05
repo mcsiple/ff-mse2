@@ -63,8 +63,8 @@ dat3.new <- mutate(dat3.new,name = recode_factor(name, 'LTmeancatch' = "Mean cat
                   "Prob.Collapse" = "Minimize P(collapse)",
                   "Collapse.Severity" = "Minimize collapse severity"))
 
-# Order factors for plotting
-dat3.new$name <- factor(dat3.new$name, levels=rev(c("Bonanza length","Mean biomass","Mean catch", "Minimize collapse severity","Minimize P(collapse)","Minimize collapse length","Minimize P(5 yr closure|closure)","Minimize years with 0 catch","Minimize catch variation")))
+# Order control rules and performance measures for plotting
+dat3.new$name <- factor(dat3.new$name, levels=rev(c("Mean biomass","Bonanza length","Minimize collapse length","Minimize P(collapse)","Minimize collapse severity","Mean catch","Minimize catch variation","Minimize P(5 yr closure|closure)","Minimize years with 0 catch")))
 dat3.new$HCR <- factor(dat3.new$HCR, levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
 
 #Some metrics have a >100% change and won't show up if you don't set them w/in plot limits. 
