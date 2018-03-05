@@ -9,10 +9,11 @@ library(extrafont)
 library(RColorBrewer)
 library(reshape2)
 library(ggplot2)
+source("/Users/Megsie Siple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Sardine" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 Date <- "2018-02-13"
 
 # Set path to wherever the simulation results are:
