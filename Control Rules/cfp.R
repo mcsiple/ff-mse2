@@ -25,16 +25,19 @@ calc.F.cfp <- function(prevCatch, Bobs, Btru, Btarget, Blim, Fmax, lh = NA, sel.
   # Result of above is F from the basic hockey stick rule. Now find out if catch would change >15%
   possible.catch <- sum(Bobs *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
   newcatch <- possible.catch
-  # if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
-  # if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}  # I checked whether 30% change (instead of 15%) works similarly; it didn't make a huge difference in relative performance.
+  if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
+  if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}  # I checked whether 30% change (instead of 15%) works similarly; it didn't make a huge difference in relative performance.
   
-  if(sum(Bobs) > Btarget){ # Per reviewer 2, this catch within 15% of previous catch requirement is sometimes only implemented above Btarget
-      if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
-      if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}
-      if(newcatch > sum(Btru[-1])){newcatch = sum(Btru[-1])}
-  }else{
-    newcatch <- possible.catch
-  }
+  # CHECK RESULTS FOR THIS ONE - Jose de Oleivera said this is how the stability style rules work sometimes:
+  # if(sum(Bobs) > Btarget){ # Per reviewer 2, this catch within 15% of previous catch requirement is sometimes only implemented above Btarget
+  #     if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
+  #     if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}
+  #     if(newcatch > sum(Btru[-1])){newcatch = sum(Btru[-1])}
+  # }else{
+  #   newcatch <- possible.catch
+  # }
+  
+  
   # *** TODO: Need to check the above. If catches are higher than biomass, halve them? Need to test again as newcatch = sum(Btru[-1])
   # Get the f from the control rule
   f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Btru, w.at.age = sizes$weight.at.age[,1])
