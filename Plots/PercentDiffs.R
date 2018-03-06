@@ -66,23 +66,37 @@ dat3.new <- mutate(dat3.new,name = recode_factor(name, 'LTmeancatch' = "Mean cat
 # Order control rules and performance measures for plotting
 dat3.new$name <- factor(dat3.new$name, levels=rev(c("Mean biomass","Bonanza length","Minimize collapse length","Minimize P(collapse)","Minimize collapse severity","Mean catch","Minimize catch variation","Minimize P(5 yr closure|closure)","Minimize years with 0 catch")))
 dat3.new$HCR <- factor(dat3.new$HCR, levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
+dat3.new$Type <- factor(dat3.new$Type, levels = c("Sardine","Anchovy","Menhaden"))
 
-#Some metrics have a >100% change and won't show up if you don't set them w/in plot limits. 
+# Some metrics have a >100% change and won't show up if you don't set them w/in plot limits. 
+# make a new column with labels for these 
+dat3.new$percentlabel <- NA
+
+# Fill in the labels from percentdiffs column
+dat3.new$percentlabel[which(dat3.new$percentdiff > 100)] <- dat3.new$percentdiff[which(dat3.new$percentdiff > 100)]
+dat3.new$percentlabel[which(dat3.new$percentdiff < -100)] <- dat3.new$percentdiff[which(dat3.new$percentdiff < -100)]
+dat3.new$percentlabel <- round(dat3.new$percentlabel,digits = 0)
+dat3.new$location <- 100
+dat3.new$location[which(dat3.new$percentdiff< (-100))] <- -100
+
 dat3.new$percentdiff[dat3.new$percentdiff > 100 & dat3.new$percentdiff < 1e6] = 100
 dat3.new$percentdiff[dat3.new$percentdiff < (-100) & dat3.new$percentdiff > (-1e6)] = -100
 dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)] <- NA
+dat3.new$percentlabel[which(is.infinite(dat3.new$percentlabel))] <- NA # replace the two "inf" values with NA
 
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = "PercentDiffsErrors_101017.pdf",width = 11,height = 9,useDingbats = FALSE)
+pdf(file = "PercentDiffsErrors_030518.pdf",width = 11,height = 9,useDingbats = FALSE)
 ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors) +
+  geom_text(aes(x=name,y=location, label=percentlabel,hjust=ifelse(sign(percentlabel)>0, -0.2, 1.1)), 
+            position = position_dodge(width=1),size=2.5) +
   geom_hline(yintercept=0)+facet_grid(HCR~Type) +
   theme_classic(base_size = 14) + 
   theme(strip.background = element_blank(),strip.text.y = element_blank()) +
   ylab("% change from delayed detection model") +
   xlab("Performance metric") + 
-  ylim(c(-100,100)) + coord_flip()
+  ylim(c(-130,130)) + coord_flip()
 dev.off()
 
 
