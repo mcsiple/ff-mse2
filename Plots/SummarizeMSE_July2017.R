@@ -185,6 +185,16 @@ lines(results[[32]]$total.catch[sim,],col='red')
 lines(results[[34]]$biomass.oneplus.obs[sim,],col="grey")
 lines(results[[34]]$total.catch[sim,],col="pink")
 
+
+
+nexamples = 9
+dim = sqrt(nexamples)
+par(mfrow=c(dim,dim))
+for(i in (1:nexamples)+60){
+  plot(results[[34]]$biomass.total.true[i,],type='l',ylab="B_total true") #Check 34 too... should have some crashes
+}
+
+
 ############################################################################
 # PLOTS AND METRICS TO SHOW OUTPUTS ----------------------------
 ############################################################################
