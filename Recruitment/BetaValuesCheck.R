@@ -26,26 +26,30 @@ calc.beta.fast<-function(ts.data){
   return(beta)
 }
 
-
-# Load results of MSE for that forage type
-path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"/",sep="")
+Date <- "2018-02-13"
+# File path for both Macs:
+#basepath <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/"
+# File path for PC laptop:
+basepath <- "C:/Users/Megsie Siple/Dropbox/Chapter4-HarvestControlRules/"
+path <- paste(basepath,"Results/",Type,Date,"/", sep="")
 files <- list.files(path=path)
 rm <- grep(files,pattern = ".txt") # Don't load the text summary
 files <- files[-rm]
+files <- files[grep(files, pattern = ".RData")] # only load RData files
 files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
 setwd(path)
-results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all the results - ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
+results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) 
 
-
-years.test <- ncol(results[[1]]$biomass) # just count cols to know how many years there are
+years.test <- ncol(results[[1]]$biomass.oneplus.true) # just count cols to know how many years there are
 nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics
 calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
 
 
 # Read table of beta and SD for stocks
-if(Type == "Anchovy"){B.data.mat <- read.csv("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Datasets/AnchHerring_Rec_Spectra.csv")}
-if(Type == "Sardine"){B.data.mat <- read.csv("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Datasets/Sardine_Rec_Spectra.csv")}
-if(Type == "Menhaden"){B.data.mat <- read.csv("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Datasets/Menhaden_Rec_Spectra.csv")}
+if(Type == "Anchovy"){B.data.mat <- read.csv(paste(basepath,"Datasets/AnchHerring_Rec_Spectra.csv",sep=""))}
+if(Type == "Sardine"){B.data.mat <- read.csv(paste(basepath,"Datasets/Sardine_Rec_Spectra.csv",sep=""))}
+if(Type == "Menhaden"){B.data.mat <- read.csv(paste(basepath,"Datasets/Datasets/Menhaden_Rec_Spectra.csv",sep=""))}
+
 
 # Here is the spectral properties of the recruitment estimates we have:
 s <- B.data.mat[,c("X","Rec.Length","SD.R","Beta.r","lowerCI","upperCI","beta.SE")]
