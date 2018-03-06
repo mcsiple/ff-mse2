@@ -58,7 +58,8 @@ pick_fill <- function(stockname,sourcename){
 
 
 # Sunset plots -----------------------------------------------------------
-
+# These are the SSB/rec plots where lighter colors = later years. Should
+# show whether SSB is a strong influence on recruitment
 # test plot
 sards$stock <- as.factor(sards$stock)
 # get just RAM and Barange data
