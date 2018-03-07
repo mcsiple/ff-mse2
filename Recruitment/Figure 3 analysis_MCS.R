@@ -7,6 +7,7 @@
 # load packages
 library(astsa)
 library(KernSmooth)
+library(plyr); library(dplyr)
 #wordir<- # set path to directory containing allforagedata.csv
 
 ################################################
@@ -305,13 +306,14 @@ addTrans <- function(color,trans)
 
 # initialize data
 
-# Load sardine/anchovy data
-workdir <- "/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Datasets"
+# Load sardine/anchovy "data"
+basedir <- "C:/Users/Megsie Siple/Dropbox/Chapter4-HarvestControlRules/"
+workdir <- paste(basedir,"Datasets","/",sep="")
 setwd(workdir)
 load("allsardineanchovy.RData") #alldat - this includes RAM and Barange (FAO is only catches so it can't be used!)
 data <- alldat
 colnames(data)[4] <- "Year"
- 
+
 
 # Change col names to match code, which is for RAM only
 colnames(data)[3] <- "stockname"
@@ -319,7 +321,7 @@ colnames(data)[5:6] <- c("TB","R")
 colnames(data)[8] <- "ER"   # Fishing mortality in some datasets, "exploitation rate" in RAM
 
 # Have to get herring and menhaden data from the RAM database
-xxx <- read.csv("/Users/mcsiple/Dropbox/Chapter 4 - Harvest Control Rules/Datasets/allforagedata.csv")
+xxx <- read.csv(paste(basedir,"/Datasets/allforagedata.csv",sep=""))
 xxx$datasource= "RAM"
 #colnames(xxx)[1] <- "oldASSESSID_discard"
 colnames(xxx)[3] <- "stockname"
