@@ -477,7 +477,7 @@ for ( i in 1:ncol(outputR)){
   R.data.mat[i,1]<-length(which(!is.na(outputR[,i])))
 
   if (length(ts.data)>=min.years){
-    # Estimate lambda and r
+    # Estimate lambda and r - this is from Essington et al. 2015
 #     lambda<- ts.data[-1]/ts.data[-length(ts.data)]+ts.f.data[-length(ts.f.data)]
 #     r<-log(lambda)
   # get spectral propoerties
