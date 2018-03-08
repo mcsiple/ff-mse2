@@ -135,41 +135,18 @@ types <- c("Anchovy"="Anchovy",
                 steepness = scenarios$h[1]
                 obs.type <- scenarios$obs.error.type[1]
                 HCR <- scenarios$HCR[1]
-                recruit.sd = .6 #scenarios$recruit.sd[1]
-                recruit.rho = .9 #scenarios$recruit.rho[1]
+                recruit.sd = 0.6 
+                recruit.rho = 0.9 
                 equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
                 rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-                test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[1]],curly.phi.vec = curly.phi.mat[1,] )
-                nofish <- melt(test.constF[-c(1,5,10,11)])
+                test <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[1]],curly.phi.vec = curly.phi.mat[1,] )
+                nofish <- melt(test[-c(1,5,10,11)])
                 nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
-                ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
+                ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") + geom_hline(yintercept=equilib$B0) + geom_hline(yintercept=0.5*equilib$Bmsy,col="red") 
+                plot(test$fishing,type='l',ylim=c(0,1))
+                any(test$intended.f==0)
+               
                 
-        # Test pop and see if it crashes ------------------------------------------
-        # Check that population will still sometimes collapse even without fishing.
-        nexamples <- 1 # How many time series do you want to plot
-        var.to.plot <- "rec"
-        set.seed(123)
-              big.df <- data.frame()
-              for(i in 1:nexamples){
-              steepness = scenarios$h[2]
-              obs.type <- scenarios$obs.error.type[2]
-              HCR <- scenarios$HCR[1]
-              recruit.sd = .6 #scenarios$recruit.sd[1]
-              recruit.rho = .9 #scenarios$recruit.rho[1]
-              equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
-              rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-              test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[1]],curly.phi.vec = curly.phi.mat[1,])
-              nofish <- melt(test.constF[-c(1,5,10,11)])
-              nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
-              vars.to.plot <- subset(nofish, L1 %in% var.to.plot)
-              vars.to.plot$rep <- paste(i)
-              big.df <- rbind(big.df,vars.to.plot)
-              }
-        
-              
-        ndf <- big.df %>% group_by(rep) %>% mutate(low.B.thresh = 0.2*mean(value)) %>% as.data.frame()
-        ggplot(ndf,aes(x=year,y=value)) + geom_line() + facet_wrap(~rep,scales = "free_y") + geom_line(aes(y=low.B.thresh),col="red") #xlim(c(150,250)
-        
         #New, just for the recruitment time series
         # fff <- nofish %>% subset(L1=="biomass.oneplus.true") %>% mutate(low.B.thresh = 0.2*mean(value,na.rm=TRUE))
         # nofish %>% subset(L1=="biomass.oneplus.true") %>% as.data.frame() %>% ggplot(aes(x=year,y=value))+geom_line()+ geom_hline(yintercept = 15639.94,col = "red")
@@ -179,7 +156,7 @@ types <- c("Anchovy"="Anchovy",
         ###########################################################################
         
         #
-        for(s in 1:nscenarios){  #
+        for(s in 1:nscenarios){  
           steepness = scenarios$h[s]
           obs.type <- scenarios$obs.error.type[s]
           HCR <- scenarios$HCR[s]
@@ -316,7 +293,7 @@ types <- c("Anchovy"="Anchovy",
                     const.f.rate = equilib$Fmsy
                     set.seed(123) # same seed
                     for (sim in 1:nsims){
-                      rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
+                      rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
                       expt.constF_HI <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
                       
                       constF_HI[["biomass.oneplus.true"]][sim,] <- expt.constF_HI$biomass.oneplus.true
