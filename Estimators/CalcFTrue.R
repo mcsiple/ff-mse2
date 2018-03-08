@@ -5,8 +5,9 @@
       # tac = 20000
       # M = 0.5
       # sel <-  c(0.004, 0.143, 0.994, 0.840, 0.191, 0.024, 0.000)
-      # obs.at.age.oneplus <- c(39869.064, 22180.144, 13353.527,  7767.168,  6295.520,  3154.487) # this is a vector of 6, has to be bc of errors
+      # obs.at.age <- c(40000, 39869.064, 22180.144, 13353.527,  7767.168,  6295.520,  3154.487) # this is a vector of 6, has to be bc of errors
       # w.at.age <- c(0.0001281, 0.0002317, 0.0003285, 0.0003711, 0.0005371, 0.0004481)
+      # calc.true.f(Btrue.fn = obs.at.age)
 
 calc.true.f <- function(tac.fn = tac, M.fn = M, sel.fn = sel, Btrue.fn = NA, w.at.age = w.at.age){
         #' @description given the TAC, and the true biomass, what is the true F that will result in catches = TAC?
