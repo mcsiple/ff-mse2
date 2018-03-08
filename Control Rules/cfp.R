@@ -20,24 +20,26 @@ calc.F.cfp <- function(prevCatch, Bobs, Btru, Btarget, Blim, Fmax, lh = NA, sel.
   if (sum(Bobs) <= Blim) {f = 0}
   if (sum(Bobs) > Blim & sum(Bobs) <= Btarget) {f <- slope * (sum(Bobs)-Blim) / adj.constant} 
                                       # adj.constant scales so the CR is linear btwn Blim and Btarget
-  if (sum(Bobs) > Btarget) {f = Fmax }
+  if (sum(Bobs) > Btarget) {f = Fmax}
   
   # Result of above is F from the basic hockey stick rule. Now find out if catch would change >15%
   possible.catch <- sum(Bobs *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
+  #print(c("Blim=",Blim,"Bobs=",sum(Bobs),"possible.catch=",possible.catch,"sum of Bobs > Blim?",sum(Bobs)>Blim,"PrevCatch=",prevCatch,"Btru",Btru))
   newcatch <- possible.catch
-  # if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
-  # if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}  # I checked whether 30% change (instead of 15%) works similarly; it didn't make a huge difference in relative performance.
-  # 
   # CHECK RESULTS
   if(sum(Bobs) > Blim){ # Per reviewer 2, this catch within 15% of previous catch requirement is sometimes only implemented above Btarget
       if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
       if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}
-      if(newcatch > sum(Btru[-1])){newcatch = sum(Btru[-1])}
-  }#else{newcatch <- possible.catch}
-
-  # *** TODO: Need to check the above. Need to test again as newcatch = sum(Btru[-1])
+      #print("Possible catch is >15% higher!")
+      }else{newcatch <- possible.catch}
+      if(newcatch > sum(Btru)){newcatch = sum(Btru) # is this problematique?
+      #print("Suggested catch higher than biomass")
+      }
+  
+  #print(c("new catch",newcatch))
+  
   # Get the f from the control rule
-  f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue = Btru, w.at.age = sizes$weight.at.age[,1])
+  f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue.fn = Btru, w.at.age = sizes$weight.at.age[,1])
   return(f.new)
 }
 
