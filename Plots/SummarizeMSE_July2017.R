@@ -13,7 +13,7 @@ source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/M
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
 Type = "Anchovy" #FF type to summarize
-Date <- "2018-02-13"
+Date <- "2018-03-07"
 
 # Set path to wherever the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
@@ -157,15 +157,29 @@ plot(results[[1]]$intended.f[1,],type='l',ylab="Fishing rate",ylim=c(0,30))
 lines(results[[1]]$fishing[1,],col='red')
 plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate",ylim=c(0,30))
 lines(results[[1]]$fishing[2,],col='red')
+par(mfrow=c(4,1))
+plot(results[[2]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
+lines(results[[2]]$total.catch[1,],col='red')
+plot(results[[2]]$biomass.oneplus.true[2,],type='l',ylab="Biomass")
+lines(results[[2]]$total.catch[2,],col='red')
+plot(results[[2]]$biomass.oneplus.true[3,],type='l',ylab="Biomass")
+lines(results[[2]]$total.catch[3,],col='red')
+plot(results[[2]]$biomass.oneplus.true[4,],type='l',ylab="Biomass")
+lines(results[[2]]$total.catch[4,],col='red')
+plot(results[[2]]$total.catch[4,],col='red',type='l')
 
-plot(results[[1]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
-lines(results[[1]]$total.catch[1,],col='red')
-plot(results[[1]]$biomass.oneplus.true[2,],type='l',ylab="Biomass")
-lines(results[[1]]$total.catch[2,],col='red')
-plot(results[[1]]$biomass.oneplus.true[3,],type='l',ylab="Biomass")
-lines(results[[1]]$total.catch[3,],col='red')
-plot(results[[1]]$biomass.oneplus.true[4,],type='l',ylab="Biomass")
-lines(results[[1]]$total.catch[4,],col='red')
+# Look at catches to make sure they're sort of following the rule
+par(mfrow=c(4,1))
+for(i in 1:4){
+plot(results[[2]]$fishing[i,],col='red',type='l')
+}
+
+# Look at scenarios with no obs error and make sure intended f = f
+plot(results[[5]]$intended.f[sim,],type='l')
+lines(results[[5]]$fishing[sim,],col='red')
+plot(results[[6]]$intended.f[sim,],type='l')
+lines(results[[6]]$fishing[sim,],col='red')
+
 
 # Compare AC and DD
 plot(results[[14]]$total.catch[1,],type='l',ylab="Catches") # 14 is autocorrelated error
