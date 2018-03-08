@@ -206,7 +206,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
         imp.rate <- const.f.rate}
        } # true fishing rate based on observed biomass
     if(hcr.type=="cfp"){
-      imp.rate <- calc.F.cfp(prevCatch = ifelse(yr==1,F0*sum(biomass[,yr]),catch[yr-1]),   #If it's year 1, use F0. Otherwise, determine f from hockey stick and previous year's catch, à la CFP's rule
+      imp.rate <- calc.F.cfp(prevCatch = ifelse(yr==1,F0*sum(biomass[,yr]),catch[yr-1]),   # If it's year 1, use F0. Otherwise, determine f from hockey stick and previous year's catch, à la CFP's rule
                                 Bobs = biomass[,yr], 
                                 Btru = biomass.true[,yr], #Total biomass
                                 Blim = 0.5*equilib$Bmsy, 
@@ -321,7 +321,7 @@ return(list(popn=popn[,1:years],
 # The function for calculating MSY (uses getTrajectory, so has to be loaded last)
 source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Run/MSY_Fxns.R")
 
-# W sardine
+# Sardine
 # tim.inits.vec = c(0.12, 0.06, 0.1, -0.22, -0.03, 0.12, -0.06, 0.42, -0.23, 0.07, -0.02, 0.23, -0.02, -0.02, 0.06, 0.12)
 # tim.rands <- tim.rands.list[[1]]
 # testie2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[1]])
