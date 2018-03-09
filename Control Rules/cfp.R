@@ -11,52 +11,63 @@
 #' @param lh List of life history traits, used for Baranov catch eqn
 #' @param sel.at.age Matrix of ages, fishery selectivity
 #' 
-#' 
+#' From Tim:  if previous year was less than Blim, then apply the HCR directly, otherwise change  by 15% max
 source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Estimators/CalcFTrue.R") # need this to get F  that gives the proper catch
-calc.F.cfp <- function(prevCatch, Bobs, Btru, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA, sizes = NA){
+calc.F.cfp <- function(prevCatch, Bobs, Bobsprev, Btru, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA, sizes = NA){
   # prevCatch is total catch in yr-1
   # Bobs is a vector of biomass at age
   # Btru is is a vector of biomass at age
+  # Bobsprev is obs biomass in teh previous year
   # Btarget
   # Blim
   # Fmax
+  #sizes is from the operating model: a list of lengths and weights
+  
+  
+  # Basic part of control rule:
   f <- NA
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
   adj.constant <- Btarget/Fmax        # scales y axis to max fishing mortality
   if (sum(Bobs) <= Blim) {f = 0}
   if (sum(Bobs) > Blim & sum(Bobs) <= Btarget) {f <- slope * (sum(Bobs)-Blim) / adj.constant} 
-                                      # adj.constant scales so the CR is linear btwn Blim and Btarget
+  # adj.constant scales so the CR is linear btwn Blim and Btarget
   if (sum(Bobs) > Btarget) {f = Fmax}
-  
-  # Result of above is F from the basic hockey stick rule. Now find out if catch would change >15%
-  possible.catch <- sum(Bobs *(1-exp(-(f*sel.at.age[,1]+lh$M)))*f*sel.at.age[,1] / (f*sel.at.age[,1] + lh$M) ) # Baranov catch eqn
-  #print(c("Blim=",Blim,"Bobs=",sum(Bobs),"possible.catch=",possible.catch,"sum of Bobs > Blim?",sum(Bobs)>Blim,"PrevCatch=",prevCatch,"Btru",Btru))
-  newcatch <- possible.catch
-  # CHECK RESULTS
-  if(sum(Bobs) > Blim){ # Per reviewer 2, this catch within 15% of previous catch requirement is sometimes only implemented above Btarget
+    
+  # If Bobs>Blim, apply control rule directly
+  if(sum(Bobsprev)<=Blim){
+    f.new <- f
+  }else{ # Otherwise, apply 15% stability rule
+    possible.catch <- sum(Bobs *(1-exp(-(f*sel.at.age[,2]+lh$M)))*f*sel.at.age[,2] / (f*sel.at.age[,2] + lh$M) ) 
+    # Baranov catch eqn - what catch would be
+                #print(c("Blim=",Blim,"Bobs=",sum(Bobs),"possible.catch=",possible.catch,"sum of Bobs > Blim?",sum(Bobs)>Blim,"PrevCatch=",prevCatch,"Btru",Btru))
+                #newcatch <- possible.catch
+    # CHECK RESULTS
       if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
-      if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}
-      #print("Possible catch is >15% higher!")
-      }else{newcatch <- possible.catch}
-      if(newcatch > sum(Btru)){newcatch = sum(Btru) # is this problematique?
-      #print("Suggested catch higher than biomass")
+      if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch #print("Possible catch is >15% higher!")
       }
-  
-  #print(c("new catch",newcatch))
-  
-  # Get the f from the control rule
-  f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,1],Btrue.fn = Btru, w.at.age = sizes$weight.at.age[,1])
+    if(newcatch > sum(Btru)){newcatch = sum(Btru)} # This is to prevent it from going over the top
+    f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,2],Btrue.fn = Bobs, w.at.age = sizes$weight.at.age[,1])     # Get the new f based on the 15% change rule - this is based on Bobs unlike f.imp in the operating model
+  }
+    #print("Suggested catch higher than biomass")
+    #print(c("new catch",newcatch))
   return(f.new)
 }
 
- # calc.F.cfp(prevCatch = 1000,
- #            Bobs = results[[1]]$biomass.oneplus.obs[2,191],
- #             Btru = results[[1]]$biomass.oneplus.true[2,191],
- #           Blim = 0.5*equilib$Bmsy,
- #           Btarget = equilib$Bmsy,
- #           Fmax = equilib$Fmsy,lh = lh.test,
- #           sel.at.age = lh.test$selectivity,
- #           sizes = sizes)
+
+# sizes=list()
+# n.ages = length(lh.test$ages)
+# sizes$weight.at.age <- matrix(nrow=n.ages,ncol=250)
+# sizes$weight.at.age[1:n.ages,] <- lh$w.at.age 
+#  calc.F.cfp(prevCatch = 1000,
+#             #Bobs = results[[29]]$biomass.oneplus.obs[2,100],
+#             Bobs = c(7021.04, 4706.28, 3154.44, 2113.87, 1417.52,  950.28,  636.53),
+#              Btru = c(7021.04, 4706.28, 3154.44, 2113.87, 1417.52,  950.28,  636.53),
+#             Bobsprev = c(7021.04, 4706.28, 3154.44, 2113.87, 1417.52,  950.28,  636.53)*0.5,
+#            Blim = 0.5*equilib$Bmsy,
+#            Btarget = equilib$Bmsy,
+#            Fmax = equilib$Fmsy,lh = lh.test,
+#            sel.at.age = lh.test$selectivity,
+#            sizes = sizes)
 
 # Test
 # First: get params from one of the ff types
