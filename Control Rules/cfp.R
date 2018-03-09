@@ -14,6 +14,12 @@
 #' 
 source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Estimators/CalcFTrue.R") # need this to get F  that gives the proper catch
 calc.F.cfp <- function(prevCatch, Bobs, Btru, Btarget, Blim, Fmax, lh = NA, sel.at.age = NA, sizes = NA){
+  # prevCatch is total catch in yr-1
+  # Bobs is a vector of biomass at age
+  # Btru is is a vector of biomass at age
+  # Btarget
+  # Blim
+  # Fmax
   f <- NA
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
   adj.constant <- Btarget/Fmax        # scales y axis to max fishing mortality
@@ -43,7 +49,7 @@ calc.F.cfp <- function(prevCatch, Bobs, Btru, Btarget, Blim, Fmax, lh = NA, sel.
   return(f.new)
 }
 
- # calc.F.cfp(prevCatch = results[[1]]$total.catch[2,190],
+ # calc.F.cfp(prevCatch = 1000,
  #            Bobs = results[[1]]$biomass.oneplus.obs[2,191],
  #             Btru = results[[1]]$biomass.oneplus.true[2,191],
  #           Blim = 0.5*equilib$Bmsy,
@@ -54,17 +60,21 @@ calc.F.cfp <- function(prevCatch, Bobs, Btru, Btarget, Blim, Fmax, lh = NA, sel.
 
 # Test
 # First: get params from one of the ff types
-# source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Ctl/Menhaden_LHControl.R")
-#  test.b <- c(7021.0485, 4706.2807, 3154.4495, 2113.8762, 1417.5272,  950.2850,  636.5326)
-#  calc.F.cfp(prevCatch = 100, Bt = test.b,Btarget = 1000,Blim = 100,Fmax = 0.6,lh = lh.test,sel.at.age = lh.test$selectivity)
-# 
-# test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
-#                          Btarget = 2000,
-#                          Blim = 100,
-#                          Fmax = 0.6,
-#                          prevCatch = seq(0,1000,by=50),
-#                          calc.f = NA)
-# 
+        # basedir <- "~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
+        # source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Ctl/Anchovy_LHControl.R")
+        # source(file.path(basedir,"Estimators/Estimators.R"))
+        #  test.b <- c(7021.04, 4706.28, 3154.44, 2113.87, 1417.52,  950.28,  636.53)/10
+        #  test.bobs <- test.b #(for now)
+        #  sum(test.b)
+        #  calc.F.cfp(prevCatch = 100, Bobs = test.bobs,Btru=test.b,Btarget = 1000,Blim = 100,Fmax = 0.6,lh = lh.test,sel.at.age = lh.test$selectivity)
+
+        # test.frame <- data.frame(Bcurr = 300,  #seq(10,10000,by=100)
+        #                          Btarget = 2000,
+        #                          Blim = 100,
+        #                          Fmax = 0.6,
+        #                          prevCatch = seq(0,1000,by=50),
+        #                          calc.f = NA)
+
 # for(i in 1:nrow(test.frame)){
 #   test.frame$calc.f[i] <- calc.F.cfp(prevCatch = test.frame$prevCatch[i],
 #                                      Bt = test.frame$Bcurr[i],
