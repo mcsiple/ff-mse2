@@ -12,8 +12,8 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Menhaden" #FF type to summarize
-Date <- "2018-03-08"
+Type = "Anchovy" #FF type to summarize
+Date <- "2018-03-09"
 
 # Set path to wherever the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
@@ -293,7 +293,9 @@ for(p in 1:3){
     # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
     remove.ind <- which(colnames(final.tab) %in% remove.these)
     final.tab <- final.tab[-remove.ind]
-    axis.labels <- nice.pms$polished[-(remove.ind-1)]
+    #colns <- data.frame(original=colnames(final.tab)[-1])
+    axis.ind <- match(x = colnames(final.tab)[-1],table = nice.pms$original)
+    axis.labels <- nice.pms$polished[axis.ind]
     final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
   plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
                             grid.label.size=3,axis.label.size=8, 
