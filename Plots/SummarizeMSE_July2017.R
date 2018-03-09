@@ -12,8 +12,8 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Anchovy" #FF type to summarize
-Date <- "2018-03-07"
+Type = "Menhaden" #FF type to summarize
+Date <- "2018-03-08"
 
 # Set path to wherever the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
@@ -153,10 +153,10 @@ str(results)
 
 # Plot a few sample time series (can modify to look at specific issues)
 par(mfrow=c(2,1))
-plot(results[[1]]$intended.f[1,],type='l',ylab="Fishing rate",ylim=c(0,30))
-lines(results[[1]]$fishing[1,],col='red')
 plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate",ylim=c(0,30))
 lines(results[[1]]$fishing[2,],col='red')
+plot(results[[1]]$intended.f[3,],type='l',ylab="Fishing rate",ylim=c(0,30))
+lines(results[[1]]$fishing[3,],col='red')
 par(mfrow=c(4,1))
 plot(results[[2]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
 lines(results[[2]]$total.catch[1,],col='red')
@@ -166,7 +166,16 @@ plot(results[[2]]$biomass.oneplus.true[3,],type='l',ylab="Biomass")
 lines(results[[2]]$total.catch[3,],col='red')
 plot(results[[2]]$biomass.oneplus.true[4,],type='l',ylab="Biomass")
 lines(results[[2]]$total.catch[4,],col='red')
-plot(results[[2]]$total.catch[4,],col='red',type='l')
+par(mfrow=c(4,1))
+plot(results[[5]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
+lines(results[[5]]$total.catch[1,],col='red')
+plot(results[[5]]$biomass.oneplus.true[2,],type='l',ylab="Biomass")
+lines(results[[5]]$total.catch[2,],col='red')
+plot(results[[5]]$biomass.oneplus.true[3,],type='l',ylab="Biomass")
+lines(results[[5]]$total.catch[3,],col='red')
+plot(results[[5]]$biomass.oneplus.true[4,],type='l',ylab="Biomass")
+lines(results[[5]]$total.catch[4,],col='red')
+# plot(results[[2]]$total.catch[4,],col='red',type='l')
 
 # Look at catches to make sure they're sort of following the rule
 par(mfrow=c(4,1))
@@ -187,7 +196,7 @@ lines(results[[16]]$total.catch[1,],col='red')              # 16 is delayed dete
 plot(results[[14]]$total.catch[2,],type='l',ylab="Catches")
 lines(results[[16]]$total.catch[2,],col='red')
 
-par(mfrow=c(2,1))
+par(mfrow=c(2,2))
 sim = 3
 plot(results[[14]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="C1")
 lines(results[[14]]$total.catch[sim,],col='red')
@@ -199,13 +208,20 @@ lines(results[[32]]$total.catch[sim,],col='red')
 lines(results[[34]]$biomass.oneplus.obs[sim,],col="grey")
 lines(results[[34]]$total.catch[sim,],col="pink")
 
+sim=22
+plot(results[[2]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[4]]$biomass.oneplus.obs[sim,])),main="CFP")
+lines(results[[2]]$total.catch[sim,],col='red')
+lines(results[[4]]$biomass.oneplus.obs[sim,],col="grey")
+lines(results[[4]]$total.catch[sim,],col="pink")
 
 
-nexamples = 9
+
+nexamples = 16
+scenario = 6
 dim = sqrt(nexamples)
 par(mfrow=c(dim,dim))
-for(i in (1:nexamples)+60){
-  plot(results[[34]]$biomass.total.true[i,],type='l',ylab="B_total true") #Check 34 too... should have some crashes
+for(i in (1:nexamples)){
+  plot(results[[scenario]]$biomass.total.true[i,],type='l',ylab="B_total true") #Check 34 too... should have some crashes
 }
 
 
@@ -327,9 +343,6 @@ pairs(p1[,-rm],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),labels=axis.labels,low
 }
 dev.off()
 
-p2 <- subset(all.scaled,scen != 3)
-pairs(p2[,-rm],col=p2$cols,pch=p2$scen,xlim=c(0,1),ylim=c(0,1),labels=axis.labels)
-
 # Change labels of things in the table! --------------------------
 raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type, 
                                                        'Tim'='Delayed change detection',
@@ -340,10 +353,6 @@ raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type,
                                  'C2' = 'C2',
                                  'C3' = 'C3',
                                  'trend' = "Trend-based"))
-
-
-
-
 
 # Plot DD scenarios & check random seeds to make sure they match ------------
 # For plotting the differences between AC error and delayed detection
@@ -374,7 +383,7 @@ lines(dd$no.fishing.tb[5,yrs],col='green',lty=2)
 lines(ac$total.catch[1,yrs],lty=2,col='red')
 lines(dd$total.catch[1,yrs],lty=2,col='blue')
 
-plot(ac$total.catch[1,yrs],type='l',col='red',ylab="Total catches",xlab="Year",ylim=c(0,250000))
+plot(ac$total.catch[1,yrs],type='l',col='red',ylab="Total catches",xlab="Year",ylim=c(0,5000))
 lines(dd$total.catch[1,yrs],col='blue')
 
 
@@ -388,7 +397,7 @@ dd <- results[[4]]
 
 yrs <- 1:250
 par(mfrow=c(1,1))
-sim <- 5
+sim <- 14
 plot(ac$total.catch[sim,yrs],col=hcr.colors[6],type='l',lwd=2)
 lines(dd$total.catch[sim,yrs],col=hcr.colors[6],lwd=2,lty=2)
 
