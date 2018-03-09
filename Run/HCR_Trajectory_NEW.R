@@ -208,6 +208,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     if(hcr.type=="cfp"){
       imp.rate <- calc.F.cfp(prevCatch = ifelse(yr==1,0.1,catch[yr-1]),   # If it's year 1, only a smidgeon of catch. Otherwise, determine f from hockey stick and previous year's catch, à la "CFP" rule (although this isn't technically the rule for CFP anymore). 0.1*sum(biomass[,yr])
                                 Bobs = biomass[,yr], 
+                                Bobsprev = ifelse(yr==1,biomass[,yr],biomass[,yr-1]),
                                 Btru = biomass.true[,yr], #Total biomass
                                 Blim = 0.5*equilib$Bmsy, 
                                 Btarget = equilib$Bmsy, 
