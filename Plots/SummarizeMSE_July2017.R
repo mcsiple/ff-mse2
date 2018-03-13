@@ -299,10 +299,13 @@ for(p in 1:3){
     which.bad <- which(colnames(tab.metrics) %in% bad.pms)
 
     # NOTE: this scales everything between 0 and 1... which is kind of weird because it can make little differences look HUGE
-    tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) 1-(x/ifelse(all(x==0),1,max(x,na.rm=T)))) # Turn all the "bad" PMs to their inverse
-    tab.metrics[,-which.bad] <- apply(tab.metrics[,-which.bad],MARGIN = 2,FUN = function(x) (x-min(x))/(max(x)-min(x)))
+    #tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) 1-(x/ifelse(all(x==0),1,max(x,na.rm=T)))) # Turn all the "bad" PMs to their inverse
+    #tab.metrics[,-which.bad] <- apply(tab.metrics[,-which.bad],MARGIN = 2,FUN = function(x) (x-min(x))/(max(x)-min(x)))
     
-    
+    # OPTION #2: if you want to scale to the best performance but not necessarily between 0 (worst) and 1 (best)
+    # PRscaled = 1- min(1, PR / Z)
+    #tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) 1 - min(1,x/0.001)) 
+    # NEED SOMETHING BETTER FOR THIS OPTION! Argh.
     
     tab.metrics[is.na(tab.metrics)] <- 1
     remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
