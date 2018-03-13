@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Sardine" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 Date <- "2018-03-09"
 
 # Set path to wherever the simulation results are:
@@ -301,10 +301,17 @@ for(p in 1:3){
     remove.ind <- which(colnames(tab.metrics) %in% remove.these)
     tab.metrics <- tab.metrics[-remove.ind]
     
+    # Sometimes there won't be collapses, so for those turn NA's into zeroes (collapse length and severity)
+    tab.metrics[,c("CollapseLength","Collapse.Severity")][is.na(tab.metrics[,c("CollapseLength","Collapse.Severity")])] <- 0
     #Here we deal with the PMs that are NEGATIVES (i.e., a high value for these is bad news) - I chose Option 3 below
     bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV(Catch)","Bonafide.Collapse")
     which.bad <- which(colnames(tab.metrics) %in% bad.pms)
-    tab.metrics[,c("SDcatch","CollapseLength")] <- 1/tab.metrics[,c("SDcatch","CollapseLength")]
+    
+    # For PMs with non-decimal values:
+    tab.metrics[,c("SDcatch","CollapseLength")] <- 1 / tab.metrics[,c("SDcatch","CollapseLength")]
+    tab.metrics$CollapseLength[is.infinite(tab.metrics$CollapseLength)] <- 1 # for when there are no collapses (get rid of infinite values)
+    
+    # PMs with decimal values:
     tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")] <- 1 - tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")]
     tab.metrics[,c("nyrs0catch")] <- 1-(tab$nyrs0catch/nyrs.to.use) # This is essentially now the proportion of years when there *wasn't* 0 catch
     
