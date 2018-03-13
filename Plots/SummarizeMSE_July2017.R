@@ -293,43 +293,54 @@ plots <- data.frame("steepness"=c(0.6,0.9,0.6),"obs.error.type" = c("AC","AC","T
 for(p in 1:3){
     tab <- subset(raw.table,obs.error.type == as.character(plots$obs.error.type[p]) & h == plots$steepness[p] & M.type == "constant")
     tab.metrics <- tab[,-(1:7)]
+    crs <- tab[,"HCR"]
+
+    #tab.metrics[is.na(tab.metrics)] <- 1
+    remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
+    # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
+    remove.ind <- which(colnames(tab.metrics) %in% remove.these)
+    tab.metrics <- tab.metrics[-remove.ind]
     
-    #Here are the PMs that are NEGATIVES (i.e., a high value for these is bad news)
+    #Here we deal with the PMs that are NEGATIVES (i.e., a high value for these is bad news) - I chose Option 3 below
     bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV(Catch)","Bonafide.Collapse")
     which.bad <- which(colnames(tab.metrics) %in% bad.pms)
-
-    # NOTE: this scales everything between 0 and 1... which is kind of weird because it can make little differences look HUGE
+    tab.metrics[,c("SDcatch","CollapseLength")] <- 1/tab.metrics[,c("SDcatch","CollapseLength")]
+    tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")] <- 1 - tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")]
+    tab.metrics[,c("nyrs0catch")] <- 1-(tab$nyrs0catch/nyrs.to.use) # This is essentially now the proportion of years when there *wasn't* 0 catch
+    
+    #tab.metrics[,-which.bad]
+    props <- tab.metrics
+    props <- apply(props, MARGIN = 2,FUN = function(x) x/max(x,na.rm=T))
+    all(props<=1) # check to make sure everything worked
+    
+    # OPTION #1: this scales everything between 0 and 1... which is kind of weird because it can make little differences look HUGE
     #tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) 1-(x/ifelse(all(x==0),1,max(x,na.rm=T)))) # Turn all the "bad" PMs to their inverse
     #tab.metrics[,-which.bad] <- apply(tab.metrics[,-which.bad],MARGIN = 2,FUN = function(x) (x-min(x))/(max(x)-min(x)))
     
     # OPTION #2: if you want to scale to the best performance but not necessarily between 0 (worst) and 1 (best)
     # PRscaled = 1- min(1, PR / Z)
-    #tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) 1 - min(1,x/0.001)) 
-    # NEED SOMETHING BETTER FOR THIS OPTION! Argh.
     
-    tab.metrics[is.na(tab.metrics)] <- 1
-    remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
-    # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
-    remove.ind <- which(colnames(tab.metrics) %in% remove.these)
-    tab.metrics <- tab.metrics[-remove.ind]
-    props <- tab.metrics
-    maxes <- apply(X = tab.metrics,MARGIN = 2,FUN = max,na.rm  = T)
-    for(i in 1:nrow(props)){
-      props[i,] <- tab.metrics[i,] / maxes
-    }
-    
-    final.tab <- cbind(tab[,'HCR'],props)
-    colnames(final.tab)[1] <- "group"
-    # final.tab[,c("CollapseLength","Collapse.Severity")][is.na(final.tab[,c("CollapseLength","Collapse.Severity")])] <- 1 # If no collapses, HCR will automatically score the best on these metrics of length & severity 
+    # OPTION #3: scale differently for different metrics. 
+    # 1/x for all the "bad" performance measures that come in numbers >= 1: PRscaled = 1/PR
+            # SD catch
+            # Collapse length
+    # 1-x for all the "bad" performance measures that come in numbers <1: PRscaled = 1-PR
+            # Probability of collapse
+            # Probability of a 5-yr closure given that there was a closure
+            # Proportion of years with zero catch
+            # Collapse severity
+    # if the whole column is zero for any of these, make all PRscaled=1
+
+    final.tab <- data.frame(group = crs,props)
     test.nas <- apply(X = final.tab,FUN = anyNA,MARGIN = 2)
     na.metrics <- names(which(test.nas))
     
-    # if(length(na.metrics>0)){
-    #   print(paste("The following performance metrics had NAs and were removed from the figure: ",na.metrics))
-    #   final.tab <- final.tab[,-which(test.nas)]
-    #   rm.metrics <- which(nice.pms$original %in% na.metrics)
-    #   axis.labels <- nice.pms[-rm.metrics,'polished']
-    # }
+    if(length(na.metrics>0)){
+      print(paste("The following performance metrics had NAs and were removed from the figure: ",na.metrics))
+      final.tab <- final.tab[,-which(test.nas)]
+      rm.metrics <- which(nice.pms$original %in% na.metrics)
+      axis.labels <- nice.pms[-rm.metrics,'polished']
+    }
     
     legend.presence <- ifelse(p == 1,TRUE,FALSE)
     axis.ind <- match(x = colnames(final.tab)[-1],table = nice.pms$original)
@@ -371,7 +382,7 @@ dev.off()
 # Try a pairs plot --------------------------------------------------------
 
 all.scaled$scen <- rep(c(1,2,3),each=length(unique(raw.table$HCR))) # This is different from "scenario" in tables above
-all.scaled$cols <- rep(hcr.colors[c(6,4,1,2,3,5)],times=length(unique(all.scaled$scen)))
+all.scaled$cols <- rep(hcr.colors[c(6,5,1,2,3,4)],times=length(unique(all.scaled$scen)))
 pairsnames <- c("Base case","High steepness","Delayed detection")
 pdf(paste("PAIRS_",Type,".pdf",sep=""), width=11,height=8.5,onefile = TRUE)
 for(i in 1:3){
