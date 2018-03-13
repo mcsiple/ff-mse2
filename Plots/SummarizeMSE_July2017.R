@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 Date <- "2018-03-09"
 
 # Set path to wherever the simulation results are:
@@ -153,9 +153,9 @@ str(results)
 
 # Plot a few sample time series (can modify to look at specific issues)
 par(mfrow=c(2,1))
-plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate",ylim=c(0,30))
+plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate",ylim=c(0,5))
 lines(results[[1]]$fishing[2,],col='red')
-plot(results[[1]]$intended.f[3,],type='l',ylab="Fishing rate",ylim=c(0,30))
+plot(results[[1]]$intended.f[3,],type='l',ylab="Fishing rate",ylim=c(0,5))
 lines(results[[1]]$fishing[3,],col='red')
 par(mfrow=c(4,1))
 plot(results[[2]]$biomass.oneplus.true[1,],type='l',ylab="Biomass")
@@ -196,23 +196,50 @@ lines(results[[16]]$total.catch[1,],col='red')              # 16 is delayed dete
 plot(results[[14]]$total.catch[2,],type='l',ylab="Catches")
 lines(results[[16]]$total.catch[2,],col='red')
 
+
+
+
+# Plot example time series of 1+ biomass for each of the control rules-- together!
+    #autcorrelated errors: 2,8,14,20,26,32
+    #dd errors: 4,10,16,22,28,34
+plot.these <- subset(scenarios, h==0.6 & obs.error.type =="Tim")$scenario
 par(mfrow=c(2,2))
-sim = 3
-plot(results[[14]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="C1")
-lines(results[[14]]$total.catch[sim,],col='red')
-lines(results[[16]]$biomass.oneplus.obs[sim,],col="grey")
-lines(results[[16]]$total.catch[sim,],col="pink")
+for(sim in 1:4){
+plot(results[[plot.these[1]]]$biomass.oneplus.true[sim,],col=hcr.colors[6],type='l',lwd=1.5,ylab="True 1+ Biomass")
+#lines(results[[2]]$biomass.oneplus.true[sim,],col=hcr.colors[6],type='l',lwd=1.5,lty=2)
+lines(results[[plot.these[2]]]$biomass.oneplus.true[sim,],col=hcr.colors[5],type='l',lwd=1.5)
+lines(results[[plot.these[3]]]$biomass.oneplus.true[sim,],col=hcr.colors[1],type='l',lwd=1.5)
+lines(results[[plot.these[4]]]$biomass.oneplus.true[sim,],col=hcr.colors[2],type='l',lwd=1.5)
+lines(results[[plot.these[5]]]$biomass.oneplus.true[sim,],col=hcr.colors[3],type='l',lwd=1.5)
+lines(results[[plot.these[6]]]$biomass.oneplus.true[sim,],col=hcr.colors[4],type='l',lwd=1.5)
+}
 
-plot(results[[32]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="Hi constF")
-lines(results[[32]]$total.catch[sim,],col='red')
-lines(results[[34]]$biomass.oneplus.obs[sim,],col="grey")
-lines(results[[34]]$total.catch[sim,],col="pink")
+for(sim in 1:4){
+  plot(results[[plot.these[1]]]$total.catch[sim,],col=hcr.colors[6],type='l',lwd=1.5,ylab="Total catches")
+  #lines(results[[2]]$total.catch[sim,],col=hcr.colors[6],type='l',lwd=1.5,lty=2)
+  lines(results[[plot.these[2]]]$total.catch[sim,],col=hcr.colors[5],type='l',lwd=1.5)
+  lines(results[[plot.these[3]]]$total.catch[sim,],col=hcr.colors[1],type='l',lwd=1.5)
+  lines(results[[plot.these[4]]]$total.catch[sim,],col=hcr.colors[2],type='l',lwd=1.5)
+  lines(results[[plot.these[5]]]$total.catch[sim,],col=hcr.colors[3],type='l',lwd=1.5)
+  lines(results[[plot.these[6]]]$total.catch[sim,],col=hcr.colors[4],type='l',lwd=1.5)
+}
 
-sim=22
-plot(results[[2]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[4]]$biomass.oneplus.obs[sim,])),main="CFP")
-lines(results[[2]]$total.catch[sim,],col='red')
-lines(results[[4]]$biomass.oneplus.obs[sim,],col="grey")
-lines(results[[4]]$total.catch[sim,],col="pink")
+# par(mfrow=c(2,2))
+# plot(results[[14]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="C1")
+# lines(results[[14]]$total.catch[sim,],col='red')
+# lines(results[[16]]$biomass.oneplus.obs[sim,],col="grey")
+# lines(results[[16]]$total.catch[sim,],col="pink")
+# 
+# plot(results[[32]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="Hi constF")
+# lines(results[[32]]$total.catch[sim,],col='red')
+# lines(results[[34]]$biomass.oneplus.obs[sim,],col="grey")
+# lines(results[[34]]$total.catch[sim,],col="pink")
+# 
+# sim=22
+# plot(results[[2]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[4]]$biomass.oneplus.obs[sim,])),main="CFP")
+# lines(results[[2]]$total.catch[sim,],col='red')
+# lines(results[[4]]$biomass.oneplus.obs[sim,],col="grey")
+# lines(results[[4]]$total.catch[sim,],col="pink")
 
 
 
@@ -266,34 +293,42 @@ plots <- data.frame("steepness"=c(0.6,0.9,0.6),"obs.error.type" = c("AC","AC","T
 for(p in 1:3){
     tab <- subset(raw.table,obs.error.type == as.character(plots$obs.error.type[p]) & h == plots$steepness[p] & M.type == "constant")
     tab.metrics <- tab[,-(1:7)]
+    
     #Here are the PMs that are NEGATIVES (i.e., a high value for these is bad news)
     bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV(Catch)","Bonafide.Collapse")
     which.bad <- which(colnames(tab.metrics) %in% bad.pms)
-    tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) ifelse(x==0,1,1/x)) # Turn all the "bad" PMs to their inverse
+
+    # NOTE: this scales everything between 0 and 1... which is kind of weird because it can make little differences look HUGE
+    tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) 1-(x/ifelse(all(x==0),1,max(x,na.rm=T)))) # Turn all the "bad" PMs to their inverse
+    tab.metrics[,-which.bad] <- apply(tab.metrics[,-which.bad],MARGIN = 2,FUN = function(x) (x-min(x))/(max(x)-min(x)))
+    
+    
+    
+    tab.metrics[is.na(tab.metrics)] <- 1
+    remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
+    # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
+    remove.ind <- which(colnames(tab.metrics) %in% remove.these)
+    tab.metrics <- tab.metrics[-remove.ind]
     props <- tab.metrics
     maxes <- apply(X = tab.metrics,MARGIN = 2,FUN = max,na.rm  = T)
     for(i in 1:nrow(props)){
       props[i,] <- tab.metrics[i,] / maxes
     }
+    
     final.tab <- cbind(tab[,'HCR'],props)
     colnames(final.tab)[1] <- "group"
-    final.tab[,c("overallMaxCollapseLength","CollapseLength","Collapse.Severity")][is.na(final.tab[,c("overallMaxCollapseLength","CollapseLength","Collapse.Severity")])] <- 1 # If no collapses, HCR will automatically score the best on these metrics of length & severity 
+    # final.tab[,c("CollapseLength","Collapse.Severity")][is.na(final.tab[,c("CollapseLength","Collapse.Severity")])] <- 1 # If no collapses, HCR will automatically score the best on these metrics of length & severity 
     test.nas <- apply(X = final.tab,FUN = anyNA,MARGIN = 2)
     na.metrics <- names(which(test.nas))
     
-    if(length(na.metrics>0)){
-      print(paste("The following performance metrics had NAs and were removed from the figure: ",na.metrics))
-      final.tab <- final.tab[,-which(test.nas)]
-      rm.metrics <- which(nice.pms$original %in% na.metrics)
-      axis.labels <- nice.pms[-rm.metrics,'polished']
-    }
+    # if(length(na.metrics>0)){
+    #   print(paste("The following performance metrics had NAs and were removed from the figure: ",na.metrics))
+    #   final.tab <- final.tab[,-which(test.nas)]
+    #   rm.metrics <- which(nice.pms$original %in% na.metrics)
+    #   axis.labels <- nice.pms[-rm.metrics,'polished']
+    # }
     
     legend.presence <- ifelse(p == 1,TRUE,FALSE)
-    remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
-    # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
-    remove.ind <- which(colnames(final.tab) %in% remove.these)
-    final.tab <- final.tab[-remove.ind]
-    #colns <- data.frame(original=colnames(final.tab)[-1])
     axis.ind <- match(x = colnames(final.tab)[-1],table = nice.pms$original)
     axis.labels <- nice.pms$polished[axis.ind]
     final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
