@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 Date <- "2018-03-09"
 
 # Set path to wherever the simulation results are:
@@ -53,22 +53,23 @@ setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir, otherwise
 # Fxns for summarizing and plotting ---------------------------------------
 
 all.summaries <- NA
-all.summaries <- lapply(results,FUN = summ.tab)   # This will take a while
+all.summaries <- lapply(results,FUN = summ.tab, calc.ind = calc.ind, ou.ind = NA)   # This will take a while
 all.summaries <- do.call(rbind.data.frame, all.summaries)
 all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
 
 # Match the scenarios to type of error, etc.
 all.summaries <- merge(all.summaries,raw.table[,1:7],by="scenario")    # all.summaries is a giant table with 1080 rows = 72 scenarios * 15 PMs
-all.summaries2 <- mutate(all.summaries, obs.error.type = recode(obs.error.type, 
-                                                               'Tim'='Delayed change detection',
-                                                               'AC' = "Autocorrelated"),
-                        HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-                                     'constF' = 'Low F',
-                                     'C1' = 'Basic hockey stick',
-                                     'C2' = 'Low Blim',
-                                     'C3' = 'High Fmax',
-                                     'trend' = "Trend-based",
-                                     'constF_HI' = "High F"))
+all.summaries2 <- all.summaries %>% mutate(obs.error.type = recode_factor(obs.error.type, 
+                                                                   "Tim"="Delayed change detection",
+                                                                   "AC" = "Autocorrelated"),
+                                           HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
+                                                        'constF' = 'Low F',
+                                                        'C1' = 'Basic hockey stick',
+                                                        'C2' = 'Low Blim',
+                                                        'C3' = 'High Fmax',
+                                                        'trend' = "Trend-based",
+                                                        'constF_HI' = "High F"))
+                                           
 
 write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
@@ -204,18 +205,18 @@ lines(results[[16]]$total.catch[2,],col='red')
     #dd errors: 4,10,16,22,28,34
 plot.these <- subset(scenarios, h==0.6 & obs.error.type =="Tim")$scenario
 par(mfrow=c(2,2))
-for(sim in 1:4){
-plot(results[[plot.these[1]]]$biomass.oneplus.true[sim,],col=hcr.colors[6],type='l',lwd=1.5,ylab="True 1+ Biomass")
-#lines(results[[2]]$biomass.oneplus.true[sim,],col=hcr.colors[6],type='l',lwd=1.5,lty=2)
-lines(results[[plot.these[2]]]$biomass.oneplus.true[sim,],col=hcr.colors[5],type='l',lwd=1.5)
+for(sim in 24:27){
+plot(results[[plot.these[1]]]$biomass.oneplus.true[sim,],col=hcr.colors[6],type='n',lwd=1.5,ylab="True 1+ Biomass")
+    #lines(results[[2]]$biomass.oneplus.true[sim,],col=hcr.colors[6],type='l',lwd=1.5,lty=2)
+#lines(results[[plot.these[2]]]$biomass.oneplus.true[sim,],col=hcr.colors[5],type='l',lwd=1.5)
 lines(results[[plot.these[3]]]$biomass.oneplus.true[sim,],col=hcr.colors[1],type='l',lwd=1.5)
 lines(results[[plot.these[4]]]$biomass.oneplus.true[sim,],col=hcr.colors[2],type='l',lwd=1.5)
-lines(results[[plot.these[5]]]$biomass.oneplus.true[sim,],col=hcr.colors[3],type='l',lwd=1.5)
-lines(results[[plot.these[6]]]$biomass.oneplus.true[sim,],col=hcr.colors[4],type='l',lwd=1.5)
+#lines(results[[plot.these[5]]]$biomass.oneplus.true[sim,],col=hcr.colors[3],type='l',lwd=1.5)
+#lines(results[[plot.these[6]]]$biomass.oneplus.true[sim,],col=hcr.colors[4],type='l',lwd=1.5)
 }
 
 for(sim in 1:4){
-  plot(results[[plot.these[1]]]$total.catch[sim,],col=hcr.colors[6],type='l',lwd=1.5,ylab="Total catches")
+  plot(results[[plot.these[1]]]$total.catch[sim,],col=hcr.colors[6],type='n',lwd=1.5,ylab="Total catches")
   #lines(results[[2]]$total.catch[sim,],col=hcr.colors[6],type='l',lwd=1.5,lty=2)
   lines(results[[plot.these[2]]]$total.catch[sim,],col=hcr.colors[5],type='l',lwd=1.5)
   lines(results[[plot.these[3]]]$total.catch[sim,],col=hcr.colors[1],type='l',lwd=1.5)
@@ -224,6 +225,11 @@ for(sim in 1:4){
   lines(results[[plot.these[6]]]$total.catch[sim,],col=hcr.colors[4],type='l',lwd=1.5)
 }
 
+
+#  Why is collapse severity worse for basic hockey than for Low Bl --------
+plot(results[[plot.these[1]]]$no.fishing.tb[sim,],col='black',type='l',lwd=1.5,ylab="1+ Biomass")
+lines(results[[plot.these[3]]]$biomass.total.true[sim,],col=hcr.colors[1],lwd=1.5)
+lines(results[[plot.these[4]]]$biomass.total.true[sim,],col=hcr.colors[2],lwd=1.5)
 # par(mfrow=c(2,2))
 # plot(results[[14]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="C1")
 # lines(results[[14]]$total.catch[sim,],col='red')
@@ -310,6 +316,7 @@ for(p in 1:3){
     # For PMs with non-decimal values:
     tab.metrics[,c("SDcatch","CollapseLength")] <- 1 / tab.metrics[,c("SDcatch","CollapseLength")]
     tab.metrics$CollapseLength[is.infinite(tab.metrics$CollapseLength)] <- 1 # for when there are no collapses (get rid of infinite values)
+    tab.metrics$SDcatch[is.infinite(tab.metrics$SDcatch)] <- 1 # there is also a case where SDcatch is zero because catches crash before the final 100 yrs
     
     # PMs with decimal values:
     tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")] <- 1 - tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")]
