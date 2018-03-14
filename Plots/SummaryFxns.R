@@ -144,6 +144,7 @@ n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows a
 
 # Get summary metrics so you can make Zeh plots (or whatever you want)
 summ.tab <- function(result.list, individual.sim = FALSE,calc.ind = calc.ind, ou.ind = NA){ #result.list is one of the results (=1 harvest rule, 1000 time series of biomass, catch, fishing, rec, depl)
+  # calc.ind is the index of which years to calculate over
   for(i in 1:length(result.list)){
     result.list[[i]] <- result.list[[i]][,calc.ind]
     if(length(ou.ind)>1){result.list[[i]] <- result.list[[i]][ou.ind,]}
