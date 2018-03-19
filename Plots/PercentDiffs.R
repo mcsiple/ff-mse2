@@ -8,11 +8,11 @@ library(RColorBrewer)
 resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results"
 
 # *** Before starting: Check to make sure these directories are results you want
-aa <- read.csv(file.path(resultsdir,"Anchovy2018-03-09/Anchovy2018-03-13_outputs.csv"))
+aa <- read.csv(file.path(resultsdir,"Anchovy2018-03-09/Anchovy2018-03-19_outputs.csv"))
 aa$Type = "Anchovy"
-mm <-read.csv(file.path(resultsdir,"Menhaden2018-03-09/Menhaden2018-03-13_outputs.csv"))
+mm <-read.csv(file.path(resultsdir,"Menhaden2018-03-09/Menhaden2018-03-19_outputs.csv"))
 mm$Type = "Menhaden"
-ss <- read.csv(file.path(resultsdir,"Sardine2018-03-09/Sardine2018-03-13_outputs.csv"))
+ss <- read.csv(file.path(resultsdir,"Sardine2018-03-09/Sardine2018-03-19_outputs.csv"))
 ss$Type = "Sardine"
 dat <- rbind.fill(aa,mm,ss)     # This is an amalgamation of all the raw.tables from the results files
 
@@ -85,7 +85,7 @@ dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)] <- NA
 dat3.new$percentlabel[which(is.infinite(dat3.new$percentlabel))] <- NA # replace the two "inf" values with NA
 
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = "PercentDiffsErrors_031318.pdf",width = 11,height = 9,useDingbats = FALSE)
+pdf(file = "PercentDiffsErrors_031918.pdf",width = 11,height = 9,useDingbats = FALSE)
 ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors) +
