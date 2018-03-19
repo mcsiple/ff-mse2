@@ -141,6 +141,14 @@ n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows a
 # Rcpproll demo:
 # set.seed(1); x <- sample(c(T, F), 100, replace = T); sum(RcppRoll::roll_sum(x, 3) == 3)
 
+# For testing summ.tab - run these then you can run the interior of the function:
+# result.list = results[[14]] #C1=14; C2=20
+# individual.sim = FALSE
+# calc.ind = 151:250
+# ou.ind = NA
+# collapse.severity.C1[which(!is.na(collapse.severity.C1))]
+# collapse.severity.C2[which(!is.na(collapse.severity.C2))]
+
 
 # Get summary metrics so you can make Zeh plots (or whatever you want)
 summ.tab <- function(result.list, individual.sim = FALSE,calc.ind = calc.ind, ou.ind = NA){ #result.list is one of the results (=1 harvest rule, 1000 time series of biomass, catch, fishing, rec, depl)
@@ -261,6 +269,7 @@ summ.tab <- function(result.list, individual.sim = FALSE,calc.ind = calc.ind, ou
   } else{
   bon.length <- quantile(avg.duration.bonanza,probs = interval,na.rm = T)
   }
+  
   # whatever
   if(all(is.na(avg.duration.collapse))){
     coll.length <- rep(NA,times=3)
