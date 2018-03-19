@@ -31,6 +31,7 @@ setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir, otherwise
   files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
   results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all results
   
+  
   # NOTE: SKIP TO ~LINE 79 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
   
   nscenarios <- length(results)
@@ -70,7 +71,7 @@ all.summaries2 <- all.summaries %>% mutate(obs.error.type = recode_factor(obs.er
                                                         'trend' = "Trend-based",
                                                         'constF_HI' = "High F"))
                                            
-
+subset(all.summaries2, h==0.6 & obs.error.type=="Autocorrelated" & PM == "Collapse.Severity")
 write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 
@@ -151,7 +152,16 @@ for (s in 1:nscenarios){
 write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
 
 str(results)
+subset(raw.table,h==0.6 & obs.error.type=="Autocorrelated")
 
+
+# Set colors! :) ----------------------------------------------------------
+# Colour palette options for plots - some of these are from iWantHue and some are ColorBrewer
+#palette <- brewer_pal(type="qual",palette=2)
+#palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
+palette <- brewer.pal(6,"Spectral")
+hcr.colors <- palette[c(6,5,4,1,3,2)]
+#show_col(hcr.colors) # C1, C2, C3, constF, stability-favoring, trend-based (this is the order of the colors)
 # Plot a few sample time series (can modify to look at specific issues)
 par(mfrow=c(2,1))
 plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate",ylim=c(0,5))
@@ -185,6 +195,7 @@ plot(results[[2]]$fishing[i,],col='red',type='l')
 }
 
 # Look at scenarios with no obs error and make sure intended f = f
+sim = 22
 plot(results[[5]]$intended.f[sim,],type='l')
 lines(results[[5]]$fishing[sim,],col='red')
 plot(results[[6]]$intended.f[sim,],type='l')
@@ -203,7 +214,7 @@ lines(results[[16]]$total.catch[2,],col='red')
 # Plot example time series of 1+ biomass for each of the control rules-- together!
     #autcorrelated errors: 2,8,14,20,26,32
     #dd errors: 4,10,16,22,28,34
-plot.these <- subset(scenarios, h==0.6 & obs.error.type =="Tim")$scenario
+plot.these <- subset(raw.table, h==0.6 & obs.error.type =="Tim")$scenario
 par(mfrow=c(2,2))
 for(sim in 24:27){
 plot(results[[plot.these[1]]]$biomass.oneplus.true[sim,],col=hcr.colors[6],type='n',lwd=1.5,ylab="True 1+ Biomass")
@@ -263,14 +274,6 @@ for(i in (1:nexamples)){
 ############################################################################
 
 #pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
-
-# Put control rules in order so they plot right
-# Colour palette options for plots - some of these are from iWantHue and some are ColorBrewer
-#palette <- brewer_pal(type="qual",palette=2)
-#palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
-palette <- brewer.pal(6,"Spectral")
-hcr.colors <- palette[c(6,5,4,1,3,2)]
-#show_col(hcr.colors) # C1, C2, C3, constF, stability-favoring, trend-based (this is the order of the colors)
 
 raw.table <- mutate(raw.table, HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
                                             'constF' = 'Low F',
