@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 Date <- "2018-03-09"
 
 # Set path to wherever the simulation results are:
@@ -152,7 +152,7 @@ for (s in 1:nscenarios){
 write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
 
 str(results)
-subset(raw.table,h==0.6 & obs.error.type=="Autocorrelated")
+subset(raw.table,h==0.6 & obs.error.type=="AC")
 
 
 # Set colors! :) ----------------------------------------------------------
@@ -161,7 +161,7 @@ subset(raw.table,h==0.6 & obs.error.type=="Autocorrelated")
 #palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
 palette <- brewer.pal(6,"Spectral")
 hcr.colors <- palette[c(6,5,4,1,3,2)]
-#show_col(hcr.colors) # C1, C2, C3, constF, stability-favoring, trend-based (this is the order of the colors)
+#show_col(hcr.colors) # C1, C2, C3, constF, stability-favoring (this is the order of the colors)
 # Plot a few sample time series (can modify to look at specific issues)
 par(mfrow=c(2,1))
 plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate",ylim=c(0,5))
@@ -214,26 +214,27 @@ lines(results[[16]]$total.catch[2,],col='red')
 # Plot example time series of 1+ biomass for each of the control rules-- together!
     #autcorrelated errors: 2,8,14,20,26,32
     #dd errors: 4,10,16,22,28,34
-plot.these <- subset(raw.table, h==0.6 & obs.error.type =="Tim")$scenario
+plot.these <- subset(raw.table, h==0.9 & obs.error.type =="AC")$scenario
+calc.ind=1:250 #for when you want to look at the whole simulation!
 par(mfrow=c(2,2))
-for(sim in 24:27){
-plot(results[[plot.these[1]]]$biomass.oneplus.true[sim,],col=hcr.colors[6],type='n',lwd=1.5,ylab="True 1+ Biomass")
-    #lines(results[[2]]$biomass.oneplus.true[sim,],col=hcr.colors[6],type='l',lwd=1.5,lty=2)
-#lines(results[[plot.these[2]]]$biomass.oneplus.true[sim,],col=hcr.colors[5],type='l',lwd=1.5)
-lines(results[[plot.these[3]]]$biomass.oneplus.true[sim,],col=hcr.colors[1],type='l',lwd=1.5)
-lines(results[[plot.these[4]]]$biomass.oneplus.true[sim,],col=hcr.colors[2],type='l',lwd=1.5)
-#lines(results[[plot.these[5]]]$biomass.oneplus.true[sim,],col=hcr.colors[3],type='l',lwd=1.5)
-#lines(results[[plot.these[6]]]$biomass.oneplus.true[sim,],col=hcr.colors[4],type='l',lwd=1.5)
+for(sim in 21:24){
+plot(results[[plot.these[5]]]$biomass.oneplus.true[sim,calc.ind],type='n',lwd=1.5,ylab="True 1+ Biomass")
+lines(results[[plot.these[1]]]$biomass.oneplus.true[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
+lines(results[[plot.these[2]]]$biomass.oneplus.true[sim,calc.ind],col=hcr.colors[5],lwd=1.5)
+lines(results[[plot.these[3]]]$biomass.oneplus.true[sim,calc.ind],col=hcr.colors[1],lwd=1.5)
+lines(results[[plot.these[4]]]$biomass.oneplus.true[sim,calc.ind],col=hcr.colors[2],lwd=1.5)
+lines(results[[plot.these[5]]]$biomass.oneplus.true[sim,calc.ind],col=hcr.colors[3],lwd=1.5)
+lines(results[[plot.these[6]]]$biomass.oneplus.true[sim,calc.ind],col=hcr.colors[4],lwd=1.5)
 }
 
-for(sim in 1:4){
-  plot(results[[plot.these[1]]]$total.catch[sim,],col=hcr.colors[6],type='n',lwd=1.5,ylab="Total catches")
-  #lines(results[[2]]$total.catch[sim,],col=hcr.colors[6],type='l',lwd=1.5,lty=2)
-  lines(results[[plot.these[2]]]$total.catch[sim,],col=hcr.colors[5],type='l',lwd=1.5)
-  lines(results[[plot.these[3]]]$total.catch[sim,],col=hcr.colors[1],type='l',lwd=1.5)
-  lines(results[[plot.these[4]]]$total.catch[sim,],col=hcr.colors[2],type='l',lwd=1.5)
-  lines(results[[plot.these[5]]]$total.catch[sim,],col=hcr.colors[3],type='l',lwd=1.5)
-  lines(results[[plot.these[6]]]$total.catch[sim,],col=hcr.colors[4],type='l',lwd=1.5)
+for(sim in 21:24){
+  plot(results[[plot.these[5]]]$total.catch[sim,calc.ind],col=hcr.colors[5],type='n',lwd=1.5,ylab="Total catches")
+  lines(results[[plot.these[1]]]$total.catch[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
+  lines(results[[plot.these[2]]]$total.catch[sim,calc.ind],col=hcr.colors[5],lwd=1.5)
+  lines(results[[plot.these[3]]]$total.catch[sim,calc.ind],col=hcr.colors[1],lwd=1.5)
+  lines(results[[plot.these[4]]]$total.catch[sim,calc.ind],col=hcr.colors[2],lwd=1.5)
+  lines(results[[plot.these[5]]]$total.catch[sim,calc.ind],col=hcr.colors[3],lwd=1.5)
+  lines(results[[plot.these[6]]]$total.catch[sim,calc.ind],col=hcr.colors[4],lwd=1.5)
 }
 
 
