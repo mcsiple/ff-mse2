@@ -25,7 +25,7 @@ mdat <- melt(dat,id.vars=c("Type","obs.error.type","HCR"))
 
 
 dat2 <- dcast(mdat,Type+HCR+variable ~ obs.error.type)
-dat2$percentdiff <- ((dat2$Tim - dat2$AC) / dat2$Tim) * 100 # Calc % diff between delay detection and AC 
+dat2$percentdiff <- ((dat2$Tim - dat2$AC) / dat2$AC) * 100 # Calc % diff between delay detection and AC 
 
 dat3 <- subset(dat2,!variable %in% c("overallMaxCollapseLength","LTnonzeromeancatch","n.10yrclose","meanDepl","good4preds","very.bad4preds","Bonafide.Collapse","overallMaxBonanzaLength","SDbiomass","CV.Catch"))
 
@@ -37,7 +37,15 @@ dat3 <- mutate(dat3,HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
                                  'trend' = "Trend-based",
                                  'constF_HI' = "High F"))
 setwd("~/Dropbox/Chapter4-HarvestControlRules/Tables")
-write.csv(dat3,"PercentDiffs_031318.csv")
+for(i in 1:nrow(dat3)){
+  if(dat3$AC[i]==0 & dat3$Tim[i]==0){
+    dat3$percentdiff[i] <- 0    
+  }
+  if(is.infinite(dat3$percentdiff[i])){
+    dat3$percentdiff[i] <- 100
+  }
+}
+write.csv(dat3,"PercentDiffs_032118.csv")
 
 # Start here if you’ve already calculated percent differences -------------
 setwd("~/Dropbox/Chapter4-HarvestControlRules/Figures/")
@@ -85,7 +93,7 @@ dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)] <- NA
 dat3.new$percentlabel[which(is.infinite(dat3.new$percentlabel))] <- NA # replace the two "inf" values with NA
 
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = "PercentDiffsErrors_031918.pdf",width = 11,height = 9,useDingbats = FALSE)
+pdf(file = "PercentDiffsErrors_032118.pdf",width = 11,height = 9,useDingbats = FALSE)
 ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors) +
@@ -98,6 +106,12 @@ ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   xlab("Performance metric") + 
   ylim(c(-130,130)) + coord_flip()
 dev.off()
+
+
+
+# Maybe add line plots to the top with time series? -----------------------
+#sardine.eg <- # just pick out the scenarios you want, load results
+
 
 
 
