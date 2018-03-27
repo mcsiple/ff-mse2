@@ -71,7 +71,8 @@ all.summaries2 <- all.summaries %>% mutate(obs.error.type = recode_factor(obs.er
                                                         'trend' = "Trend-based",
                                                         'constF_HI' = "High F"))
                                            
-subset(all.summaries2, h==0.6 & obs.error.type=="Autocorrelated" & PM == "Collapse.Severity")
+subset(all.summaries2, h==0.6 & obs.error.type=="Autocorrelated" & PM == "CollapseLength") 
+# 14 is basic hockey, 20 is low Blim, 26 is high Fmax
 write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 
@@ -214,7 +215,7 @@ lines(results[[16]]$total.catch[2,],col='red')
 # Plot example time series of 1+ biomass for each of the control rules-- together!
     #autcorrelated errors: 2,8,14,20,26,32
     #dd errors: 4,10,16,22,28,34
-plot.these <- subset(raw.table, h==0.9 & obs.error.type =="AC")$scenario
+plot.these <- subset(raw.table, h==0.6 & obs.error.type =="AC")$scenario
 calc.ind=1:250 #for when you want to look at the whole simulation!
 par(mfrow=c(2,2))
 for(sim in 21:24){
@@ -239,9 +240,12 @@ for(sim in 21:24){
 
 
 #  Why is collapse severity worse for basic hockey than for Low Bl --------
+par(mfrow=c(1,1))
 plot(results[[plot.these[1]]]$no.fishing.tb[sim,],col='black',type='l',lwd=1.5,ylab="1+ Biomass")
 lines(results[[plot.these[3]]]$biomass.total.true[sim,],col=hcr.colors[1],lwd=1.5)
 lines(results[[plot.these[4]]]$biomass.total.true[sim,],col=hcr.colors[2],lwd=1.5)
+lines(results[[plot.these[5]]]$biomass.total.true[sim,],col=hcr.colors[3],lwd=1.5)
+
 # par(mfrow=c(2,2))
 # plot(results[[14]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="C1")
 # lines(results[[14]]$total.catch[sim,],col='red')
