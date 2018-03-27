@@ -333,4 +333,259 @@ for(s in 1:nscenarios){  #
 } # end of scenarios loop
 
 
+###########################################################################
+###########################################################################
+###########################################################################
+###########################################################################
+###########################################################################
+###########################################################################
+# Read them all in; plot and stuff ----------------------------------------
+
+
+library(gtools)
+library(RcppRoll)
+library(plyr); library(dplyr)
+library(scales)
+library(gridExtra)
+library(extrafont)
+library(RColorBrewer)
+library(reshape2)
+library(ggplot2)
+source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
+source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
+Type = "Anchovy" #FF type to summarize
+
+# Set path to wherever the simulation results are:
+path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/Sensitivity/mortality")
+setwd(path)  
+
+# Read all files into giant list
+files <- list.files(path=path)
+rm <- grep(files,pattern = ".txt") # Don't load the text table summary
+files <- files[-rm]
+files <- files[grep(files, pattern = ".RData")] #only load rdata files
+files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
+results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all results
+nscenarios <- length(results)
+raw.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
+nsims <- nrow(results[[1]]$biomass.oneplus.true) # count nrows to know how many sims there are
+years.test <- ncol(results[[1]]$biomass.oneplus.true) # count cols to know how many years there are
+nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
+calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
+
+# Add performance measure columns to table
+performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
+pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") # for distinguishing types of PMs (mostly for plotting...)
+raw.table[,performance.measures] <- NA
+
+
+# ------------------------------------------------------------------------
+# Summarize everything in one giant "outputs" table - this is ugly, sorry
+# ------------------------------------------------------------------------
+
+# Fxns for summarizing and plotting ---------------------------------------
+
+all.summaries <- NA
+all.summaries <- lapply(results,FUN = summ.tab, calc.ind = calc.ind, ou.ind = NA)   # This will take a while
+all.summaries <- do.call(rbind.data.frame, all.summaries)
+all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
+
+# Match the scenarios to type of error, etc.
+all.summaries <- merge(all.summaries,raw.table[,1:8],by="scenario")    # all.summaries is a giant table with 1080 rows = 72 scenarios * 15 PMs
+all.summaries2 <- all.summaries %>% mutate(obs.error.type = recode_factor(obs.error.type, 
+                                                                          "Tim"="Delayed change detection",
+                                                                          "AC" = "Autocorrelated"),
+                                           HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
+                                                               'constF' = 'Low F',
+                                                               'C1' = 'Basic hockey stick',
+                                                               'C2' = 'Low Blim',
+                                                               'C3' = 'High Fmax',
+                                                               'trend' = "Trend-based",
+                                                               'constF_HI' = "High F"))
+
+subset(all.summaries2, h==0.6 & obs.error.type=="Autocorrelated" & PM == "Collapse.Severity")
+write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
+
+for (s in 1:nscenarios){
+  #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
+  result.to.use <- results[[s]]
+  raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind],na.rm = TRUE)) 
+  #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
+  nonzero.catch <- result.to.use$total.catch[,calc.ind]
+  nonzero.catch <- ifelse(nonzero.catch<0.1,NA,nonzero.catch)
+  mnz.catches <- rowMeans(nonzero.catch,na.rm=TRUE)
+  raw.table[s,performance.measures[2]] <- median(mnz.catches,na.rm = TRUE) #"LTnonzeromeancatch"
+  raw.table[s,performance.measures[3]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = sd,MARGIN = 1)) 
+  ######
+  five.yr.closure.given1 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5 / 
+    n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1
+  median.P5 <- median(five.yr.closure.given1,na.rm=TRUE) # This is now the # of 5-year closures given a 1-year closure
+  if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0) &
+     all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1==0)){
+    median.P5 = 0
+  }
+  
+  raw.table[s,performance.measures[4]] <- median.P5 # Mean number of 5-yr closures given a 1-yr closure
+  
+  ######
+  ten.yr.closure.given5 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10 / 
+    n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5
+  median.P10 <- median(ten.yr.closure.given5,na.rm=TRUE) 
+  if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10==0) &
+     all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0)){
+    median.P10 = 0
+  }
+  
+  raw.table[s,performance.measures[5]] <- median.P10 # Mean number of 10-yr closures given a 5-yr closure
+  ######
+  raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
+  
+  raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$biomass.total.true[,calc.ind])) # "meanbiomass"
+  
+  raw.table[s,performance.measures[8]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],
+                                                       FUN = good4pred,MARGIN = 1, 
+                                                       F0.x = result.to.use$no.fishing.tb[,calc.ind])) # "good4preds" - this is calculated from TOTAL biomass (including age 0)
+  
+  raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
+  
+  yrs.bad <- apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are very bad for preds - length of vector is nsims 
+  
+  raw.table[s,performance.measures[10]] <- median(yrs.bad)
+  
+  sw <- subset(all.summaries,scenario==s)
+  for(pm in 11:19){
+    select.ind <- which(sw$PM == performance.measures[pm]) 
+    raw.table[s,performance.measures[pm]] <- sw[select.ind,'med'] 
+  }
+  # 1. Depletion
+  # 2. max collapse length
+  # 3. **N**max bonanza length
+  # 4. Mean bonanza length
+  # 5. Mean collapse length
+  # 6. # probability of collapse 
+  # 7. Collapse severity
+  # 8. CV.Catch
+  # 9. Bonafide.collapse
+} 
+
+write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
+
+
+#  Some plots -------------------------------------------------------------
+palette <- brewer.pal(6,"Spectral")
+hcr.colors <- palette[c(6,5,4,1,3,2)]
+raw.table <- mutate(raw.table, HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
+                                                   'constF' = 'Low F',
+                                                   'C1' = 'Basic hockey stick',
+                                                   'C2' = 'Low Blim',
+                                                   'C3' = 'High Fmax',
+                                                   'constF_HI' = "High F"))
+
+# Kite plots showing tradeoffs --------------------------------------------
+
+nice.pms <- data.frame(original = colnames(raw.table)[-(1:8)],
+                       polished = c("Mean catch","Mean nonzero catch",
+                                    "Catch stability","Minimize \n P(5-yr closure)",
+                                    "Minimize \n P(10-yr closure)","Minimize years \n w/ zero catch",
+                                    "Mean biomass","Number of yrs \n above pred threshold",
+                                    "SD(Biomass)","Number of yrs \n below low pred threshold",
+                                    "Mean depletion","Max collapse length","Max bonanza length",
+                                    "Bonanza length","Minimize \n collapse length", "Minimize \n P(collapse)",
+                                    "Minimize \n collapse severity","CV(Catch)","Minimize \n long collapses"))
+
+plotnames <- list()
+tileplots <- list()
+all.scaled <- vector()
+plots <- data.frame("steepness"=0.6,"obs.error.type" = "AC","LH"=unique(raw.table$LH))
+
+for(p in 1:5){
+  tab <- subset(raw.table,obs.error.type == as.character(plots$obs.error.type[p]) & h == plots$steepness[p] & LH == plots$LH[p])
+  tab.metrics <- tab[,-c(1:2,4:6,8)]
+  crs <- tab[,"HCR"]
+  remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
+  # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
+  remove.ind <- which(colnames(tab.metrics) %in% remove.these)
+  tab.metrics <- tab.metrics[-remove.ind]
+  
+  # Sometimes there won't be collapses, so for those turn NA's into zeroes (collapse length and severity)
+  tab.metrics[,c("CollapseLength","Collapse.Severity")][is.na(tab.metrics[,c("CollapseLength","Collapse.Severity")])] <- 0
+  #Here we deal with the PMs that are NEGATIVES (i.e., a high value for these is bad news) - I chose Option 3 below
+  bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV(Catch)","Bonafide.Collapse")
+  which.bad <- which(colnames(tab.metrics) %in% bad.pms)
+  
+  # For PMs with non-decimal values:
+  tab.metrics[,c("SDcatch","CollapseLength")] <- 1 / tab.metrics[,c("SDcatch","CollapseLength")]
+  tab.metrics$CollapseLength[is.infinite(tab.metrics$CollapseLength)] <- 1 # for when there are no collapses (get rid of infinite values)
+  tab.metrics$SDcatch[is.infinite(tab.metrics$SDcatch)] <- 1 # there is also a case where SDcatch is zero because catches crash before the final 100 yrs
+  
+  # PMs with decimal values:
+  tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")] <- 1 - tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")]
+  tab.metrics[,c("nyrs0catch")] <- 1-(tab$nyrs0catch/nyrs.to.use) # This is essentially now the proportion of years when there *wasn't* 0 catch
+  
+  #tab.metrics[,-which.bad]
+  props <- tab.metrics[,-(1:2)]
+  props <- apply(props, MARGIN = 2,FUN = function(x) x/max(x,na.rm=T))
+  all(props<=1) # check to make sure everything worked
+  
+  # OPTION #1: this scales everything between 0 and 1... which is kind of weird because it can make little differences look HUGE
+  #tab.metrics[,which.bad] <- apply(tab.metrics[,which.bad],MARGIN = 2,FUN = function(x) 1-(x/ifelse(all(x==0),1,max(x,na.rm=T)))) # Turn all the "bad" PMs to their inverse
+  #tab.metrics[,-which.bad] <- apply(tab.metrics[,-which.bad],MARGIN = 2,FUN = function(x) (x-min(x))/(max(x)-min(x)))
+  
+  # OPTION #2: if you want to scale to the best performance but not necessarily between 0 (worst) and 1 (best)
+  # PRscaled = 1- min(1, PR / Z)
+  
+  # OPTION #3: scale differently for different metrics. 
+  # 1/x for all the "bad" performance measures that come in numbers >= 1: PRscaled = 1/PR
+  # SD catch
+  # Collapse length
+  # 1-x for all the "bad" performance measures that come in numbers <1: PRscaled = 1-PR
+  # Probability of collapse
+  # Probability of a 5-yr closure given that there was a closure
+  # Proportion of years with zero catch
+  # Collapse severity
+  # if the whole column is zero for any of these, make all PRscaled=1
+  
+  final.tab <- data.frame(group = crs,props)
+  test.nas <- apply(X = final.tab,FUN = anyNA,MARGIN = 2)
+  na.metrics <- names(which(test.nas))
+  
+  if(length(na.metrics>0)){
+    print(paste("The following performance metrics had NAs and were removed from the figure: ",na.metrics))
+    final.tab <- final.tab[,-which(test.nas)]
+    rm.metrics <- which(nice.pms$original %in% na.metrics)
+    axis.labels <- nice.pms[-rm.metrics,'polished']
+  }
+  
+  legend.presence <- ifelse(p == 1,TRUE,FALSE)
+  axis.ind <- match(x = colnames(final.tab)[-1],table = nice.pms$original)
+  axis.labels <- nice.pms$polished[axis.ind]
+  final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
+  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
+                            grid.label.size=3,axis.label.size=8, 
+                            legend.text.size = 4,
+                            axis.labels = axis.labels,
+                            plot.legend=FALSE,
+                            palette.vec = hcr.colors[1:5],
+                            manual.levels = levels(final.tab$group)[1:5])
+  
+  # ftm <- melt(final.tab,id.vars="group")
+  # ftm$name <- ftm$variable
+  # ftm$name <- factor(ftm$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity"))
+  # ftm$group <- factor(ftm$group,c("Basic hockey stick","Low Blim","High Fmax","Low F","High F","Stability-favoring"))
+  # ftm <- mutate(ftm,name = recode_factor(name, 'LTmeancatch' = "Mean catch",
+  #                                        "meanbiomass" = "Mean biomass",
+  #                                        "BonanzaLength" = "Bonanza Length",
+  #                                        'SDcatch' = "Minimize \n catch variation",
+  #                                        'nyrs0catch' = "Minimize \n years with 0 catch",
+  #                                        'n.5yrclose' = "Minimize \n P(5 yr closure|closure)",
+  #                                        "CollapseLength" = "Minimize \n collapse length",
+  #                                        "Prob.Collapse" = "Minimize P(collapse)",
+  #                                        "Collapse.Severity" = "Minimize collapse severity"))
+  # tileplots[[p]] <- ggplot(ftm,aes(x=name,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="RdYlBu",trans="reverse") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + geom_text(aes(label=round(value,digits = 1)))
+  all.scaled <- rbind(all.scaled,final.tab)
+}
+
+pdf(file = paste(Type,Sys.Date(),"SENSITIVITY_KitePlots_v2.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
+grid.arrange(plotnames[[1]],plotnames[[1]],plotnames[[2]],plotnames[[3]],plotnames[[4]],plotnames[[5]],ncol=2)
+dev.off()
 
