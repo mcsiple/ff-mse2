@@ -246,25 +246,6 @@ lines(results[[plot.these[3]]]$biomass.total.true[sim,],col=hcr.colors[1],lwd=1.
 lines(results[[plot.these[4]]]$biomass.total.true[sim,],col=hcr.colors[2],lwd=1.5)
 lines(results[[plot.these[5]]]$biomass.total.true[sim,],col=hcr.colors[3],lwd=1.5)
 
-# par(mfrow=c(2,2))
-# plot(results[[14]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="C1")
-# lines(results[[14]]$total.catch[sim,],col='red')
-# lines(results[[16]]$biomass.oneplus.obs[sim,],col="grey")
-# lines(results[[16]]$total.catch[sim,],col="pink")
-# 
-# plot(results[[32]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[14]]$biomass.oneplus.obs[sim,])),main="Hi constF")
-# lines(results[[32]]$total.catch[sim,],col='red')
-# lines(results[[34]]$biomass.oneplus.obs[sim,],col="grey")
-# lines(results[[34]]$total.catch[sim,],col="pink")
-# 
-# sim=22
-# plot(results[[2]]$biomass.oneplus.obs[sim,],type='l',ylab="",ylim=c(0,max(results[[4]]$biomass.oneplus.obs[sim,])),main="CFP")
-# lines(results[[2]]$total.catch[sim,],col='red')
-# lines(results[[4]]$biomass.oneplus.obs[sim,],col="grey")
-# lines(results[[4]]$total.catch[sim,],col="pink")
-
-
-
 nexamples = 16
 scenario = 6
 dim = sqrt(nexamples)
