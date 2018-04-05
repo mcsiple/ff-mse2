@@ -316,6 +316,7 @@ colnames(data)[4] <- "Year"
 
 
 # Change col names to match code, which is for RAM only
+head(dplyr::rename(data,stockname=stock,TB = ssb,R=rec,ER=fishing.mortality))
 colnames(data)[3] <- "stockname"
 colnames(data)[5:6] <- c("TB","R")
 colnames(data)[8] <- "ER"   # Fishing mortality in some datasets, "exploitation rate" in RAM
@@ -445,9 +446,9 @@ stock.count<-apply(FUN=yearcount,X=outputB[,long.index],1)
 
 
 # only save output for populations that have 25 years or more of population biomass
-outputB<-outputB[,long.index]
-outputF<-outputF[,long.index]
-outputR<-outputR[,long.index]
+outputB <- outputB[,long.index]
+outputF <- outputF[,long.index]
+outputR <- outputR[,long.index]
 
 B.data.mat <- matrix(NA,nrow=ncol(outputB),ncol=11) # **** NOTE: I haven't used B data mat yet! It is a relic from the olden days of this code
 R.data.mat <- matrix(NA,nrow=ncol(outputR),ncol=11)
@@ -457,7 +458,7 @@ colnames(B.data.mat) <-colnames(R.data.mat) <-  c("Rec Length","SD.R","Beta.r","
 # outputB saved from B and F summary, includes all data
 
 
-outputB.all<-outputB
+outputB.all <- outputB
 outputR.all <- outputR
 
 ###### Load data, extract total biomass ONLY for calculation of lambdas
@@ -493,7 +494,7 @@ for ( i in 1:ncol(outputR)){
 }
 
 sardine.save <- R.data.mat[,c("Rec Length","SD.R","Beta.r","lowerCI","upperCI","beta SE")]
-write.csv(sardine.save,"Sardine_Rec_Spectra.csv")
+write.csv(sardine.save,"Sardine_Rec_Spectra.csv") 
 
 herring.anch.save <- R.data.mat[,c("Rec Length","SD.R","Beta.r","lowerCI","upperCI","beta SE")]
 write.csv(herring.anch.save,file="AnchHerring_Rec_Spectra.csv")
@@ -534,7 +535,7 @@ sd.beta.kernel<-bkde2D(cbind(estimated.beta,estimated.sd.r),bandwidth=c(beta.bw,
 #########Begin Randomization Test ##############
 # setup information
 ts.lengths<-as.numeric(nyears.list[which(nyears.list>25)])
-n.stocks<-55 # number of stocks with 25 or more years of data
+n.stocks <- 55 # number of stocks with 25 or more years of data
 n.sims<-1000
 
 # tolerance on simulated B time series, in terms of beta and sd
@@ -554,7 +555,7 @@ p.collapse<-matrix(NA,nrow=n.sims,ncol=2)
 p.uber.collapse<-matrix(NA,nrow=n.sims,ncol=2)
 duration.output<-rep(NA,n.sims)
 
-# Begin simulations - this takes a long time!
+# Begin simulations -THIS TAKES A LONG TIME!!
 for (sim in 1:n.sims){
   # create a matrix to hold n.stocks time series and their properites
   ts.properties<-matrix(NA,nrow=n.stocks,ncol=3)
@@ -601,7 +602,7 @@ for (sim in 1:n.sims){
         beta.flag=(test.beta.B<beta.B.tol[2]&test.beta.B>beta.B.tol[1])
         sd.flag<-(test.sd.B<sd.B.tol[2]&test.sd.B>sd.B.tol[1])
         # if conditions are met, save output in ts.output and move onto next stock
-        if (beta.flag&sd.flag){
+        if (beta.flag&sd.flag){ 
           flag=1
           ts.properties[i,1]<-min(adj.sample)
           ts.properties[i,2]<-max(adj.sample)
