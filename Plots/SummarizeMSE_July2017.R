@@ -25,25 +25,23 @@ setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir, otherwise
 
 # Read all files into giant list
   files <- list.files(path=path)
-  rm <- grep(files,pattern = ".txt") # Don't load the text table summary
+  rm <- grep(files,pattern = ".txt") # Don't load text table summary
   files <- files[-rm]
-  files <- files[grep(files, pattern = ".RData")] #only load rdata files
+  files <- files[grep(files, pattern = ".RData")] # load rdata files
   files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
-  results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # This is a giant list of all results
-  
-  
-  # NOTE: SKIP TO ~LINE 79 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
-  
+  results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # giant list
   nscenarios <- length(results)
-  raw.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
   nsims <- nrow(results[[1]]$biomass.oneplus.true) # count nrows to know how many sims there are
   years.test <- ncol(results[[1]]$biomass.oneplus.true) # count cols to know how many years there are
-  nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics - There are no big differences btwn 50 and 100 yrs
-  calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use)
+  nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics
+  calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use) 
   
   # Add performance measure columns to table
   performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
   pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") # for distinguishing types of PMs (mostly for plotting...)
+  
+  # NOTE: SKIP TO LINE 79 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
+  raw.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
   raw.table[,performance.measures] <- NA
 
 
@@ -61,16 +59,15 @@ all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
 # Match the scenarios to type of error, etc.
 all.summaries <- merge(all.summaries,raw.table[,1:7],by="scenario")    # all.summaries is a giant table with 1080 rows = 72 scenarios * 15 PMs
 all.summaries2 <- all.summaries %>% mutate(obs.error.type = recode_factor(obs.error.type, 
-                                                                   "Tim"="Delayed change detection",
-                                                                   "AC" = "Autocorrelated"),
+                                                                          "Tim"="Delayed change detection",
+                                                                          "AC" = "Autocorrelated"),
                                            HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
-                                                        'constF' = 'Low F',
-                                                        'C1' = 'Basic hockey stick',
-                                                        'C2' = 'Low Blim',
-                                                        'C3' = 'High Fmax',
-                                                        'trend' = "Trend-based",
-                                                        'constF_HI' = "High F"))
-                                           
+                                                               'constF' = 'Low F',
+                                                               'C1' = 'Basic hockey stick',
+                                                               'C2' = 'Low Blim',
+                                                               'C3' = 'High Fmax',
+                                                               'trend' = "Trend-based",
+                                                               'constF_HI' = "High F"))           
 subset(all.summaries2, h==0.6 & obs.error.type=="Autocorrelated" & PM == "CollapseLength") 
 # 14 is basic hockey, 20 is low Blim, 26 is high Fmax
 write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
@@ -78,13 +75,11 @@ write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 
 # Just load the raw table, if you have already run the code below  --------
-    opfile <- grep("outputs",x = list.files()) # Find outputs file
+    opfile <- grep("outputs.csv",x = list.files()) # Find outputs file - csv only
      raw.table <- read.csv(list.files()[opfile])
     if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } # if you use read.csv you need this
+    all.summaries2 <- read.csv(paste(Type,"_AllSummaries.csv",sep=""))
 
-# See if performance metrics are correlated -------------------------------
-# sims.all <- lapply(results,FUN = summ.tab, individual.sim = TRUE)
-# pairs(sims.all[[33]],pch=19,col=rgb(0,0,0,0.2))
 
 # Table of summary stats! -----------------------------------------------------------
  
@@ -134,7 +129,7 @@ for (s in 1:nscenarios){
 
   raw.table[s,performance.measures[10]] <- median(yrs.bad)
   
-  sw <- subset(all.summaries,scenario==s)
+  sw <- subset(all.summaries2,scenario==s)
   for(pm in 11:19){
     select.ind <- which(sw$PM == performance.measures[pm]) 
     raw.table[s,performance.measures[pm]] <- sw[select.ind,'med'] 
@@ -469,7 +464,7 @@ median(dd.means)
 ###########################################################################
 
 # Zeh plots (e.g. Punt 2015) -----------------------------------------------
-ggplot(all.summaries,aes(x=HCR,y=med,colour=HCR)) +
+ggplot(all.summaries2,aes(x=HCR,y=med,colour=HCR)) +
   geom_point(size=3,shape=20) +
   geom_pointrange(aes(ymin=loCI,ymax=hiCI)) +
   facet_grid(PM~h+obs.error.type, scales = "free_y") +
