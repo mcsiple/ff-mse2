@@ -23,11 +23,11 @@ for (t in 2:length(timelist)) {
 }
 
 setwd('/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures')
-plotfilename <- "DelayedDetection.pdf"
+plotfilename <- "DelayedDetection_2.pdf"
 pdf(file = plotfilename, height = 7, width = 10,useDingbats = FALSE)
 par(mfrow=c(1,1))
-lotau.col <- "red" #539E59"
-hitau.col <- "orange" #BBD961" # light green
+lotau.col <- "#0F2B5F" #"red" #539E59" 
+hitau.col <- "#8EC1E7" #"orange" #BBD961" # light green
 plot(timelist,B, type = "l", lwd = 2, col = "black", xlab = "", ylab = " ", ylim = c(0, 275), axes = F)
 box()
 mtext(side = 2, text = "Population Size", line = 1)
@@ -55,7 +55,7 @@ for (t in 2:length(timelist)) {
 lines(timelist, E, lwd = 2, col = hitau.col)
 points(timelist, E, pch=21, bg = hitau.col)
 
-legend('topright',pch=rep(21,times=3),pt.bg=c('black',lotau.col,hitau.col),legend=c("Biomass","Large changes \n not expected","Large changes expected"))
+legend('topright',pch=rep(21,times=3),pt.bg=c('black',lotau.col,hitau.col),legend=c("Biomass",paste("Large changes \n not expected (", expression(tau),"hey"), "Large changes expected"))
 
 dev.off()
 #system2("open",args=c("-a Skim.app",plotfilename))
