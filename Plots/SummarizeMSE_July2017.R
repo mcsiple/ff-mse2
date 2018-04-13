@@ -21,24 +21,24 @@ path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Typ
 # Menhaden: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
 # Sardine: "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,"2017-07-20","/",sep=""
 
-setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir, otherwise you'll get an error
+setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir
 
 # Read all files into giant list
   files <- list.files(path=path)
-  rm <- grep(files,pattern = ".txt") # Don't load text table summary
+  rm <- grep(files,pattern = ".txt") # Don't load text summary
   files <- files[-rm]
   files <- files[grep(files, pattern = ".RData")] # load rdata files
-  files <- mixedsort(files) # IMPORTANT: need this line to order in same order as scenario table!
+  files <- mixedsort(files) # IMPORTANT: order in same order as scenario table!
   results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # giant list
   nscenarios <- length(results)
   nsims <- nrow(results[[1]]$biomass.oneplus.true) # count nrows to know how many sims there are
   years.test <- ncol(results[[1]]$biomass.oneplus.true) # count cols to know how many years there are
-  nyrs.to.use <- 100 # How many years you want to use to calculate all your metrics
-  calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate median depletion over (length = nyrs.to.use) 
+  nyrs.to.use <- 100 
+  calc.ind <- tail(1:years.test, nyrs.to.use) # Which years to calculate metrics over (length = nyrs.to.use) 
   
   # Add performance measure columns to table
   performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
-  pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") # for distinguishing types of PMs (mostly for plotting...)
+  pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") 
   
   # NOTE: SKIP TO LINE 79 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
   raw.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
@@ -57,7 +57,7 @@ all.summaries <- do.call(rbind.data.frame, all.summaries)
 all.summaries$scenario <- rep(1:nscenarios,each=length(performance.measures))
 
 # Match the scenarios to type of error, etc.
-all.summaries <- merge(all.summaries,raw.table[,1:7],by="scenario")    # all.summaries is a giant table with 1080 rows = 72 scenarios * 15 PMs
+all.summaries <- merge(all.summaries,raw.table[,1:7],by="scenario")  # all.summaries is a giant table with 1080 rows = 72 scenarios * 15 PMs
 all.summaries2 <- all.summaries %>% mutate(obs.error.type = recode_factor(obs.error.type, 
                                                                           "Tim"="Delayed change detection",
                                                                           "AC" = "Autocorrelated"),
@@ -96,7 +96,7 @@ for (s in 1:nscenarios){
   ######
   five.yr.closure.given1 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5 / 
                             n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1
-  median.P5 <- median(five.yr.closure.given1,na.rm=TRUE) # This is now the # of 5-year closures given a 1-year closure
+  median.P5 <- median(five.yr.closure.given1,na.rm=TRUE) # This is now the probability of a 5-year closure given a 1-year closure
   if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0) &
      all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1==0)){
     median.P5 = 0
@@ -113,7 +113,7 @@ for (s in 1:nscenarios){
     median.P10 = 0
   }
   
-  raw.table[s,performance.measures[5]] <- median.P10 # Mean number of 10-yr closures given a 5-yr closure
+  raw.table[s,performance.measures[5]] <- median.P10 # Mean P(10-yr closure|5-yr closure)
   ######
   raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
   
@@ -152,12 +152,13 @@ subset(raw.table,h==0.6 & obs.error.type=="AC")
 
 
 # Set colors! :) ----------------------------------------------------------
-# Colour palette options for plots - some of these are from iWantHue and some are ColorBrewer
+# Colour palette options for plots - from iWantHue and some from ColorBrewer
 #palette <- brewer_pal(type="qual",palette=2)
 #palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
 palette <- brewer.pal(6,"Spectral")
 hcr.colors <- palette[c(6,5,4,1,3,2)]
-#show_col(hcr.colors) # C1, C2, C3, constF, stability-favoring (this is the order of the colors)
+
+
 # Plot a few sample time series (can modify to look at specific issues)
 par(mfrow=c(2,1))
 plot(results[[1]]$intended.f[2,],type='l',ylab="Fishing rate",ylim=c(0,5))
@@ -403,8 +404,7 @@ raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type,
                                  'trend' = "Trend-based"))
 
 # Plot DD scenarios & check random seeds to make sure they match ------------
-# For plotting the differences between AC error and delayed detection
-# First, for menhaden, try scenario 2 (AC) vs. 4 (DD)-- biggest change in p(closure)
+# First try scenario 2 (AC) vs. 4 (DD)-- biggest change in p(closure)
 ac <- results[[2]]
 dd <- results[[4]]
 yrs <- 1:250
