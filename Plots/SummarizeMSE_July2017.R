@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Anchovy" #FF type to summarize
+Type = "Menhaden" #FF type to summarize
 Date <- "2018-03-09"
 
 # Set path to wherever the simulation results are:
@@ -182,7 +182,6 @@ plot(results[[5]]$biomass.oneplus.true[3,],type='l',ylab="Biomass")
 lines(results[[5]]$total.catch[3,],col='red')
 plot(results[[5]]$biomass.oneplus.true[4,],type='l',ylab="Biomass")
 lines(results[[5]]$total.catch[4,],col='red')
-# plot(results[[2]]$total.catch[4,],col='red',type='l')
 
 # Look at catches to make sure they're sort of following the rule
 par(mfrow=c(4,1))
@@ -455,6 +454,25 @@ dd.means <- apply(dd$total.catch[,yrs],MARGIN = 1,FUN = mean)
 
 median(ac.means)
 median(dd.means)
+
+
+# Why does anchovy perform so much worse than menhaden @ high h? -----------
+hi.scen <- subset(raw.table,obs.error.type=="Autocorrelated" & h == 0.9)$scenario # scenarios w h=0.9 and obs.error="AC"
+anchovy.hi <- results[hi.scen]
+menhaden.hi <- results[hi.scen]
+
+calc.ind=1:250
+par(mfrow=c(2,2))
+for(sim in 21:24){ # stability-favoring specifically
+  # plot(menhaden.hi[[1]]$biomass.oneplus.true[sim,calc.ind],type='n',lwd=1.5,ylab="True 1+ Biomass",ylim=c(0,4e5))
+  # lines(menhaden.hi[[1]]$biomass.oneplus.true[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
+  # lines(anchovy.hi[[1]]$biomass.oneplus.true[sim,calc.ind],col='black',lwd=1.5)
+  plot(menhaden.hi[[1]]$no.fishing.tb[sim,calc.ind],type='n',lwd=1.5,ylab="True 1+ Biomass",ylim=c(0,8e5))
+  lines(menhaden.hi[[1]]$no.fishing.tb[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
+  lines(anchovy.hi[[1]]$no.fishing.tb[sim,calc.ind],col='black',lwd=1.5)
+}
+
+
 
 
 ###########################################################################
