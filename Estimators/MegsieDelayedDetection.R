@@ -23,17 +23,18 @@ for (t in 2:length(timelist)) {
 }
 
 setwd('/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures')
-plotfilename <- "DelayedDetection_2.pdf"
+plotfilename <- "DelayedDetection_blackbkd.pdf"
 pdf(file = plotfilename, height = 7, width = 10,useDingbats = FALSE)
 par(mfrow=c(1,1))
-lotau.col <- "#0F2B5F" #"red" #539E59" 
-hitau.col <- "#8EC1E7" #"orange" #BBD961" # light green
-plot(timelist,B, type = "l", lwd = 2, col = "black", xlab = "", ylab = " ", ylim = c(0, 275), axes = F)
-box()
+lotau.col <- "#FB323B" # blues: "#0F2B5F" #"red" #539E59" 
+hitau.col <-  "#C5E137" # blues: "#8EC1E7" #"orange" #BBD961" # light green
+par(bg = 'black', fg = 'white') # set background to black, foreground white
+plot(timelist,B, type = "l", lwd = 3, col = "white", xlab = "", ylab = " ", ylim = c(0, 275), axes = F)
+box() #make col="black" for plotting in paper (or other white bkd) 
 mtext(side = 2, text = "Population Size", line = 1)
-points(timelist, B, pch=21, bg = "black")
-lines(timelist, E, lwd = 2, col = lotau.col)
-points(timelist, E, pch=21, bg = lotau.col)
+points(timelist, B, pch=21, bg = "white") #change bg="black" if paper
+lines(timelist, E, lwd = 3, col = lotau.col)
+points(timelist, E, pch=21, bg = lotau.col, col=lotau.col)
 
 
 tau0 <-  1000
@@ -52,10 +53,11 @@ for (t in 2:length(timelist)) {
   E[t] <- E[t-1] * exp(rnorm(1,mu1.tmp,tau1))
 }
 
-lines(timelist, E, lwd = 2, col = hitau.col)
-points(timelist, E, pch=21, bg = hitau.col)
+lines(timelist, E, lwd = 3, col = hitau.col)
+points(timelist, E, pch=21, bg = hitau.col,col = hitau.col)
 
-legend('topright',pch=rep(21,times=3),pt.bg=c('black',lotau.col,hitau.col),
+legend('topright',pch=rep(21,times=3),pt.bg=c('white',lotau.col,hitau.col), # put 'black' here for paper
+       col=c('white',lotau.col,hitau.col),
        legend=c("Biomass",
                 expression(paste("Large changes not expected (",tau," = 0.1",")",sep="")),
                 expression(paste("Large changes expected (",tau," = 1000",")",sep=""))))
