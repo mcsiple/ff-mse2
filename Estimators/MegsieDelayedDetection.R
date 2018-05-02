@@ -55,7 +55,10 @@ for (t in 2:length(timelist)) {
 lines(timelist, E, lwd = 2, col = hitau.col)
 points(timelist, E, pch=21, bg = hitau.col)
 
-legend('topright',pch=rep(21,times=3),pt.bg=c('black',lotau.col,hitau.col),legend=c("Biomass",paste("Large changes \n not expected (", expression(tau),"hey"), "Large changes expected"))
+legend('topright',pch=rep(21,times=3),pt.bg=c('black',lotau.col,hitau.col),
+       legend=c("Biomass",
+                expression(paste("Large changes not expected (",tau," = 0.1",")",sep="")),
+                expression(paste("Large changes expected (",tau," = 1000",")",sep=""))))
 
 dev.off()
 #system2("open",args=c("-a Skim.app",plotfilename))
