@@ -315,13 +315,15 @@ ggradar_b <- function(plot.data,
                       plot.black= F, # I ADDED THIS ONE
                       legend.title="",
                       legend.text.size=grid.label.size,
-                      palette.vec = c("#D53E4F", "#FC8D59", "#FEE08B", "#E6F598", "#99D594", "#3288BD")) {
+                      palette.vec = c("#D53E4F", "#FC8D59", "#FEE08B", "#E6F598", "#99D594", "#3288BD"),
+                      manual.levels = NA) {
   
   library(ggplot2)
   
   plot.data <- as.data.frame(plot.data)
   
   plot.data[,1] <- as.factor(as.character(plot.data[,1]))
+  if(all(!is.na(manual.levels))){plot.data[,1] <- factor(plot.data[,1],levels = manual.levels)}
   names(plot.data)[1] <- "group"
   
   var.names <- colnames(plot.data)[-1]  #'Short version of variable names 
