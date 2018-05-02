@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 Date <- "2018-03-09"
 
 # Set path to wherever the simulation results are:
@@ -254,8 +254,6 @@ for(i in (1:nexamples)){
 # PLOTS AND METRICS TO SHOW OUTPUTS ----------------------------
 ############################################################################
 
-#pdf(paste(Type,"AllPlots",Sys.Date(),".pdf",sep=""),width = 10,height = 9,onefile = TRUE)
-
 raw.table <- mutate(raw.table, HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
                                             'constF' = 'Low F',
                                             'C1' = 'Basic hockey stick',
@@ -484,13 +482,32 @@ for(sim in 21:24){ # stability-favoring specifically
 
 
 # Single control rule for presentation ------------------------------------
-pick.hcr = "High Fmax"
-for(p in 1:3){
+pick.hcr = "Basic hockey stick"
+types = c("Sardine","Anchovy","Menhaden")
+plots <- data.frame("steepness"=c(0.6,0.9,0.6),"obs.error.type" = c("Autocorrelated","Autocorrelated","Delayed change detection"))
+
+p = 1
+for(sp in 1:3){
+  Type = types[sp]
+  Date <- "2018-03-09"
+  path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
+  setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir
+  opfile <- grep("outputs.csv",x = list.files()) # Find outputs file - csv only
+  raw.table <- read.csv(list.files()[opfile])
+  if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } # if you use read.csv you need this
+  raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type,
+                                                         'Tim'='Delayed change detection',
+                                                         'AC' = "Autocorrelated"),
+                      HCR = recode(HCR, 'cfp' = 'Stability-favoring',
+                                   'constF' = 'Low F',
+                                   'C1' = 'Basic hockey stick',
+                                   'C2' = 'Low Blim',
+                                   'C3' = 'High Fmax',
+                                   'constF_HI' = "High F"))
+#for(p in 1:3){ 
   tab <- subset(raw.table,obs.error.type == as.character(plots$obs.error.type[p]) & h == plots$steepness[p] & M.type == "constant")
   tab.metrics <- tab[,-(1:7)]
   crs <- tab[,"HCR"]
-  
-  #tab.metrics[is.na(tab.metrics)] <- 1
   remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
   # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
   remove.ind <- which(colnames(tab.metrics) %in% remove.these)
@@ -529,11 +546,11 @@ for(p in 1:3){
   axis.labels <- nice.pms$polished[axis.ind]
   final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
   final.tab <- subset(final.tab, group==pick.hcr)
-  plotnames[[p]] <- ggradar_b(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
+  plotnames[[sp]] <- ggradar_b(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
                               grid.label.size=3,axis.label.size=8, 
                               legend.text.size = 4,
                               axis.labels = axis.labels,
-                              plot.legend=legend.presence,palette.vec = hcr.colors[3],
+                              plot.legend=legend.presence,palette.vec = hcr.colors[which(levels(final.tab$group)==pick.hcr)],
                               manual.levels = factor(pick.hcr),
                               plot.black=T)
   
@@ -550,9 +567,13 @@ for(p in 1:3){
                                          "CollapseLength" = "Minimize \n collapse length",
                                          "Prob.Collapse" = "Minimize P(collapse)",
                                          "Collapse.Severity" = "Minimize collapse severity"))
-  tileplots[[p]] <- ggplot(ftm,aes(x=name,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="RdYlBu",trans="reverse") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + geom_text(aes(label=round(value,digits = 1)))
-  all.scaled <- rbind(all.scaled,final.tab)
 }
+
+setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
+pdf(file = paste("SAM",Sys.Date(),"_BlackBkd_KitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
+grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],ncol=1)
+dev.off() #This plot can be used in a presentation to compare life history types
+
 
 # Zeh plots (e.g. Punt 2015) -----------------------------------------------
 ggplot(all.summaries2,aes(x=HCR,y=med,colour=HCR)) +
