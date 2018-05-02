@@ -483,7 +483,8 @@ ggradar_b <- function(plot.data,
                 panel.grid.major=element_blank(),
                 panel.grid.minor=element_blank(),
                 panel.border=element_blank(),
-                legend.key=element_rect(linetype="blank"))
+                legend.key=element_rect(linetype="blank")
+                )
         }
   axis.label.color = ifelse(plot.black,"white","black")
     #Base-layer = axis labels + plot extent
