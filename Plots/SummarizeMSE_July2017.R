@@ -344,12 +344,13 @@ for(p in 1:3){
     axis.ind <- match(x = colnames(final.tab)[-1],table = nice.pms$original)
     axis.labels <- nice.pms$polished[axis.ind]
     final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
-  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
+  plotnames[[p]] <- ggradar_b(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
                             grid.label.size=3,axis.label.size=8, 
                                            legend.text.size = 4,
                                             axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors,
-                            manual.levels = levels(final.tab$group))
+                            manual.levels = levels(final.tab$group),
+                            plot.black=T)
   
   ftm <- melt(final.tab,id.vars="group")
   ftm$name <- ftm$variable
@@ -481,6 +482,78 @@ for(sim in 21:24){ # stability-favoring specifically
 ###########################################################################
 ###########################################################################
 
+
+# Single control rule for presentation ------------------------------------
+pick.hcr = "High Fmax"
+for(p in 1:3){
+  tab <- subset(raw.table,obs.error.type == as.character(plots$obs.error.type[p]) & h == plots$steepness[p] & M.type == "constant")
+  tab.metrics <- tab[,-(1:7)]
+  crs <- tab[,"HCR"]
+  
+  #tab.metrics[is.na(tab.metrics)] <- 1
+  remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
+  # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
+  remove.ind <- which(colnames(tab.metrics) %in% remove.these)
+  tab.metrics <- tab.metrics[-remove.ind]
+  
+  # Sometimes there won't be collapses, so for those turn NA's into zeroes (collapse length and severity)
+  tab.metrics[,c("CollapseLength","Collapse.Severity")][is.na(tab.metrics[,c("CollapseLength","Collapse.Severity")])] <- 0
+  #Here we deal with the PMs that are NEGATIVES (i.e., a high value for these is bad news) - I chose Option 3 below
+  bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV(Catch)","Bonafide.Collapse")
+  which.bad <- which(colnames(tab.metrics) %in% bad.pms)
+  
+  # For PMs with non-decimal values:
+  tab.metrics[,c("SDcatch","CollapseLength")] <- 1 / tab.metrics[,c("SDcatch","CollapseLength")]
+  tab.metrics$CollapseLength[is.infinite(tab.metrics$CollapseLength)] <- 1 # for when there are no collapses (get rid of infinite values)
+  tab.metrics$SDcatch[is.infinite(tab.metrics$SDcatch)] <- 1 # there is also a case where SDcatch is zero because catches crash before the final 100 yrs
+  
+  # PMs with decimal values:
+  tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")] <- 1 - tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")]
+  tab.metrics[,c("nyrs0catch")] <- 1-(tab$nyrs0catch/nyrs.to.use) # This is essentially now the proportion of years when there *wasn't* 0 catch
+  props <- tab.metrics
+  props <- apply(props, MARGIN = 2,FUN = function(x) x/max(x,na.rm=T))
+  all(props<=1) # check to make sure everything worked
+  final.tab <- data.frame(group = crs,props)
+  test.nas <- apply(X = final.tab,FUN = anyNA,MARGIN = 2)
+  na.metrics <- names(which(test.nas))
+  
+  if(length(na.metrics>0)){
+    print(paste("The following performance metrics had NAs and were removed from the figure: ",na.metrics))
+    final.tab <- final.tab[,-which(test.nas)]
+    rm.metrics <- which(nice.pms$original %in% na.metrics)
+    axis.labels <- nice.pms[-rm.metrics,'polished']
+  }
+  
+  legend.presence <- ifelse(p == 1,TRUE,FALSE)
+  axis.ind <- match(x = colnames(final.tab)[-1],table = nice.pms$original)
+  axis.labels <- nice.pms$polished[axis.ind]
+  final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
+  final.tab <- subset(final.tab, group==pick.hcr)
+  plotnames[[p]] <- ggradar_b(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
+                              grid.label.size=3,axis.label.size=8, 
+                              legend.text.size = 4,
+                              axis.labels = axis.labels,
+                              plot.legend=legend.presence,palette.vec = hcr.colors[3],
+                              manual.levels = factor(pick.hcr),
+                              plot.black=T)
+  
+  ftm <- melt(final.tab,id.vars="group")
+  ftm$name <- ftm$variable
+  ftm$name <- factor(ftm$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity"))
+  ftm$group <- factor(ftm$group,c("Basic hockey stick","Low Blim","High Fmax","Low F","High F","Stability-favoring"))
+  ftm <- mutate(ftm,name = recode_factor(name, 'LTmeancatch' = "Mean catch",
+                                         "meanbiomass" = "Mean biomass",
+                                         "BonanzaLength" = "Bonanza Length",
+                                         'SDcatch' = "Minimize \n catch variation",
+                                         'nyrs0catch' = "Minimize \n years with 0 catch",
+                                         'n.5yrclose' = "Minimize \n P(5 yr closure|closure)",
+                                         "CollapseLength" = "Minimize \n collapse length",
+                                         "Prob.Collapse" = "Minimize P(collapse)",
+                                         "Collapse.Severity" = "Minimize collapse severity"))
+  tileplots[[p]] <- ggplot(ftm,aes(x=name,y=group)) + geom_tile(aes(fill=value)) + scale_fill_distiller(palette="RdYlBu",trans="reverse") + theme_classic() + theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + geom_text(aes(label=round(value,digits = 1)))
+  all.scaled <- rbind(all.scaled,final.tab)
+}
+
 # Zeh plots (e.g. Punt 2015) -----------------------------------------------
 ggplot(all.summaries2,aes(x=HCR,y=med,colour=HCR)) +
   geom_point(size=3,shape=20) +
@@ -609,7 +682,6 @@ for (scenario.index in 1:4){
 }
 
 # Medians and 95% intervals for biomass, catch, etc ------------------
-
 
 for (scenario in 1:length(results)){
   par(mfrow=c(2,2),mar=c(5,4,3,2)+0.1)
