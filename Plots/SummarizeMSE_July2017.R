@@ -482,9 +482,25 @@ for(sim in 21:24){ # stability-favoring specifically
 
 
 # Single control rule for presentation ------------------------------------
-pick.hcr = "Basic hockey stick"
+pick.hcr = c("Basic hockey stick")
 types = c("Sardine","Anchovy","Menhaden")
 plots <- data.frame("steepness"=c(0.6,0.9,0.6),"obs.error.type" = c("Autocorrelated","Autocorrelated","Delayed change detection"))
+nyrs.to.use <- 100 
+nice.pms <- data.frame(original = colnames(raw.table[-(1:7)]),
+                       polished = c("Mean catch","Mean nonzero catch",
+                                    "Catch stability","Minimize \n P(5-yr closure)",
+                                    "Minimize \n P(10-yr closure)","Minimize years \n w/ zero catch",
+                                    "Mean biomass","Number of yrs \n above pred threshold",
+                                    "SD(Biomass)","Number of yrs \n below low pred threshold",
+                                    "Mean depletion","Max collapse length","Max bonanza length",
+                                    "Bonanza length","Minimize \n collapse length", "Minimize \n P(collapse)",
+                                    "Minimize \n collapse severity","CV(Catch)","Minimize \n long collapses"))
+palette <- brewer.pal(6,"Spectral")
+hcr.colors <- palette[c(6,5,4,1,3,2)]
+plotnames <- list()
+tileplots <- list()
+all.scaled <- vector()
+
 
 p = 1
 for(sp in 1:3){
@@ -545,13 +561,13 @@ for(sp in 1:3){
   axis.ind <- match(x = colnames(final.tab)[-1],table = nice.pms$original)
   axis.labels <- nice.pms$polished[axis.ind]
   final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
-  final.tab <- subset(final.tab, group==pick.hcr)
+  #final.tab <- subset(final.tab, group %in% pick.hcr)
   plotnames[[sp]] <- ggradar_b(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
                               grid.label.size=3,axis.label.size=8, 
                               legend.text.size = 4,
                               axis.labels = axis.labels,
-                              plot.legend=legend.presence,palette.vec = hcr.colors[which(levels(final.tab$group)==pick.hcr)],
-                              manual.levels = factor(pick.hcr),
+                              plot.legend=legend.presence,palette.vec = hcr.colors, #rev(hcr.colors[which(levels(final.tab$group) %in% pick.hcr)])
+                              manual.levels = levels(final.tab$group),  #factor(pick.hcr)
                               plot.black=T)
   
   ftm <- melt(final.tab,id.vars="group")
@@ -570,7 +586,7 @@ for(sp in 1:3){
 }
 
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = paste("SAM",Sys.Date(),"_BlackBkd_KitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
+pdf(file = paste("SAM_ALL",Sys.Date(),"_BlackBkd_KitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
 grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],ncol=1)
 dev.off() #This plot can be used in a presentation to compare life history types
 
