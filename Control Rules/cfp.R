@@ -23,7 +23,6 @@ calc.F.cfp <- function(prevCatch, Bobs, Bobsprev, Btru, Btarget, Blim, Fmax, lh 
   # Fmax
   #sizes is from the operating model: a list of lengths and weights
   
-  
   # Basic part of control rule:
   f <- NA
   slope = Btarget/(Btarget-Blim)      # slope of the diagonal part of the hockey stick
@@ -33,19 +32,25 @@ calc.F.cfp <- function(prevCatch, Bobs, Bobsprev, Btru, Btarget, Blim, Fmax, lh 
   # adj.constant scales so the CR is linear btwn Blim and Btarget
   if (sum(Bobs) > Btarget) {f = Fmax}
     
-  # If Bobs>Blim, apply control rule directly
+  # If Bobs<Blim, apply control rule directly
   if(sum(Bobsprev)<=Blim){
     f.new <- f
-  }else{ # Otherwise, apply 15% stability rule
-    possible.catch <- sum(Bobs *(1-exp(-(f*sel.at.age[,2]+lh$M)))*f*sel.at.age[,2] / (f*sel.at.age[,2] + lh$M) )  # Baranov catch eqn - what catch would be
-                #print(c("Blim=",Blim,"Bobs=",sum(Bobs),"possible.catch=",possible.catch,"sum of Bobs > Blim?",sum(Bobs)>Blim,"PrevCatch=",prevCatch,"Btru",Btru))
+  # Otherwise, apply 15% stability rule
+  }else{ 
+    possible.catch <- sum(Bobs *(1-exp(-(f*sel.at.age[,2]+lh$M)))*f*sel.at.age[,2] / (f*sel.at.age[,2] + lh$M) )  # Baranov catch eqn - catch given f
+          # print(c("Blim=",Blim,"Bobs=",sum(Bobs),
+          # "possible.catch=",possible.catch,
+          # "sum of Bobs > Blim?",sum(Bobs)>Blim,
+          # "PrevCatch=",prevCatch,
+          # "Btru",Btru))
+    
+      if(possible.catch == 0){newcatch <- 0}
       if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
-      if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch #print("Possible catch is >15% higher!")
-      }
+      if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}
+    
     if(newcatch > sum(Btru)){newcatch = sum(Btru)} # This is to prevent catches from going over biomass
     f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,2],Btrue.fn = Bobs, w.at.age = sizes$weight.at.age[,1])   # Get new f based on the 15% change rule - this is based on Bobs, unlike f.imp in the operating model. That's because it's the 'managers' trying to figure out what their 'imp.f' will be, based on the stability restriction. 
   }
-    #print("Suggested catch higher than biomass")
     #print(c("new catch",newcatch))
   return(f.new)
 }
