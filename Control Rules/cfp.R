@@ -36,18 +36,25 @@ calc.F.cfp <- function(prevCatch, Bobs, Bobsprev, Btru, Btarget, Blim, Fmax, lh 
   if(sum(Bobsprev)<=Blim){
     f.new <- f
   # Otherwise, apply 15% stability rule
-  }else{ 
-    possible.catch <- sum(Bobs *(1-exp(-(f*sel.at.age[,2]+lh$M)))*f*sel.at.age[,2] / (f*sel.at.age[,2] + lh$M) )  # Baranov catch eqn - catch given f
-          # print(c("Blim=",Blim,"Bobs=",sum(Bobs),
+    }else{ 
+    possible.catch <- sum(Bobs *(1-exp(-(f*sel.at.age[,2]+lh$M)))*f*sel.at.age[,2] / (f*sel.at.age[,2] + lh$M) )  
+    # Baranov catch eqn - catch given f
+          
+    # print(c("Blim=",Blim,"Bobs=",sum(Bobs),
           # "possible.catch=",possible.catch,
           # "sum of Bobs > Blim?",sum(Bobs)>Blim,
           # "PrevCatch=",prevCatch,
           # "Btru",Btru))
     
-      if(possible.catch == 0){newcatch <- 0}
-      if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}
-      if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}
-    
+    # 15% change rule
+      if(possible.catch == 0){newcatch <- 0}else{
+        if(possible.catch != 0 && possible.catch < 0.85*prevCatch) {newcatch <- 0.85*prevCatch}else{
+          if(possible.catch != 0 && possible.catch > 1.15*prevCatch) {newcatch <- 1.15*prevCatch}else{
+            newcatch = possible.catch
+          }
+        }
+      }
+      
     if(newcatch > sum(Btru)){newcatch = sum(Btru)} # This is to prevent catches from going over biomass
     f.new <- calc.true.f(tac.fn = newcatch,M.fn = lh$M,sel.fn = sel.at.age[,2],Btrue.fn = Bobs, w.at.age = sizes$weight.at.age[,1])   # Get new f based on the 15% change rule - this is based on Bobs, unlike f.imp in the operating model. That's because it's the 'managers' trying to figure out what their 'imp.f' will be, based on the stability restriction. 
   }
