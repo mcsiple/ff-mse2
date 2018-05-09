@@ -12,8 +12,8 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Menhaden" #FF type to summarize
-Date <- "2018-03-09"
+Type = "Sardine" #FF type to summarize
+Date <- "2018-05-08"
 
 # Set path to wherever the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
@@ -230,7 +230,12 @@ for(sim in 21:24){
   lines(results[[plot.these[6]]]$total.catch[sim,calc.ind],col=hcr.colors[4],lwd=1.5)
 }
 
-
+# Single black and white example fig for presentations
+calc.ind = 150:250
+par(bg = 'black', fg = 'white',col.lab="white",col.axis='white',mfrow=c(1,1))
+plot(results[[plot.these[5]]]$biomass.oneplus.true[sim,calc.ind],lwd=1.5,ylab="True 1+ Biomass",type='l')
+lines(results[[plot.these[5]]]$biomass.oneplus.obs[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
+lines(results[[plot.these[5]]]$biomass.oneplus.obs[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
 #  Why is collapse severity worse for basic hockey than for Low Bl --------
 par(mfrow=c(1,1))
 plot(results[[plot.these[1]]]$no.fishing.tb[sim,],col='black',type='l',lwd=1.5,ylab="1+ Biomass")
@@ -382,7 +387,7 @@ pdf(paste("PAIRS_",Type,".pdf",sep=""), width=11,height=8.5,onefile = TRUE)
 for(i in 1:3){
 p1 <- subset(all.scaled,scen==i)
 par(las=1)
-rm <- which(colnames(p1) %in% c("group","scen","cols")) # take out cols without performance in them
+rm <- which(colnames(p1) %in% c("group","scen","cols"))             # take out cols without performance in them
 pairs(p1[,-rm],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),
       labels=axis.labels,lower.panel = NULL)
 #title(paste(pairsnames[i]),line = 0)
@@ -757,11 +762,9 @@ for (scenario in 1:length(results)){
   mtext(paste(scen.table[scenario,'HCR']), outer = TRUE, cex = 1.5,side = 3,line = -1.8)
   mtext(paste("h=",scen.table[scenario,'h'],"-","ObsErrorType =",scen.table[scenario,'obs.error.type'],sep= " "),outer=TRUE,cex=1.2,side=3,line=-3)
 }
-
-
 dev.off()
 
-pdf(paste(Type,"ErrorPlots",Sys.Date(),".pdf",sep=""),width=9.5,height=5)
+#pdf(paste(Type,"ErrorPlots",Sys.Date(),".pdf",sep=""),width=9.5,height=5)
 
 
 
