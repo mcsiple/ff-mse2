@@ -25,7 +25,7 @@ setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir
   rm <- grep(files,pattern = ".txt") # Don't load text summary
   files <- files[-rm]
   files <- files[grep(files, pattern = ".RData")] # load rdata files
-  files <- mixedsort(files) # IMPORTANT: order in same order as scenario table!
+  files <- mixedsort(files) # order in same order as scenario table
   results <- sapply(files, function(x) mget(load(x)),simplify=TRUE) # giant list
   nscenarios <- length(results)
   nsims <- nrow(results[[1]]$biomass.oneplus.true) # count nrows to know how many sims there are
@@ -66,10 +66,7 @@ all.summaries2 <- all.summaries %>% mutate(obs.error.type = recode_factor(obs.er
                                                                'trend' = "Trend-based",
                                                                'constF_HI' = "High F"))           
 subset(all.summaries2, h==0.6 & obs.error.type=="Autocorrelated" & PM == "CollapseLength") 
-# 14 is basic hockey, 20 is low Blim, 26 is high Fmax
 write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
-
-
 
 # Just load the raw table, if you have already run the code below  --------
     opfile <- grep("outputs.csv",x = list.files()) # Find outputs file - csv only
@@ -84,22 +81,22 @@ for (s in 1:nscenarios){
   #**N** indicate metrics for which higher values mean worse performance (like SD(catch)) - these metrics are in scen.table as 1/x
   result.to.use <- results[[s]]
   raw.table[s,performance.measures[1]] <- median(rowMeans(result.to.use$total.catch[,calc.ind],na.rm = TRUE)) 
-  #calculate mean B over years to use in the index - the final number is the median (across all simulations) mean B
+  #calculate mean B over index years - final number is the median (across all simulations) mean B
   nonzero.catch <- result.to.use$total.catch[,calc.ind]
   nonzero.catch <- ifelse(nonzero.catch<0.1,NA,nonzero.catch)
   mnz.catches <- rowMeans(nonzero.catch,na.rm=TRUE)
-  raw.table[s,performance.measures[2]] <- median(mnz.catches,na.rm = TRUE) #"LTnonzeromeancatch"
+  raw.table[s,performance.measures[2]] <- median(mnz.catches,na.rm = TRUE)  # LT nonzero catch
   raw.table[s,performance.measures[3]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = sd,MARGIN = 1)) 
   ######
   five.yr.closure.given1 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5 / 
                             n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1
-  median.P5 <- median(five.yr.closure.given1,na.rm=TRUE) # This is now the probability of a 5-year closure given a 1-year closure
+  median.P5 <- median(five.yr.closure.given1,na.rm=TRUE) # P(5-yr closure|closure)
   if(all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count5==0) &
      all(n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count1==0)){
     median.P5 = 0
   }
 
-  raw.table[s,performance.measures[4]] <- median.P5 # Mean number of 5-yr closures given a 1-yr closure
+  raw.table[s,performance.measures[4]] <- median.P5 
   
   ######
   ten.yr.closure.given5 <- n.multiyr.closures(result.to.use$total.catch[,calc.ind],threshold=0)$count10 / 
@@ -110,19 +107,19 @@ for (s in 1:nscenarios){
     median.P10 = 0
   }
   
-  raw.table[s,performance.measures[5]] <- median.P10 # Mean P(10-yr closure|5-yr closure)
+  raw.table[s,performance.measures[5]] <- median.P10 # P(10-yr closure|5-yr closure)
   ######
   raw.table[s,performance.measures[6]] <- median(apply(X = result.to.use$total.catch[,calc.ind],FUN = nzeroes,MARGIN = 1))
   
-    raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$biomass.total.true[,calc.ind])) # "meanbiomass"
+    raw.table[s,performance.measures[7]] <- median(rowMeans(result.to.use$biomass.total.true[,calc.ind])) # meanbiomass
 
     raw.table[s,performance.measures[8]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],
                                                          FUN = good4pred,MARGIN = 1, 
-                                                         F0.x = result.to.use$no.fishing.tb[,calc.ind])) # "good4preds" - this is calculated from TOTAL biomass (including age 0)
+                                                         F0.x = result.to.use$no.fishing.tb[,calc.ind])) # "good4preds" - calculated from TOTAL biomass (including age 0)
     
-  raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = sd,MARGIN = 1))  #Actual raw SD of Biomass
+  raw.table[s,performance.measures[9]] <- median(apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = sd,MARGIN = 1))  # SD(biomass)
   
-  yrs.bad <- apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are very bad for preds - length of vector is nsims 
+  yrs.bad <- apply(X = result.to.use$biomass.total.true[,calc.ind],FUN = bad4pred,MARGIN = 1, F0.x = result.to.use$no.fishing.tb[,calc.ind] ) # Number of years that are "bad for preds"; length of yrs.bad = nsims
 
   raw.table[s,performance.measures[10]] <- median(yrs.bad)
   
@@ -131,15 +128,6 @@ for (s in 1:nscenarios){
     select.ind <- which(sw$PM == performance.measures[pm]) 
     raw.table[s,performance.measures[pm]] <- sw[select.ind,'med'] 
   }
-    # 1. Depletion
-    # 2. max collapse length
-    # 3. **N**max bonanza length
-    # 4. Mean bonanza length
-    # 5. Mean collapse length
-    # 6. # probability of collapse 
-    # 7. Collapse severity
-    # 8. CV.Catch
-    # 9. Bonafide.collapse
 } 
 
 write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
@@ -148,8 +136,8 @@ str(results)
 subset(raw.table,h==0.6 & obs.error.type=="AC")
 
 
-# Set colors! :) ----------------------------------------------------------
-# Colour palette options for plots - from iWantHue and some from ColorBrewer
+# Set colors ------------------------------------------------------------
+# Colour palette options for plots - from iWantHue, some from ColorBrewer
 #palette <- brewer_pal(type="qual",palette=2)
 #palette <- c("#d94313","#3097ff","#f5bd4e","#e259db","#009a3b","#da0b96","#38e096","#ff4471","#007733","#ff90f5","#588400","#feaedc","#a1d665","#42c7ff","#6f5500","#01b1be") 
 palette <- brewer.pal(6,"Spectral")
@@ -236,7 +224,7 @@ par(bg = 'black', fg = 'white',col.lab="white",col.axis='white',mfrow=c(1,1))
 plot(results[[plot.these[5]]]$biomass.oneplus.true[sim,calc.ind],lwd=1.5,ylab="True 1+ Biomass",type='l')
 lines(results[[plot.these[5]]]$biomass.oneplus.obs[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
 lines(results[[plot.these[5]]]$biomass.oneplus.obs[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
-#  Why is collapse severity worse for basic hockey than for Low Bl --------
+#  Why is collapse severity worse for basic hockey than for Low Bl (see notes) --------
 par(mfrow=c(1,1))
 plot(results[[plot.these[1]]]$no.fishing.tb[sim,],col='black',type='l',lwd=1.5,ylab="1+ Biomass")
 lines(results[[plot.these[3]]]$biomass.total.true[sim,],col=hcr.colors[1],lwd=1.5)
@@ -248,7 +236,7 @@ scenario = 6
 dim = sqrt(nexamples)
 par(mfrow=c(dim,dim))
 for(i in (1:nexamples)){
-  plot(results[[scenario]]$biomass.total.true[i,],type='l',ylab="B_total true") #Check 34 too... should have some crashes
+  plot(results[[scenario]]$biomass.total.true[i,],type='l',ylab="B_total true")  # check for crashes
 }
 
 
