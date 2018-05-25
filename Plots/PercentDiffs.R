@@ -93,7 +93,7 @@ dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)] <- NA
 dat3.new$percentlabel[which(is.infinite(dat3.new$percentlabel))] <- NA # replace the two "inf" values with NA
 
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = "PercentDiffsErrors_032118.pdf",width = 11,height = 9,useDingbats = FALSE)
+pdf(file = "PercentDiffsErrors_050918.pdf",width = 11,height = 9,useDingbats = FALSE)
 ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors) +
@@ -117,12 +117,14 @@ dev.off()
 
 #  Make a dark-background one for presentations ---------------------------
 pdf(file = "PercentDiffsErrors_black.pdf",width = 11,height = 9,useDingbats = FALSE)
+dat3.new <- subset(dat3.new,variable %in% c("LTmeancatch","CollapseLength","Prob.Collapse","Collapse.Severity"))
 ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors) +
   geom_hline(yintercept=0,colour='white')+facet_grid(HCR~Type) +
-  theme_black(base_size = 14) +
-  theme(strip.background = element_blank(),strip.text.y = element_blank()) +
+  theme_black(base_size = 18) +
+  theme(strip.background = element_blank(),strip.text.y = element_blank(),
+        axis.text.y=element_text(hjust=0.95,vjust=0.2)) +
   ylab("% change from delayed detection model") +
   xlab("Performance metric") + 
   ylim(c(-100,100)) + coord_flip() 
