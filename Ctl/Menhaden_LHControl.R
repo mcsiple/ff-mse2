@@ -1,14 +1,16 @@
 # Menhaden_LHControl
-# Life history params for the menhaden model, to be used with menhaden-like recruitment patterns
-# These are based on the Atlantic menhaden stock assessment (SEDAR 40)
+# Life history params for the menhaden model. Use with 'menhaden-like' recruitment patterns.
+# Values are based on the Atlantic menhaden stock assessment (SEDAR 40)
+
 ages.test <- 0:6
 nages.test <- length(ages.test)
+
       # selectivity.test <- cbind(age=ages.test,selectivity = c(0.004,0.143,0.994,0.84,0.191,0.024,0))  # "domed" commercial selectivity from reduction fishery. Used Butterworth 2012 as an example.
-# UPDATE: As of August 2017, new selectivity values are available for Atlantic menhaden (selectivity curve published in assessment; based on selectivity for commercial reduction fleet in 2005-2016; Figure 6.2.1.6. p. 111). These are:
+# UPDATE, August 2017: new selectivity values are available for Atlantic menhaden (selectivity curve published in assessment; based on selectivity for commercial reduction fleet in 2005-2016; Figure 6.2.1.6. p. 111). These are:
  selectivity.test <- cbind(age=ages.test,selectivity = c(0, 0.19,1,0.6,0.21,0.075,0.02))
-# This is the same "dome-shaped" curve as previous runs but new stock assessment has selectivity values in it
+# This is the same "dome-shaped" curve as previous runs but new stock assessment has actual values in it
 lh.test <- list(type = "Menhaden",
-                M = 0.5,   #from menhaden assessment (http://www.asmfc.org/uploads/file/55089931S40_AtlMenhadenSAR_CombinedFINAL_1.15.2015-reduced.pdf) - mortality is averaged over all ages, from all years (Boudreau & Dickie) - table 3.6.1
+                M = 0.5,   # menhaden assessment: http://www.asmfc.org/uploads/file/55089931S40_AtlMenhadenSAR_CombinedFINAL_1.15.2015-reduced.pdf - mortality is averaged over all ages, from all years (Boudreau & Dickie) - table 3.6.1
                 selectivity = selectivity.test,
                 ages = ages.test,
                 l.at.age = c(8,16.66,21.74,25.13,26.98,30.22,28.87), #http://www.asmfc.org/uploads/file/55089931S40_AtlMenhadenSAR_CombinedFINAL_1.15.2015-reduced.pdf (Table 3.3.2; 2013 values; Age 0 is interpolated from age-length curve). Lengths are in cm.

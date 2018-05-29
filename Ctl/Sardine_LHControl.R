@@ -1,5 +1,5 @@
-# Sardine life history control file
-# This file contains all the life history and fishery info to use in the MSE. Normally this would be a .ctl file but since I'm using R I'm just making it a source file for now.
+# Sardine life history params
+# This file contains all the life history info to use in the MSE. Normally it would be a .ctl file.
 
 
 # Sardine LH parameters
@@ -48,4 +48,4 @@ lh.test <- list(M = 0.4,   #from sardine assessment (Hurtado-Ferro & Punt 2014 w
         # points(x=equilib$Fmsy,y=max(equilib$y.vec), pch=19)
         # points(x=equilib$Fmsy*0.5,y=equilib$y.vec[which.min(abs(equilib$x.vec - 0.5*equilib$Fmsy))], pch=19,col="blue")
         # dev.off()
-        
+
