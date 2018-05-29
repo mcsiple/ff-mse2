@@ -16,14 +16,8 @@ library(reshape2)
 RAM.new <- RAM
 RAM.new$datasource <- "RAM"
 europilchard <- subset(RAM.new,scientificname=="Sardina pilchardus")
-# ** I calculated catches by multiplying ssb * fishing.mortality
-# europilchard$totalcatch <- europilchard$ssb*europilchard$fishing.mortality
-# min(europilchard$year)
-# max(europilchard$year)
-# mean(europilchard$rec)
-# write.csv(europilchard,"europilchard.csv")
 
-# Barange et al. stocks - 
+# Barange et al. stocks
 Barange.new <-  data.frame(datasource=rep("Barange",times=nrow(barange_noNAs)),scientificname=rep(NA,times=nrow(barange_noNAs)),barange_noNAs)
 
 Barange.sardines <- subset(Barange.new,sp=="Sardine")
