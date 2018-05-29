@@ -474,6 +474,7 @@ head(overs)
 
 # Compare the performance metrics between exact and over- or under --------
 all.results <- rbind.fill(exacts,unders,overs)
+hcr.colors <- 
 # Subset to the control rules that use metric m:
 if(metric == "B0"){plot.results <- subset(all.results, HCR %in% c("C1","C2","C3"))
                     col.to.use <- hcr.colors[1:3]}
