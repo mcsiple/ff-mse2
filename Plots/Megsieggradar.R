@@ -280,7 +280,7 @@ ggradar <- function(plot.data,
 
   
 
-#  “BLack” version for presentation ---------------------------------------
+#  “Black” version for presentation ---------------------------------------
 
 ggradar_b <- function(plot.data,
                       font.radar="Circular Air Light",

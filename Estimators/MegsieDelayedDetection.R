@@ -39,7 +39,7 @@ for (t in 2:length(timelist)) {
 
 setwd('/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures')
 plotfilename <- "DelayedDetection_blackbkd.pdf"
-#pdf(file = plotfilename, height = 7, width = 10,useDingbats = FALSE)
+pdf(file = plotfilename, height = 7, width = 10,useDingbats = FALSE)
 par(mfrow=c(1,1))
 lotau.col <- "#FB323B" # blues: "#0F2B5F" #"red" #539E59" 
 hitau.col <-  "#C5E137" # blues: "#8EC1E7" #"orange" #BBD961" # light green

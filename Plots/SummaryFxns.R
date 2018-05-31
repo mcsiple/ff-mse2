@@ -110,7 +110,7 @@ n.bonafide.collapses <- function(ts.length, coll.yrs){
       if(c[(ind.coll-1)]>=4 & c[ind.coll+1]>=4){counter <- counter+1} else{ 
         if(c[ind.coll+1]<=4 & c[ind.coll+2]>=2){counter <- counter +1} else{
         counter=counter}}}else{counter=counter}
-    # if the 4 years leading up to the collapse are not-collapsed, and same with the four years after, it's a "bonafide collapse"
+    # if the 4 years leading up to the collapse are not-collapsed, and same with the four years after, it's a "bonafide collapse" (later called "extended collapse")
   }
   # Last case: if the final years are collapsed, need to count those!
   if(tail(d,1) & tail(c,1) > 4){counter=counter+1}else{counter=counter}
@@ -141,16 +141,9 @@ n.multiyr.closures <- function(x, threshold = NA) { #where x is a matrix, rows a
 # Rcpproll demo:
 # set.seed(1); x <- sample(c(T, F), 100, replace = T); sum(RcppRoll::roll_sum(x, 3) == 3)
 
-# For testing summ.tab - run these then you can run the interior of the function:
-# result.list = results[[14]] #C1=14; C2=20
-# individual.sim = FALSE
-# calc.ind = 151:250
-# ou.ind = NA
-# collapse.severity.C1[which(!is.na(collapse.severity.C1))]
-# collapse.severity.C2[which(!is.na(collapse.severity.C2))]
 
 
-# Get summary metrics so you can make Zeh plots (or whatever you want)
+# Get summary metrics for Zeh plots or quantiles
 summ.tab <- function(result.list, individual.sim = FALSE,calc.ind = calc.ind, ou.ind = NA){ #result.list is one of the results (=1 harvest rule, 1000 time series of biomass, catch, fishing, rec, depl)
   # calc.ind is the index of which years to calculate over
   for(i in 1:length(result.list)){
@@ -175,7 +168,7 @@ summ.tab <- function(result.list, individual.sim = FALSE,calc.ind = calc.ind, ou
   
   #5- and 10-yr closures
   n.5yrclose <- n.multiyr.closures(catch,threshold = 0)$count5 / nz1          # P(5yr closure | closure)
-  n.10yrclose <- n.multiyr.closures(catch,threshold = 0)$count10 / n.5yrclose # P(10yr closure | 5yr closure) - this one is depracated
+  n.10yrclose <- n.multiyr.closures(catch,threshold = 0)$count10 / n.5yrclose # P(10yr closure | 5yr closure) - depracated
   
   # SDbiomass
   true.biomass <- result.list$biomass.total.true
@@ -226,7 +219,6 @@ summ.tab <- function(result.list, individual.sim = FALSE,calc.ind = calc.ind, ou
       
       # N "bonafide" collapse periods (this is different than dipping below 0.2Bbar, you have to have a streak of non-collapse years before and after)
       bonafide.collapse[sim] <- n.bonafide.collapses(ts.length = length(true.biomass[sim,]),coll.yrs = coll.yrs)           
-                  # 
     } #end of sim loop
   
   mean.depl <- apply(depl,MARGIN = 1,FUN = mean)

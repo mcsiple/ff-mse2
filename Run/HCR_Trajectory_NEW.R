@@ -6,7 +6,6 @@
 
 #rm(list=ls()[-which(ls()=="workdir")]) # Clear workspace if you need it
 
-
 # Calculate SBPR0 to use in stock recruit fn
 getSBPR <- function(nat.mort, maturity, fecun, n.ages){
   #' @description Function to calculate spawners per recruit

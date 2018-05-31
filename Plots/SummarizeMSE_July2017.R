@@ -15,7 +15,7 @@ source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
 Type = "Sardine" #FF type to summarize
 Date <- "2018-05-08"
 
-# Set path to wherever the simulation results are:
+# Set path to where the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
 
 setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir
