@@ -17,7 +17,6 @@ types <- c("Anchovy"="Anchovy",
         # Set directories
         basedir <- "~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
         resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results"
-        #subDir <- "Anchovy" # Name of ff type
         subDir <- fftype
         
         #Set up other simulation params
@@ -25,8 +24,8 @@ types <- c("Anchovy"="Anchovy",
         nsims = 1000
         tim.params = list(sigma0 = 0.2,tau0 = 0.1)
         tau1 = (1/tim.params$tau0^2 + 1/tim.params$sigma0^2)^(-0.5)
-        sig.s = 0.3 # 
-        R0.sens = NA #NO DYNAMIC R0 anymore-- ignore
+        sig.s = 0.3 
+        R0.sens = NA # NO DYNAMIC R0 anymore-- ignore
 
         
         # Load packages
@@ -76,13 +75,15 @@ types <- c("Anchovy"="Anchovy",
         
         # Create list of matrices with error for the delayed detection scenario. This is important because the random seed will offset otherwise.
         set.seed(123)
-        tim.rands.list <- list() #for all ensuring random values
-        n.ages = length(lh.test$ages)
-        tim.inits.vec <- rnorm(n.ages,0,tim.params$sigma0)  # just for initial values
+        tim.rands.list <- list() 
+        n.ages <- length(lh.test$ages)
+        error.inits <- rnorm(1,0,tim.params$sigma0)
+        tim.inits.vec <- rep(error.inits,times=n.ages)  # just for initial values
         for(sim in 1:nsims){
           tim.mat <- matrix(NA,nrow=n.ages,ncol=years.test)
         for(i in 1:years.test){
-          tim.mat[,i] <- rnorm(n.ages,0,tau1)
+          err <- rnorm(1,0,tau1)
+          tim.mat[,i] <- rep(err,times=n.ages)
           }
           tim.rands.list[[sim]] <- tim.mat
         }
