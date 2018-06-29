@@ -4,7 +4,9 @@ source(file.path(basedir,"Recruitment/GenerateDevs.R"))
 source(file.path(basedir,"Estimators/CalcFTrue.R"))
 source(file.path(basedir,"Estimators/Estimators.R"))
 source(file.path(basedir,"Run/generate_M.R"))
-# Load harvest rules
+source(file.path(basedir,"Run/HCR_Trajectory_NEW.R")) # om
+
+# Harvest rules
 source(file.path(basedir,"Control Rules/smith_oceana.R"))
 source(file.path(basedir,"Control Rules/cfp.R"))
 source(file.path(basedir,"Control Rules/hockey-stick.R"))
@@ -21,22 +23,22 @@ recruit.rho <- 0.5
 steepness = 0.6
 ages.test <- 0:6
 nages.test <- length(ages.test)
-time.var.m=NA
-toplot = FALSE
+time.var.m = NA
+toplot <- FALSE
 years.test <- 250
 tim.params <- list(sigma0 = 0.2,tau0 = 0.1)
-obs.cv = 1.2
-init = init.test
-F0 = F0.test
-cr = NA
-years = years.test
-hcr.type = "cfp"
-equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
-obs.type = "Tim"
-tim.params = tim.params
-#const.f.rate=0.6
-sig.s = 0.3
-rec.ram=NA
+obs.cv <- 1.2
+init <- init.test
+F0 <- F0.test
+cr <- NA
+years <- years.test
+hcr.type <- "constF"
+equilib <- getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
+obs.type <- "AC"
+tim.params <- tim.params
+const.f.rate <- 0
+sig.s <- 0.3
+rec.ram <- NA
 rec.dev = generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
 lh=lh.test
 # These are all in the fishery control file
@@ -249,17 +251,19 @@ curly.phi.vec = c(-0.17, -0.07, 0.47, 0.02, 0.04, 0.51, 0.14, -0.38, -0.21, -0.1
                   0.1, -0.23, -0.24, -0.15, 0.45, -0.34, -0.05, 0.57, -0.03, -0.41,
                   -0.2, 0.15)
 
-par(mfrow=c(3,3))
+
 #set.seed(123)
+tiff("B0_anchovy.tiff",width = 8,height = 7,units = 'in',res = 150)
+par(mfrow=c(3,3))
 for(i in 1:9){
   rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
   rec.dev = rec.dev.test
-  testie4 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0, cr = cr, years = years.test,hcr.type = hcr.type,equilib = equilib,steepness=steepness,obs.type = obs.type, tim.params = tim.params,const.f.rate=equilib$Fmsy, sig.s = .3,rec.ram=NA,time.var.m = NA,tim.rand.inits = tim.rand.inits,tim.rands = tim.rands,curly.phi.vec = curly.phi.vec)
-  
-  #      par(mfrow=c(2,1))
-  plot(testie4$biomass.oneplus.true,type='l',ylim=c(0,6e4),ylab="True B1+")
-  lines(testie4$total.catch,col='red')
+  testie4 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0, cr = cr, years = years.test,hcr.type = hcr.type,equilib = equilib,steepness=steepness,obs.type = obs.type, tim.params = tim.params,const.f.rate=const.f.rate, sig.s = .3,rec.ram=NA,time.var.m = NA,tim.rand.inits = tim.rand.inits,tim.rands = tim.rands,curly.phi.vec = curly.phi.vec)
+
+  plot(testie4$biomass.oneplus.true,type='l',ylim=c(0,9e5),ylab="B1+ true")
+  #lines(testie4$total.catch,col='red')
 }
+dev.off()
 # any(testie4$total.catch == 0)
 # plot(testie4$intended.f,type='l')
 # lines(testie4$fishing,col='red')
