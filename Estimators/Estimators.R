@@ -53,14 +53,18 @@ tim.assessment.original <- function(B,Eprev,sigma0 = NA, tau0 = NA){
 
 # New version of tim.assessment that doesn’t disrupt the random seed! --------
 tim.assessment <- function(B,Eprev,sigma0, tau0, tau1, err = NULL, err_a = NULL){
+  #' @description This function takes the previous year's biomass estimate (Eprev) and the current biomass (B) and returns an estimate for biomass in the present year. Observation error is described by sigma0, and is just random and lognormal.
+  #' @details The goal of this type of observation error is to mimic what observations might be if we had some prior knowledge about the expected change in B. The level of confidence in our ability to detect change is set by tau0, with small tau0 indicating a case where the assessment or scientist is resistant to large changes in biomass, and large tau0 indicating a case where errors are random, i.e., a large change in biomass is plausible.
+  #' @param B - biomass in the current year. 
+  #' @param Eprev - biomass ESTIMATE in the previous year. 
+  #' @param sigma0 - observation error (between B and E there is an intermediate step not explicitly shown here, which is that there is random lognormal survey error)
+  #' @param tau0 - the amount of confidence in the survey (or assessment)'s ability to detect changes in biomass. Smaller tau0 indicates an assessment or expert who is unlikely to believe large changes in biomass.
   #' @param err an error value to pass below - rnorm(1,mu1.tmp,tau1) - can be drawn from a vector
   #' @param err_a vector of age-specific errors to pass below - rnorm(length(B),mu1.tmp,tau1)- can be drawn from a matrix
   if(length(B)<2 & length(Eprev)<2){ # Sometimes B and Eprev will be given as single values (e.g., total biomass instead of B_a)
     if(B==0 | Eprev==0){Ecurr=0}else{
-      #tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
       yt <- log(B/Eprev)
       mu1.tmp <- yt * (1-sigma0^2/(tau0^2+sigma0^2))
-      #err <- rnorm(1,mu1.tmp,tau1)
       err1 = mu1.tmp + err # err is rnorm(1,0,tau1)
       Ecurr <- Eprev * exp(err1)}}else{   # If function inputs are vectors (in case this is the situation where B is vectorized)
         if(sum(B)==0 | sum(Eprev)==0){Ecurr=rep(0,times=length(B))}else{
@@ -69,15 +73,12 @@ tim.assessment <- function(B,Eprev,sigma0, tau0, tau1, err = NULL, err_a = NULL)
           yt <- log(B/Eprev)
           tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
           mu1.tmp <- yt * (1-sigma0^2/(tau0^2+sigma0^2))
-          #err2 <- rnorm(length(B),mu1.tmp,tau1) # add error to each age class
           err2 <- mu1.tmp + err_a   # err_a is rnorm(n.ages,0,tau1) - add error to each age class
           Ecurr <- Eprev * exp(err2)}}
   return(Ecurr)
 }
 
-set.seed(123)
-rnorm(1,1,0.2)
-1+rnorm(1,0,0.2)
+
 # Lognormal error ---------------------------------------------------------
 
 add.LN.error <- function(biomass.true, obs.cv, years=1){
