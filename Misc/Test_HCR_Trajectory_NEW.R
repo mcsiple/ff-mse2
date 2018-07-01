@@ -1,5 +1,9 @@
 # For testing HCR_Trajectory:
-basedir <- "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
+library(here)
+
+basedir <- here()
+
+  "/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
 source(file.path(basedir,"Recruitment/GenerateDevs.R"))
 source(file.path(basedir,"Estimators/CalcFTrue.R"))
 source(file.path(basedir,"Estimators/Estimators.R"))
