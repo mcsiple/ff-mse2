@@ -1,6 +1,8 @@
 
-basedir <- "~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
-resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results"
+library(here)
+basedir <- here()
+# If you want to store results
+resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results" 
 
 source(file.path(basedir,"Recruitment/GenerateDevs.R")) 
 source(file.path(basedir,"Estimators/CalcFTrue.R"))
@@ -8,8 +10,45 @@ source(file.path(basedir,"Run/HCR_Trajectory_NEW.R"))
 source(file.path(basedir,"Estimators/Estimators.R"))
 source(file.path(basedir,"Run/generate_M.R"))
 
+##################################################################################################
+##################################################################################################
+##################################################################################################
 
 
+# Confirm that both error functions (AC & DD) work if added individually to each age or to total B
+
+# Made up vectors of nums at age 
+x <- c(0.1,0.2,50,40,30)
+x.prev <- c(0.2,0.8,60,50,40)
+
+# Error params, drawn from error distributions
+eps.prev =0.5;sig.s=0.3;rho=0.5;curly.phi=-0.37
+
+# Add AC error to each age (B_a)
+by.age <- add.wied.error(biomass.true=x,epsilon.prev = eps.prev,sig.s = sig.s,rho = rho,curly.phi = curly.phi)
+sum(by.age$biomass.est)
+# To total (B)
+total <- add.wied.error(biomass.true=sum(x),epsilon.prev = eps.prev,sig.s = sig.s,rho = rho,curly.phi = curly.phi)
+sum(total$biomass.est)
+total$biomass.est
+
+# Add DD error to each age (B_a)
+by.age2 <- tim.assessment(Eprev = x.prev,B = x,sigma0 = tim.params$sigma0, tau0 = tim.params$tau0,tau1 = tau1,err_a = rep(-0.08,times=length(x)))
+# To total (B)
+total.2 <- tim.assessment(B = sum(x),Eprev = sum(x.prev),sigma0 = tim.params$sigma0,tau0 = tim.params$tau0,tau1 = tau1,err = -0.08)
+sum(by.age2)
+total.2
+# They both work- so error can be added to total biomass or biomass-at-age using the same functions.
+
+
+##################################################################################################
+##################################################################################################
+##################################################################################################
+
+
+
+# Now find AC error sd that will result in AC and DD having comparable errors (log(B/Bobs)) --------
+# Fake biomass time series
 test.ts <- c(129790, 210226, 268468, 390606, 398058, 397318, 360216, 358585, 
              374015, 362225, 371147, 404184, 389995, 351421, 303666, 310247, 
              267873, 239348, 233029, 222568, 199544, 332979, 333917, 288796, 
@@ -42,105 +81,71 @@ test.ts <- c(129790, 210226, 268468, 390606, 398058, 397318, 360216, 358585,
              253587, 214134, 226303, 238854, 266070, 351503, 331102, 275112, 
              225694, 209395, 316549, 299872, 252782, 189004, 166132, 120317, 
              115794, 109419)
-# curly.phi <- rnorm(1,0,sig.s) # random deviations on top of the autocorrelation
-# epsilon.curr <- rho * epsilon.prev + sqrt(1-(rho^2)) * curly.phi # error in the current year
-sigma.test <- seq(0.25,0.35, length.out =50)
+
+# Vector of AC sd's to test
+sigma.test <- seq(0.1,0.5, length.out = 50)
 tim.params <- list(sigma0 = 0.2,tau0 = 0.1)
-tau1 <-  (1/tim.params$tau0^2 + 1/tim.params$sigma0^2)^(-0.5)
+tau1 <- (1/tim.params$tau0^2 + 1/tim.params$sigma0^2)^(-0.5)
 sigma.save <- matrix(NA,2,length(sigma.test))
-#tim.params$sigma0 <- sigma_est
 
 for (i in 1:length(sigma.test)){
-
 obs.ts <-eps.vec <- obs.ts.ac <-vector()
 obs.ts[1] <- test.ts[1]*exp(rnorm(1,0,(1/tim.params$tau0^2 +1/tim.params$sigma0^2)^(-0.5)))
-
-
-sig.s2 <- sigma.test[i] #(1/tim.params$tau0^2 +1/tim.params$sigma0^2)^(-0.5) # diff values
-curly.phi2 <- rnorm(1,0,sig.s2) # random deviations on top of the autocorrelation
-
-#epsilon.curr2 <- 1 # error in the current year
-#err2 <- (epsilon.curr2-(0.5*sig.s2^2))
+sig.s2 <- sigma.test[i] 
+curly.phi2 <- rnorm(1,0,sig.s2) # random devs on top of the autocorrelation
 obs.ts.ac[1] <- test.ts[1] * exp(curly.phi2)
-
-# sig.s <- (1/tim.params$tau0^2 +1/tim.params$sigma0^2)^(-0.5) # target sd 0.4
 eps.vec[1] <- 1
-#obs.ts[1] <- biomass.true[,yr] * exp(tim.rand.inits)
-  
-for(t in 2:250){
-  obs.ts[t] <- tim.assessment(B = test.ts[t],Eprev = obs.ts[t-1],sigma0 = tim.params$sigma0, tau0 = tim.params$tau0,tau1 = tau1,err = ,err_a = )
-  #Eprev = biomass[,yr-1],
-  # B = biomass.true[,yr],
-  # sigma0 = sigma0,
-  # tau0 = tau0,
-  # tau1 = tau1,
-  # err_a = tim.rands[,yr]
-  x<- c(0.1,0.2,50,40,30)
-  x.prev <- c(0.2,0.8,60,50,40)
-  
-  eps.prev =0.5;sig.s=0.3;rho=0.5;curly.phi=-0.37
-  by.age <- add.wied.error(biomass.true=x,epsilon.prev = eps.prev,sig.s = sig.s,rho = rho,curly.phi = curly.phi)
-  sum(by.age$biomass.est)
-  total <- add.wied.error(biomass.true=sum(x),epsilon.prev = eps.prev,sig.s = sig.s,rho = rho,curly.phi = curly.phi)
-  sum(total$biomass.est)
-  
-  by.age2 <- tim.assessment(Eprev = x.prev,B = x,sigma0 = tim.params$sigma0, tau0 = tim.params$tau0,tau1 = tau1,err_a = rep(-0.08,times=length(x)))
-  total.2 <- tim.assessment(B = sum(x),Eprev = sum(x.prev),sigma0 = tim.params$sigma0,tau0 = tim.params$tau0,tau1 = tau1,err = -0.08)
-  
-  sum(by.age2)
-  total.2
-    # tim.assessment(Eprev = biomass[,yr-1],
-    #                B = biomass.true[,yr],
-    #                sigma0 = sigma0,
-    #                tau0 = tau0,
-    #                tau1 = tau1,
-    #                err_a = tim.rands[,yr])
-  
-  # if y==1, biomass.true[,yr] * exp(tim.rand.inits)
-  est <- add.wied.error(biomass.true = test.ts[t],epsilon.prev = eps.vec[t-1],sig.s = sig.s2,rho=0.5)
-  obs.ts.ac[t] <- est$biomass.est
-  eps.vec[t] <- est$epsilon.curr
-}
-# par(mfrow=c(1,1))
-# plot(test.ts,type='l')
-# lines(obs.ts, col="red")
-# lines(obs.ts.ac, col="blue")
 
- sigma.save[1,i] <- sd(log(test.ts/obs.ts))
+      for(t in 2:250){
+        obs.ts[t] <- tim.assessment(B = test.ts[t],
+                                    Eprev = obs.ts[t-1],
+                                    sigma0 = tim.params$sigma0, 
+                                    tau0 = tim.params$tau0,
+                                    tau1 = tau1,
+                                    err = rnorm(1,0,tau1)) # 
+      
+        est <- add.wied.error(biomass.true = test.ts[t],
+                              epsilon.prev = eps.vec[t-1],
+                              sig.s = sig.s2,rho=0.74,curly.phi = rnorm(1,0,sig.s2)) #CHANGED RHO HERE. Might have to change curly.phi2 to something that changes every year?
+        obs.ts.ac[t] <- est$biomass.est
+        eps.vec[t] <- est$epsilon.curr
+      }
+
+ sigma.save[1,i] <- sd(log(test.ts/obs.ts)) # tim errors
  sigma.save[2,i] <-  sd(log(test.ts/obs.ts.ac))
- 
-
 }
 
-plot(sigma.test,sigma.save[1,], ylim = c(0.05,0.5))
+plot(sigma.test,sigma.save[1,], ylim = c(0.05,0.5),type='l',lty=2, xlab="Test sigma",ylab="Resulting ts error")
 lines(sigma.test,sigma.save[2,])
-# Figure out where these two sigma values intersect; this is where error(AC) ~~ error(DD)
+legend("topleft",c("Delayed detection","AC"),lty=c(2,1))
+# Where two sigma values intersect = where error(AC) ~~ error(DD)
 
+      # Plot time series (make sure to use correct sigmas)
+      # hist(sigma.save[1,])
+      # plot(test.ts, type = 'l')
+      # lines(obs.ts.ac, col = 'blue')
+      # lines(obs.ts, col = 'red')
 
+##################################################################################################
+##################################################################################################
+##################################################################################################
 
+# Test it numerically - not done
 
-hist(sigma.save[1,])
-
-plot(test.ts, type = 'l')
-lines(obs.ts.ac, col = 'blue')
-lines(obs.ts, col = 'red')
-
-
-epis.prev <- 1
+eps.prev <- 1
 rho <- 0
-
 tau0 <- 0.5
-
 sig.1 <- 0.4 # Specify the sd on 'add wied error'
 
-sigma_est <- (1/(0.1^(-2)-1/tau0^2))^0.5 # Calculate the value for sigma2 given tau - max value is 0.5 (inf)
-sig.2 <-sigma_est # specifiy the sd on 'tim.assessment'
+sigma_est <- (1/(0.1^(-2)-1/tau0^2))^0.5 
+# Calculate value for sigma2 given tau - max value is 0.5 (inf)
+sig.2 <- sigma_est # sd on DD
 sigma0 <- sig.2
 ntest <- vector()
 ntest2 <- vector()
 
-for (i in 1:10000){ # Test it numerically
-ntest[i] <-add.wied.error(epis.prev,sig.1,rho)
+for (i in 1:10000){ 
+ntest[i] <-add.wied.error(eps.prev,sig.1,rho)
 ntest2[i] <- tim.assessment(tau0, sig.2)
 }
 
