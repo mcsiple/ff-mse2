@@ -79,8 +79,8 @@ types <- c("Anchovy"="Anchovy",
         set.seed(123)
         tim.rands.list <- list() 
         n.ages <- length(lh.test$ages)
-        error.inits <- rnorm(1,0,tim.params$sigma0)
-        tim.inits.vec <- rep(error.inits,times=n.ages)  # just for initial values
+        error.inits <- rnorm(1,0,tim.params$sigma0)  # initial error values
+        tim.inits.vec <- rep(error.inits,times=n.ages)  # same error for each age
         for(sim in 1:nsims){
           tim.mat <- matrix(NA,nrow=n.ages,ncol=years.test)
         for(i in 1:years.test){
