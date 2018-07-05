@@ -1,6 +1,8 @@
 # Libraries
-library(here)
-#library(plyr)
+library(reshape2)
+library(ggplot2)
+library(plyr)
+library(dplyr)
 
 
 types <- c("Anchovy"="Anchovy",
@@ -12,12 +14,12 @@ types <- c("Anchovy"="Anchovy",
     # llply(.data=types,.fun = run.mod,.parallel = TRUE)
     # stopCluster()
 
- for (f in 1:3){
+ for (f in 2:3){
   fftype = types[f]
 
       #run.mod <- function(fftype){
         # Set directories
-        basedir <- here()
+        basedir <- "~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2"
         resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results"
         subDir <- fftype
         
@@ -29,12 +31,6 @@ types <- c("Anchovy"="Anchovy",
         sig.s = 0.3 
         R0.sens = NA # NO DYNAMIC R0 anymore-- ignore
 
-        
-        # Load packages
-        library(reshape2)
-        library(ggplot2)
-        library(plyr)
-        library(dplyr)
         
         # Load rev devs generating fxn, MSE main model, estimator fxns
         #toplot=FALSE      # Don't plot examples of recruitement trajectories
