@@ -150,7 +150,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     # Autocorrelated error  ###########################
     # Set sig.s and rho: These values are best estimates from Wiedenmann et al. 2015 Table 5: Median estimates of sd and autocorrelated in biomass observation error. For high steepness, slightly lower rho and sig.s.
     
-          rho = 0.5 
+          rho = 0.74 # changed 7/5/18
         if(is.na(sig.s)){ # if sig.s isn't provided at the beginning of the fxn, provide it here. 
           sig.s = 0.3 # This value comes from running the delay function a bunch of times, getting a target sd(log). This matches the sd from the autocorrelated error to the delay detection error.
                       # This value is similar to the sigma.s value estimated for species with high recruitment variability in Wied. et al. (sig.s = 0.35)
