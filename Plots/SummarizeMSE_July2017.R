@@ -13,7 +13,7 @@ source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/M
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
 Type = "Sardine" #FF type to summarize
-Date <- "2018-05-08"
+Date <- "2018-07-05"
 
 # Set path to where the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
@@ -37,7 +37,7 @@ setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir
   performance.measures <- c("LTmeancatch","LTnonzeromeancatch","SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","meanbiomass","good4preds","SDbiomass","very.bad4preds","meanDepl","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV.Catch","Bonafide.Collapse")
   pm.type <- c(rep("Fishery",times=6),rep("Ecosystem",times=11),"Fishery","Ecosystem") 
   
-  # NOTE: SKIP TO LINE 79 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
+  # NOTE: SKIP TO LINE 72 IF RESULTS HAVE ALREADY BEEN SUMMARIZED
   raw.table <- read.table("Scenario_Table.txt")  #This empty table is generated when the simulations are run - then you fill it in after everything runs
   raw.table[,performance.measures] <- NA
 
@@ -218,26 +218,26 @@ for(sim in 21:24){
   lines(results[[plot.these[6]]]$total.catch[sim,calc.ind],col=hcr.colors[4],lwd=1.5)
 }
 
-# Single black and white example fig for presentations
-calc.ind = 150:250
-par(bg = 'black', fg = 'white',col.lab="white",col.axis='white',mfrow=c(1,1))
-plot(results[[plot.these[5]]]$biomass.oneplus.true[sim,calc.ind],lwd=1.5,ylab="True 1+ Biomass",type='l')
-lines(results[[plot.these[5]]]$biomass.oneplus.obs[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
-lines(results[[plot.these[5]]]$biomass.oneplus.obs[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
-#  Why is collapse severity worse for basic hockey than for Low Bl (see notes) --------
-par(mfrow=c(1,1))
-plot(results[[plot.these[1]]]$no.fishing.tb[sim,],col='black',type='l',lwd=1.5,ylab="1+ Biomass")
-lines(results[[plot.these[3]]]$biomass.total.true[sim,],col=hcr.colors[1],lwd=1.5)
-lines(results[[plot.these[4]]]$biomass.total.true[sim,],col=hcr.colors[2],lwd=1.5)
-lines(results[[plot.these[5]]]$biomass.total.true[sim,],col=hcr.colors[3],lwd=1.5)
-
-nexamples = 16
-scenario = 6
-dim = sqrt(nexamples)
-par(mfrow=c(dim,dim))
-for(i in (1:nexamples)){
-  plot(results[[scenario]]$biomass.total.true[i,],type='l',ylab="B_total true")  # check for crashes
-}
+# Single black and white example fig for presentations - this modifies par() so don't use if you don't have to
+        # calc.ind = 150:250
+        # par(bg = 'black', fg = 'white',col.lab="white",col.axis='white',mfrow=c(1,1))
+        # plot(results[[plot.these[5]]]$biomass.oneplus.true[sim,calc.ind],lwd=1.5,ylab="True 1+ Biomass",type='l')
+        # lines(results[[plot.these[5]]]$biomass.oneplus.obs[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
+        # lines(results[[plot.these[5]]]$biomass.oneplus.obs[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
+        # #  Why is collapse severity worse for basic hockey than for Low Bl (see notes) --------
+        # par(mfrow=c(1,1))
+        # plot(results[[plot.these[1]]]$no.fishing.tb[sim,],col='black',type='l',lwd=1.5,ylab="1+ Biomass")
+        # lines(results[[plot.these[3]]]$biomass.total.true[sim,],col=hcr.colors[1],lwd=1.5)
+        # lines(results[[plot.these[4]]]$biomass.total.true[sim,],col=hcr.colors[2],lwd=1.5)
+        # lines(results[[plot.these[5]]]$biomass.total.true[sim,],col=hcr.colors[3],lwd=1.5)
+        # 
+        # nexamples = 16
+        # scenario = 6
+        # dim = sqrt(nexamples)
+        # par(mfrow=c(dim,dim))
+        # for(i in (1:nexamples)){
+        #   plot(results[[scenario]]$biomass.total.true[i,],type='l',ylab="B_total true")  # check for crashes
+        # }
 
 
 ############################################################################
@@ -332,13 +332,12 @@ for(p in 1:3){
     axis.ind <- match(x = colnames(final.tab)[-1],table = nice.pms$original)
     axis.labels <- nice.pms$polished[axis.ind]
     final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
-  plotnames[[p]] <- ggradar_b(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
+  plotnames[[p]] <- ggradar(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
                             grid.label.size=3,axis.label.size=8, 
                                            legend.text.size = 4,
                                             axis.labels = axis.labels,
                                            plot.legend=legend.presence,palette.vec = hcr.colors,
-                            manual.levels = levels(final.tab$group),
-                            plot.black=T)
+                            manual.levels = levels(final.tab$group))
   
   ftm <- melt(final.tab,id.vars="group")
   ftm$name <- ftm$variable
@@ -465,132 +464,12 @@ menhaden.hi <- results[hi.scen]
 calc.ind=1:250
 par(mfrow=c(2,2))
 for(sim in 21:24){ # stability-favoring specifically
-  # plot(menhaden.hi[[1]]$biomass.oneplus.true[sim,calc.ind],type='n',lwd=1.5,ylab="True 1+ Biomass",ylim=c(0,4e5))
-  # lines(menhaden.hi[[1]]$biomass.oneplus.true[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
-  # lines(anchovy.hi[[1]]$biomass.oneplus.true[sim,calc.ind],col='black',lwd=1.5)
   plot(menhaden.hi[[1]]$no.fishing.tb[sim,calc.ind],type='n',lwd=1.5,ylab="True 1+ Biomass",ylim=c(0,8e5))
   lines(menhaden.hi[[1]]$no.fishing.tb[sim,calc.ind],col=hcr.colors[6],lwd=1.5)
   lines(anchovy.hi[[1]]$no.fishing.tb[sim,calc.ind],col='black',lwd=1.5)
 }
 
 
-
-
-###########################################################################
-###########################################################################
-# Everything below this line can be used but isn’t really necessary -------
-###########################################################################
-###########################################################################
-
-
-# Single control rule for presentation ------------------------------------
-pick.hcr = c("Basic hockey stick")
-types = c("Sardine","Anchovy","Menhaden")
-plots <- data.frame("steepness"=c(0.6,0.9,0.6),"obs.error.type" = c("Autocorrelated","Autocorrelated","Delayed change detection"))
-nyrs.to.use <- 100 
-nice.pms <- data.frame(original = colnames(raw.table[-(1:7)]),
-                       polished = c("Mean catch","Mean nonzero catch",
-                                    "Catch stability","Minimize \n P(5-yr closure)",
-                                    "Minimize \n P(10-yr closure)","Minimize years \n w/ zero catch",
-                                    "Mean biomass","Number of yrs \n above pred threshold",
-                                    "SD(Biomass)","Number of yrs \n below low pred threshold",
-                                    "Mean depletion","Max collapse length","Max bonanza length",
-                                    "Bonanza length","Minimize \n collapse length", "Minimize \n P(collapse)",
-                                    "Minimize \n collapse severity","CV(Catch)","Minimize \n long collapses"))
-palette <- brewer.pal(6,"Spectral")
-hcr.colors <- palette[c(6,5,4,1,3,2)]
-plotnames <- list()
-tileplots <- list()
-all.scaled <- vector()
-
-
-p = 1
-for(sp in 1:3){
-  Type = types[sp]
-  Date <- "2018-03-09"
-  path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
-  setwd(path)    # ONLY RDATA FILES and TXT FILES should be in this dir
-  opfile <- grep("outputs.csv",x = list.files()) # Find outputs file - csv only
-  raw.table <- read.csv(list.files()[opfile])
-  if(colnames(raw.table)[1] == "X"){raw.table <- raw.table[,-1] } # if you use read.csv you need this
-  raw.table <- mutate(raw.table, obs.error.type = recode(obs.error.type,
-                                                         'Tim'='Delayed change detection',
-                                                         'AC' = "Autocorrelated"),
-                      HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-                                   'constF' = 'Low F',
-                                   'C1' = 'Basic hockey stick',
-                                   'C2' = 'Low Blim',
-                                   'C3' = 'High Fmax',
-                                   'constF_HI' = "High F"))
-#for(p in 1:3){ 
-  tab <- subset(raw.table,obs.error.type == as.character(plots$obs.error.type[p]) & h == plots$steepness[p] & M.type == "constant")
-  tab.metrics <- tab[,-(1:7)]
-  crs <- tab[,"HCR"]
-  remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
-  # Removed "Bonafide collapse" metric bc all CRs were performing similarly on it (in the paper this is called an "extended collapse")
-  remove.ind <- which(colnames(tab.metrics) %in% remove.these)
-  tab.metrics <- tab.metrics[-remove.ind]
-  
-  # Sometimes there won't be collapses, so for those turn NA's into zeroes (collapse length and severity)
-  tab.metrics[,c("CollapseLength","Collapse.Severity")][is.na(tab.metrics[,c("CollapseLength","Collapse.Severity")])] <- 0
-  #Here we deal with the PMs that are NEGATIVES (i.e., a high value for these is bad news) - I chose Option 3 below
-  bad.pms <- c("SDcatch","n.5yrclose","n.10yrclose","nyrs0catch","SDbiomass","very.bad4preds","overallMaxCollapseLength","CollapseLength","Prob.Collapse","Collapse.Severity","CV(Catch)","Bonafide.Collapse")
-  which.bad <- which(colnames(tab.metrics) %in% bad.pms)
-  
-  # For PMs with non-decimal values:
-  tab.metrics[,c("SDcatch","CollapseLength")] <- 1 / tab.metrics[,c("SDcatch","CollapseLength")]
-  tab.metrics$CollapseLength[is.infinite(tab.metrics$CollapseLength)] <- 1 # for when there are no collapses (get rid of infinite values)
-  tab.metrics$SDcatch[is.infinite(tab.metrics$SDcatch)] <- 1 # there is also a case where SDcatch is zero because catches crash before the final 100 yrs
-  
-  # PMs with decimal values:
-  tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")] <- 1 - tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")]
-  tab.metrics[,c("nyrs0catch")] <- 1-(tab$nyrs0catch/nyrs.to.use) # This is essentially now the proportion of years when there *wasn't* 0 catch
-  props <- tab.metrics
-  props <- apply(props, MARGIN = 2,FUN = function(x) x/max(x,na.rm=T))
-  all(props<=1) # check to make sure everything worked
-  final.tab <- data.frame(group = crs,props)
-  test.nas <- apply(X = final.tab,FUN = anyNA,MARGIN = 2)
-  na.metrics <- names(which(test.nas))
-  
-  if(length(na.metrics>0)){
-    print(paste("The following performance metrics had NAs and were removed from the figure: ",na.metrics))
-    final.tab <- final.tab[,-which(test.nas)]
-    rm.metrics <- which(nice.pms$original %in% na.metrics)
-    axis.labels <- nice.pms[-rm.metrics,'polished']
-  }
-  
-  legend.presence <- ifelse(p == 1,TRUE,FALSE)
-  axis.ind <- match(x = colnames(final.tab)[-1],table = nice.pms$original)
-  axis.labels <- nice.pms$polished[axis.ind]
-  final.tab$group <- factor(final.tab$group,levels=c("Basic hockey stick","Low Blim","High Fmax","High F","Low F","Stability-favoring"))
-  #final.tab <- subset(final.tab, group %in% pick.hcr)
-  plotnames[[sp]] <- ggradar_b(final.tab,font.radar = "Helvetica",   # Add "_b" to fxn name if making w black background
-                              grid.label.size=3,axis.label.size=8, 
-                              legend.text.size = 4,
-                              axis.labels = axis.labels,
-                              plot.legend=legend.presence,palette.vec = hcr.colors, #rev(hcr.colors[which(levels(final.tab$group) %in% pick.hcr)])
-                              manual.levels = levels(final.tab$group),  #factor(pick.hcr)
-                              plot.black=T)
-  
-  ftm <- melt(final.tab,id.vars="group")
-  ftm$name <- ftm$variable
-  ftm$name <- factor(ftm$name, levels=c("LTmeancatch", "meanbiomass", "BonanzaLength","SDcatch","nyrs0catch","n.5yrclose","CollapseLength","Prob.Collapse","Collapse.Severity"))
-  ftm$group <- factor(ftm$group,c("Basic hockey stick","Low Blim","High Fmax","Low F","High F","Stability-favoring"))
-  ftm <- mutate(ftm,name = recode_factor(name, 'LTmeancatch' = "Mean catch",
-                                         "meanbiomass" = "Mean biomass",
-                                         "BonanzaLength" = "Bonanza Length",
-                                         'SDcatch' = "Minimize \n catch variation",
-                                         'nyrs0catch' = "Minimize \n years with 0 catch",
-                                         'n.5yrclose' = "Minimize \n P(5 yr closure|closure)",
-                                         "CollapseLength" = "Minimize \n collapse length",
-                                         "Prob.Collapse" = "Minimize P(collapse)",
-                                         "Collapse.Severity" = "Minimize collapse severity"))
-}
-
-setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = paste("SAM_ALL",Sys.Date(),"_BlackBkd_KitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
-grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],ncol=1)
-dev.off() #This plot can be used in a presentation to compare life history types
 
 
 # Zeh plots (e.g. Punt 2015) -----------------------------------------------
@@ -602,59 +481,6 @@ ggplot(all.summaries2,aes(x=HCR,y=med,colour=HCR)) +
   theme_bw(base_size = 12) + 
   theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
   ylab("Median (+/- 90% quantile)")
-
-# Tradeoff figures ---------------------------------------------------
-# *** NOTE: Need to scale these to best (as in kite plots); scen.table depracated
-tradeoff.plot <- subset(scen.table,h==0.9)
-# Scale all performance measures to max
-for(i in 7:ncol(tradeoff.plot)){
-  tradeoff.plot[,i] <- tradeoff.plot[,i] / max(tradeoff.plot[,i],na.rm=T) *100
-}
-melt.tradeoff <- melt(tradeoff.plot,id.vars=c("h","recruit.sd","recruit.rho","obs.error.type","HCR","scenario"))
-ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=scenario,alpha=obs.error.type)) +
-  xlab("Control rule") + ylab("% of best performance, h = 0.9") +
-  scale_colour_manual(values = hcr.colors) +
-  scale_alpha_manual(values = c(0.6,1)) +
-  geom_point(size=5)  + theme_bw(base_size = 18) + 
-  theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
-  facet_wrap(~variable)
-
-
-tradeoff.plot <- subset(scen.table,h==0.6)
-# Scale all performance measures to max
-for(i in 7:ncol(tradeoff.plot)){
-  tradeoff.plot[,i] <- tradeoff.plot[,i] / max(tradeoff.plot[,i],na.rm=T) *100
-}
-melt.tradeoff <- melt(tradeoff.plot,id.vars=c("h","recruit.sd","recruit.rho","obs.error.type","HCR","scenario"))
-ggplot(melt.tradeoff,aes(x=HCR,y=value,colour=HCR,shape=obs.error.type,label=scenario,alpha=obs.error.type)) +
-  xlab("Control rule") + ylab("% of best performance, h = 0.6") +
-  scale_colour_manual(values = hcr.colors) +
-  scale_alpha_manual(values = c(0.6,1)) +
-  geom_point(size=5)  + theme_bw(base_size = 18) + 
-  theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
-  facet_wrap(~variable)
-
-
-# Plot just the predator ones ---------------------------------------------
-            pred.df <- subset(all.summaries,PM %in% c("good4preds","very.bad4preds","overallMaxCollapseLength","overallMaxBonanzaLength","BonanzaLength","CollapseLength"))
-            dodge <- position_dodge(.6)
-            ggplot(pred.df,aes(x=HCR,y=med,colour=HCR,shape=obs.error.type,alpha=obs.error.type,label=med)) +
-              scale_colour_manual(values = hcr.colors) +
-              scale_alpha_manual(values = c(0.6,1)) +
-              geom_point(size=5,position=dodge)  + 
-              geom_errorbar(aes(ymin = loCI, ymax = hiCI), position = dodge,width=0.1) +
-              theme_bw(base_size = 18) +
-              theme(axis.text.x = element_text(angle = 90,hjust = 1,vjust = .5)) +
-              facet_wrap(h~PM,scales="free_y")
-            
-            
-# Plot comparing biomass, catch, etc for one run each scenario ------------
-attributes <- c("Biomass","Catches","Recruitment","Depletion (B/B0)")
-att.ind <- c(1,2,4,5)
-
-
-
-# Plot time series of fishing rates leading up to collapses ---------------
 
 
 
@@ -751,19 +577,6 @@ for (scenario in 1:length(results)){
   mtext(paste("h=",scen.table[scenario,'h'],"-","ObsErrorType =",scen.table[scenario,'obs.error.type'],sep= " "),outer=TRUE,cex=1.2,side=3,line=-3)
 }
 dev.off()
-
-#pdf(paste(Type,"ErrorPlots",Sys.Date(),".pdf",sep=""),width=9.5,height=5)
-
-
-
-#  Steepness tests --------------------------------------------------------
-
-hiS <- results[[7]]
-loS <- results[[8]]
-yrs <- 150:250
-par(mfrow=c(2,1))
-plot(hiS$biomass.total.true[1,yrs],type='l',ylab="Total biomass",xlab="Year")
-lines(loS$biomass.total.true[1,yrs],col='red')
 
 
 # Plot just pred ones for paper -------------------------------------------
