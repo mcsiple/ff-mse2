@@ -14,7 +14,7 @@ types <- c("Anchovy"="Anchovy",
     # llply(.data=types,.fun = run.mod,.parallel = TRUE)
     # stopCluster()
 
- for (f in 2:3){
+ for (f in 1:3){
   fftype = types[f]
 
       #run.mod <- function(fftype){
@@ -75,7 +75,7 @@ types <- c("Anchovy"="Anchovy",
         set.seed(123)
         tim.rands.list <- list() 
         n.ages <- length(lh.test$ages)
-        error.inits <- rnorm(1,0,tim.params$sigma0)  # initial error values
+        error.inits <- rnorm(1,0,tim.params$sigma0)     # initial error values
         tim.inits.vec <- rep(error.inits,times=n.ages)  # same error for each age
         for(sim in 1:nsims){
           tim.mat <- matrix(NA,nrow=n.ages,ncol=years.test)
@@ -138,18 +138,13 @@ types <- c("Anchovy"="Anchovy",
                 recruit.rho = 0.9 
                 equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
                 rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-                test <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = NA,sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[1]],curly.phi.vec = curly.phi.mat[1,] )
+                test <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C1", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,ac.params = list(rho=0.74,sig.s=0.3),time.var.m = NA,sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[1]],curly.phi.vec = curly.phi.mat[1,] )
                 nofish <- melt(test[-c(1,5,10,11)])
                 nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
                 ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") + geom_hline(yintercept=equilib$B0) + geom_hline(yintercept=0.5*equilib$Bmsy,col="red") 
                 plot(test$fishing,type='l',ylim=c(0,1))
                 any(test$intended.f==0)
                
-                
-        #New, just for the recruitment time series
-        # fff <- nofish %>% subset(L1=="biomass.oneplus.true") %>% mutate(low.B.thresh = 0.2*mean(value,na.rm=TRUE))
-        # nofish %>% subset(L1=="biomass.oneplus.true") %>% as.data.frame() %>% ggplot(aes(x=year,y=value))+geom_line()+ geom_hline(yintercept = 15639.94,col = "red")
-        # 
         ###########################################################################
         # SIMULATIONS -------------------------------------------------------------
         ###########################################################################
@@ -162,7 +157,8 @@ types <- c("Anchovy"="Anchovy",
           recruit.sd = scenarios$recruit.sd[s]
           recruit.rho = scenarios$recruit.rho[s]
           M.type = scenarios$M.type[s]
-        
+          ac.params = list(rho=ifelse(recruit.rho==0.9,0.89,0.74),
+                           sig.s=ifelse(recruit.rho==0.9,0.34,0.37))    #NEW
           equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
           const.f.rate = 0.5*equilib$Fmsy 
                   no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
@@ -172,7 +168,7 @@ types <- c("Anchovy"="Anchovy",
                   if(M.type == "regimeshift"){time.var.m <- regime.M(Mbar = lh.test$M,cutoff.yr = 201,n = years.test)}
                   for (sim in 1:nsims){
                         rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-                        F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])$biomass.total.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
+                        F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,ac.params = ac.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])$biomass.total.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
                         no.fishing[sim,] <- F0.Type
                           }
                 
@@ -181,7 +177,7 @@ types <- c("Anchovy"="Anchovy",
           set.seed(123) # Start each round of sims at same random seed
           for (sim in 1:nsims){
                 rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-                expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s,rec.ram = NA, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
+                expt.cfp <- calc.trajectory(lh = lh.test,obs.cv = NA, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,ac.params = ac.params,time.var.m = time.var.m, sig.s = sig.s,rec.ram = NA, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
               
             CFP[["biomass.oneplus.true"]][sim,] <- expt.cfp$biomass.oneplus.true # This is the true one-plus biomass
             CFP[["total.catch"]][sim,] <- expt.cfp$total.catch  
@@ -200,7 +196,7 @@ types <- c("Anchovy"="Anchovy",
             set.seed(123) # same seed
             for (sim in 1:nsims){
                   rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-                  expt.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
+                  expt.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,ac.params = ac.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
                   
             constF[["biomass.oneplus.true"]][sim,] <- expt.constF$biomass.oneplus.true
             constF[["total.catch"]][sim,] <- expt.constF$total.catch
@@ -218,7 +214,7 @@ types <- c("Anchovy"="Anchovy",
             set.seed(123) # same seed
             for (sim in 1:nsims){
                 rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-                expt.c1 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C1",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
+                expt.c1 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C1",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,ac.params = ac.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
                
             C1[["biomass.oneplus.true"]][sim,] <- expt.c1$biomass.oneplus.true
             C1[["total.catch"]][sim,] <- expt.c1$total.catch
@@ -236,7 +232,7 @@ types <- c("Anchovy"="Anchovy",
             set.seed(123) # same seed
             for (sim in 1:nsims){
               rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-              expt.c2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
+              expt.c2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,ac.params = ac.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
               
               C2[["biomass.oneplus.true"]][sim,] <- expt.c2$biomass.oneplus.true
               C2[["total.catch"]][sim,] <- expt.c2$total.catch
@@ -255,7 +251,7 @@ types <- c("Anchovy"="Anchovy",
             set.seed(123) # same seed
             for (sim in 1:nsims){
               rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-              expt.c3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C3",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
+              expt.c3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C3",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,ac.params = ac.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
               
               C3[["biomass.oneplus.true"]][sim,] <- expt.c3$biomass.oneplus.true
               C3[["total.catch"]][sim,] <- expt.c3$total.catch
@@ -274,7 +270,7 @@ types <- c("Anchovy"="Anchovy",
             set.seed(123) # same seed
             for (sim in 1:nsims){
               rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-              expt.trend <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "trend",const.f.rate = 0.6,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
+              expt.trend <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "trend",const.f.rate = 0.6,equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,ac.params = ac.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
               
               trend[["biomass.oneplus.true"]][sim,] <- expt.trend$biomass.oneplus.true
               trend[["total.catch"]][sim,] <- expt.trend$total.catch
@@ -293,7 +289,7 @@ types <- c("Anchovy"="Anchovy",
                     set.seed(123) # same seed
                     for (sim in 1:nsims){
                       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-                      expt.constF_HI <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
+                      expt.constF_HI <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = const.f.rate, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,ac.params = ac.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
                       
                       constF_HI[["biomass.oneplus.true"]][sim,] <- expt.constF_HI$biomass.oneplus.true
                       constF_HI[["total.catch"]][sim,] <- expt.constF_HI$total.catch
