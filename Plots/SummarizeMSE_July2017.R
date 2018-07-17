@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Sardine" #FF type to summarize
+Type = "Anchovy" #FF type to summarize
 Date <- "2018-07-05"
 
 # Set path to where the simulation results are:
@@ -195,7 +195,7 @@ lines(results[[16]]$total.catch[2,],col='red')
 # Plot example time series of 1+ biomass for each of the control rules-- together!
     #autcorrelated errors: 2,8,14,20,26,32
     #dd errors: 4,10,16,22,28,34
-plot.these <- subset(raw.table, h==0.6 & obs.error.type =="AC")$scenario
+plot.these <- subset(raw.table, h==0.9 & obs.error.type =="AC")$scenario
 calc.ind=1:250 #for when you want to look at the whole simulation!
 par(mfrow=c(2,2))
 for(sim in 21:24){
@@ -292,9 +292,7 @@ for(p in 1:3){
     
     # PMs with decimal values:
     tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")] <- 1 - tab.metrics[,c("Prob.Collapse","Collapse.Severity","n.5yrclose")]
-    tab.metrics[,c("nyrs0catch")] <- 1-(tab$nyrs0catch/nyrs.to.use) # This is essentially now the proportion of years when there *wasn't* 0 catch
-    
-    #tab.metrics[,-which.bad]
+    tab.metrics[,c("nyrs0catch")] <- 1-(tab$nyrs0catch/nyrs.to.use) # Proportion of years when there *wasn't* 0 catch
     props <- tab.metrics
     props <- apply(props, MARGIN = 2,FUN = function(x) x/max(x,na.rm=T))
     all(props<=1) # check to make sure everything worked
@@ -369,7 +367,7 @@ dev.off()
 
 all.scaled$scen <- rep(c(1,2,3),each=length(unique(raw.table$HCR))) # This is different from "scenario" in tables above
 all.scaled$cols <- rep(hcr.colors[c(6,5,1,2,3,4)],times=length(unique(all.scaled$scen)))
-pairsnames <- c("Base case","High steepness","Delayed detection")
+#pairsnames <- c("Base case","High steepness","Delayed detection")
 pdf(paste("PAIRS_",Type,".pdf",sep=""), width=11,height=8.5,onefile = TRUE)
 for(i in 1:3){
 p1 <- subset(all.scaled,scen==i)

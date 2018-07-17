@@ -106,7 +106,7 @@ eps.vec[1] <- 1
       
         est <- add.wied.error(biomass.true = test.ts[t],
                               epsilon.prev = eps.vec[t-1],
-                              sig.s = sig.s2,rho=0.74,curly.phi = rnorm(1,0,sig.s2)) #CHANGED RHO HERE. Might have to change curly.phi2 to something that changes every year?
+                              sig.s = sig.s2,rho=0.74,curly.phi = rnorm(1,0,sig.s2)) # NEW RHO
         obs.ts.ac[t] <- est$biomass.est
         eps.vec[t] <- est$epsilon.curr
       }
@@ -130,7 +130,7 @@ legend("topleft",c("Delayed detection","AC"),lty=c(2,1))
 ##################################################################################################
 ##################################################################################################
 
-# Test it numerically - not done
+# Test numerically - not done
 
 eps.prev <- 1
 rho <- 0
