@@ -36,7 +36,7 @@ bevHolt <- function(h, R0 = 1000, SBPR0, S){
   return (Rec)
 }
 
-calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr, years, hcr.type = "hockeystick",obs.type="LN",const.f.rate = NULL,equilib = NULL, buffer = NULL,steepness = 0.9, R0.traj = 0,tim.params = NULL,time.var.m=NA, sig.s = NA, tim.rand.inits = NULL, tim.rands = NULL, curly.phi.vec = NULL){
+calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr, years, hcr.type = "hockeystick",obs.type="LN",const.f.rate = NULL,equilib = NULL, buffer = NULL,steepness = 0.9, R0.traj = 0,tim.params = NULL,ac.params = NULL,time.var.m=NA, sig.s = NA, tim.rand.inits = NULL, tim.rands = NULL, curly.phi.vec = NULL){
   #' @description Function to calculate a trajectory of biomass, catch, and surplus production
   #' @param lh is a list containing the following:
         # M - natural mortality (scalar)
@@ -61,6 +61,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   #' @param steepness - h parameter
   #' @param R0.traj - time series of R0, if you are testing time-varying R0
   #' @param tim.params - list of parameters (sigma0, tau0) describing the level of belief that the assessment or surveyor has in the possibility of large peaks or collapses
+  #' @param ac.params - list of parameters (sig.s,rho) describing autocorrelation and sd of observtion errors in AC scenarios
   #' @param time.var.m - time series of natural mortality (M) values for cases where M is time-varying
   #' @param curly.phi.vec a vector of random errors for the autocorrelated error: rnorm(years,0,sig.s)
   #' @return list: obs biomass, true biomass, catches, recruitment, and others
@@ -149,16 +150,17 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     
     # Autocorrelated error  ###########################
     # Set sig.s and rho: These values are best estimates from Wiedenmann et al. 2015 Table 5: Median estimates of sd and autocorrelated in biomass observation error. For high steepness, slightly lower rho and sig.s.
-    
-          rho = 0.74 # changed 7/5/18
-        if(is.na(sig.s)){ # if sig.s isn't provided at the beginning of the fxn, provide it here. 
-          sig.s = 0.3 # This value comes from running the delay function a bunch of times, getting a target sd(log). This matches the sd from the autocorrelated error to the delay detection error.
-                      # This value is similar to the sigma.s value estimated for species with high recruitment variability in Wied. et al. (sig.s = 0.35)
-          
+        
+          rho = ac.params$rho # rho = 0.74 for short-lived spps and rho=0.89 for long-lived spps; changed 7/5/18
+          sig.s = ac.params$sig.s # sig.s = 0.3 # This value comes from running the delay function a bunch of times, getting a target sd(log). This matches the sd from the autocorrelated error to the delay detection error. It is similar to the sigma.s value estimated for species with high recruitment variability in Wied. et al. (sig.s ~ 0.35)
+       
+           # if sig.s isn't provided at the beginning of the fxn, provide it here. 
           # There are also values of sig.s and rho that are conditioned on steepness, also from Wiedenmann et al. 2015. I don't use these now, but they were tested long ago:
           # sig.s = ifelse(steepness>0.5,0.30,0.38)
           # rho = ifelse(steepness>0.5,0.82,0.87)
-    }
+        #}
+          
+          
     if(obs.type == "AC"){
       eps.prev = ifelse(yr==1,1,eps.prev) # Initialize epsilon
       outs <-  add.wied.error(biomass.true = biomass.true[,yr],
