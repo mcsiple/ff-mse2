@@ -8,11 +8,13 @@ library(RColorBrewer)
 resultsdir <- "~/Dropbox/Chapter4-HarvestControlRules/Results"
 
 # *** Before starting: Check to make sure these directories are results you want
-aa <- read.csv(file.path(resultsdir,"Anchovy2018-03-09/Anchovy2018-03-19_outputs.csv"))
+#  RunDate <- "2018-07-05"
+#  SummaryDate <- "2018-07-16"
+aa <- read.csv(file.path(resultsdir,"Anchovy2018-07-16/Anchovy2018-07-17_outputs.csv"))
 aa$Type = "Anchovy"
-mm <-read.csv(file.path(resultsdir,"Menhaden2018-03-09/Menhaden2018-03-19_outputs.csv"))
+mm <-read.csv(file.path(resultsdir,"Menhaden2018-07-16/Menhaden2018-07-17_outputs.csv"))
 mm$Type = "Menhaden"
-ss <- read.csv(file.path(resultsdir,"Sardine2018-03-09/Sardine2018-03-19_outputs.csv"))
+ss <- read.csv(file.path(resultsdir,"Sardine2018-07-16/Sardine2018-07-17_outputs.csv"))
 ss$Type = "Sardine"
 dat <- rbind.fill(aa,mm,ss)     # This is an amalgamation of all the raw.tables from the results files
 
@@ -45,7 +47,7 @@ for(i in 1:nrow(dat3)){
     dat3$percentdiff[i] <- 100
   }
 }
-write.csv(dat3,"PercentDiffs_032118.csv")
+write.csv(dat3,"PercentDiffs_071718.csv")
 
 # Start here if you’ve already calculated percent differences -------------
 setwd("~/Dropbox/Chapter4-HarvestControlRules/Figures/")
@@ -92,13 +94,18 @@ dat3.new$percentdiff[dat3.new$percentdiff < (-100) & dat3.new$percentdiff > (-1e
 dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)] <- NA
 dat3.new$percentlabel[which(is.infinite(dat3.new$percentlabel))] <- NA # replace the two "inf" values with NA
 
+# Find places where there are NA's, to mark them on the plot
+stars <- subset(dat3.new,is.na(percentdiff)) 
+stars$zeroes <- 0
+
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = "PercentDiffsErrors_050918.pdf",width = 11,height = 9,useDingbats = FALSE)
+pdf(file = "PercentDiffsErrors_071718_ACparams.pdf",width = 11,height = 9,useDingbats = FALSE)
 ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors) +
   geom_text(aes(x=name,y=location, label=percentlabel,hjust=ifelse(sign(percentlabel)>0, -0.2, 1.1)), 
             position = position_dodge(width=1),size=2.5) +
+  geom_point(data=stars,aes(x=name,y=zeroes),colour='darkgrey',size=2) + #new line
   geom_hline(yintercept=0)+facet_grid(HCR~Type) +
   theme_classic(base_size = 14) + 
   theme(strip.background = element_blank(),strip.text.y = element_blank()) +
