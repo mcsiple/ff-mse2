@@ -12,8 +12,8 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Anchovy" #FF type to summarize
-Date <- "2018-07-05"
+Type = "Menhaden" #FF type to summarize
+Date <- "2018-07-16"
 
 # Set path to where the simulation results are:
 path <- paste("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Results/",Type,Date,"/",sep="")
@@ -132,7 +132,7 @@ for (s in 1:nscenarios){
 
 write.csv(raw.table, file=paste(Type,Sys.Date(),"_outputs.csv",sep=""))
 
-str(results)
+#str(results)
 subset(raw.table,h==0.6 & obs.error.type=="AC")
 
 
@@ -377,16 +377,6 @@ pairs(p1[,-rm],col=p1$cols,pch=19,xlim=c(0,1),ylim=c(0,1),
       labels=axis.labels,lower.panel = NULL)
 #title(paste(pairsnames[i]),line = 0)
 }
-dev.off()
-
-
-# Quick: make black-background plot for presentation:
-pdf("Tradeoff_example.pdf",width = 5,height = 5,useDingbats = FALSE)
-par(bg='black',mfrow=c(1,1),fg='white',col.axis="white",col.lab="white",mgp=c(3,1,0))
-plot(p1$LTmeancatch,p1$BonanzaLength,pch=19,
-     col=p1$cols,cex=2.1,
-     xlab="Mean Catch (% of max performance)",
-     ylab="Bonanza length (% of max performance)")
 dev.off()
 
 
