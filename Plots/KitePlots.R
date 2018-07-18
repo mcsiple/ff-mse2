@@ -1,4 +1,5 @@
-# Make kite plots as shown in the paper- this should save time.
+# Figure 5
+
 library(gtools)
 library(plyr); library(dplyr)
 library(scales)
@@ -104,34 +105,28 @@ Figure5a <- function(steepness=0.6,obs="AC",M.type=constant){
                                 manual.levels = levels(final.tab$group),
                                 axis.label.offset=1.1)
     }
-  #margin = theme(plot.margin = unit(c(0,1,0,1), "cm"))
+
   p1 <- plotnames[[1]]
   p2 <- plotnames[[2]]
   p3 <- plotnames[[3]]
-  # gt1 <- ggplot_gtable(ggplot_build(p1))
-  # gt2 <- ggplot_gtable(ggplot_build(p2))
-  # gt3 <- ggplot_gtable(ggplot_build(p3))
-  # 
-  # gt1$layout$clip <- gt2$layout$clip <- gt3$layout$clip <- "off"
-  # 
-  #grid.arrange(gt1,gt2,gt3,ncol=3)  #,grobs = lapply(plotnames, "+", margin)
-    grid.arrange(p1,p2,p3,ncol=3)
+  grid.arrange(p1,p2,p3,ncol=3)
   } # end of Fig 5a function
+
+
 
 setwd(figwd)
 pdf(file = "Figure5a.pdf",width=27,height=15,useDingbats = FALSE)
 Figure5a()
 dev.off()
-    # pdf(file = paste(Type,Sys.Date(),"2_KitePlots.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
-    # grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],ncol=1)
-    # dev.off()
 
-p1 <- plotnames[[1]]
-p2 <- plotnames[[2]]
-gt1 <- ggplot_gtable(ggplot_build(p1))
-gt2 <- ggplot_gtable(ggplot_build(p2))
+setwd(figwd)
+pdf(file = "Figure5b.pdf",width=27,height=15,useDingbats = FALSE)
+Figure5a(steepness = 0.9)
+dev.off()
 
-gt1$layout$clip[gt1$layout$name == "panel"] <- gt2$layout$clip[gt2$layout$name == "panel"] <- "off"
-grid.arrange(gt1,gt2,ncol=2)
-grid::grid.draw(gt)
-    
+setwd(figwd)
+pdf(file = "Figure5c.pdf",width=27,height=15,useDingbats = FALSE)
+Figure5a(obs = "Tim")
+dev.off()
+
+
