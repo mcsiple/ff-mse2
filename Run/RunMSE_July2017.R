@@ -158,8 +158,8 @@ types <- c("Anchovy"="Anchovy",
           recruit.rho = scenarios$recruit.rho[s]
           M.type = scenarios$M.type[s]
           ac.params = list(rho=ifelse(recruit.rho==0.9,0.89,0.74),
-                           sig.s=ifelse(recruit.rho==0.9,0.34,0.37))    #NEW
-          equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # NO recruitment devs used in the equilibrium calculations, so don't need to embed in the loop
+                           sig.s=ifelse(recruit.rho==0.9,0.34,0.37))    #NEW- give sardine long-lived params
+          equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness) # No rec devs used in the equilibrium calculations, so don't need to embed in the loop
           const.f.rate = 0.5*equilib$Fmsy 
                   no.fishing <- matrix(NA, nrow = nsims, ncol = years.test)
                   set.seed(123) # Start each round of sims at same random seed
