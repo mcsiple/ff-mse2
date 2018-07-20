@@ -39,14 +39,10 @@ dat3 <- mutate(dat3,HCR = recode_factor(HCR, 'cfp' = 'Stability-favoring',
                                  'trend' = "Trend-based",
                                  'constF_HI' = "High F"))
 setwd("~/Dropbox/Chapter4-HarvestControlRules/Tables")
-for(i in 1:nrow(dat3)){
-  if(dat3$AC[i]==0 & dat3$Tim[i]==0){
-    dat3$percentdiff[i] <- 0    
-  }
-  if(is.infinite(dat3$percentdiff[i])){
-    dat3$percentdiff[i] <- 100
-  }
-}
+
+# Put zero change when both cols = 0
+dat3$percentdiff[which(dat3$AC==0 & dat3$Tim==0)] <- 0
+
 write.csv(dat3,"PercentDiffs_071718.csv")
 
 # Start here if you’ve already calculated percent differences -------------
@@ -91,34 +87,33 @@ dat3.new$location[which(dat3.new$percentdiff< (-100))] <- -100
 
 dat3.new$percentdiff[dat3.new$percentdiff > 100 & dat3.new$percentdiff < 1e6] = 100
 dat3.new$percentdiff[dat3.new$percentdiff < (-100) & dat3.new$percentdiff > (-1e6)] = -100
-dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)] <- NA
-dat3.new$percentlabel[which(is.infinite(dat3.new$percentlabel))] <- NA # replace the two "inf" values with NA
+
+# Deal with percent changes that are Inf (because changes are between zero and another value)
+infinites <- subset(dat3.new,is.infinite(percentdiff))
+#dat3.new$percentlabel[is.infinite(dat3.new$percentdiff)] <- "+"
+dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)] <- ifelse(dat3.new$percentdiff[is.infinite(dat3.new$percentdiff)]<100,-100,100)
+
 
 # Find places where there are NA's, to mark them on the plot
 stars <- subset(dat3.new,is.na(percentdiff)) 
 stars$zeroes <- 0
 
+
 setwd("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Figures")
-pdf(file = "PercentDiffsErrors_071718_ACparams.pdf",width = 11,height = 9,useDingbats = FALSE)
+pdf(file = "PercentDiffsErrors_071718_ACparamsv2.pdf",width = 11,height = 9,useDingbats = FALSE)
 ggplot(dat3.new, aes(x=name,y=percentdiff)) +
   geom_bar(colour='black',aes(fill=HCR),stat = "identity") + 
   scale_fill_manual(values = hcr.colors) +
   geom_text(aes(x=name,y=location, label=percentlabel,hjust=ifelse(sign(percentlabel)>0, -0.2, 1.1)), 
             position = position_dodge(width=1),size=2.5) +
-  geom_point(data=stars,aes(x=name,y=zeroes),colour='darkgrey',size=2) + #new line
   geom_hline(yintercept=0)+facet_grid(HCR~Type) +
+  geom_point(data=stars,aes(x=name,y=zeroes),colour='darkgrey',size=2) + #new line
   theme_classic(base_size = 14) + 
   theme(strip.background = element_blank(),strip.text.y = element_blank()) +
   ylab("% change from delayed detection model") +
   xlab("Performance metric") + 
   ylim(c(-130,130)) + coord_flip()
 dev.off()
-
-
-
-# Maybe add line plots to the top with time series? -----------------------
-#sardine.eg <- # just pick out the scenarios you want, load results
-
 
 
 
