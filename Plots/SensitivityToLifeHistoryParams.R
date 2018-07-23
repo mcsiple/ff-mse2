@@ -121,19 +121,6 @@ CFP <- C1 <- C2 <- C3 <- constF <- trend <- constF_HI <-
        biomass.total.true = matrix(nrow = nsims,ncol = years.test),
        no.fishing.tb = matrix(nrow = nsims,ncol = years.test))
 
-# Test params and runs to make sure they look good ------------------------
-# steepness = scenarios$h[1]
-# obs.type <- scenarios$obs.error.type[1]
-# HCR <- scenarios$HCR[1]
-# equilib = getEquilibriumConditions(lh = lh.test,fish = seq(0,5,by=.1),years = 150,steepness=steepness)
-# rec.dev.test <- generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd)
-# test.constF <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test,rec.ram = NA, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,]) # Need to fix the rest of these
-# nofish <- melt(test.constF[c("biomass.oneplus.obs","biomass.total.obs","total.catch","fishing","biomass.total.true","rec","biomass.oneplus.true")])
-# nofish$year <- rep(1:years.test,times=length(unique(nofish$L1)))
-# ggplot(nofish,aes(x=year,y=value)) + geom_line() + facet_wrap(~L1,scales = "free_y") #+ xlim(c(150,250))
-# 
-
-
 
 # Test sensitivity to over-or under-estimating B0 ---------------------------------------------------
 
@@ -406,7 +393,7 @@ all.summaries2 <- all.summaries %>% mutate(obs.error.type = recode_factor(obs.er
                                                                'trend' = "Trend-based",
                                                                'constF_HI' = "High F"))
 
-subset(all.summaries2, h==0.6 & obs.error.type=="Autocorrelated" & PM == "Collapse.Severity")
+subset(all.summaries2, h==0.6 & obs.error.type=="Autocorrelated" & PM == "Collapse.Severity") # check
 write.csv(all.summaries2, file = paste(Type,"_AllSummaries.csv",sep=""))
 
 for (s in 1:nscenarios){
@@ -589,6 +576,6 @@ for(p in 1:5){
 }
 
 pdf(file = paste(Type,Sys.Date(),"SENSITIVITY_KitePlots_v2.pdf",sep=""),width = 15,height=27,useDingbats = FALSE)
-grid.arrange(plotnames[[1]],plotnames[[1]],plotnames[[2]],plotnames[[3]],plotnames[[4]],plotnames[[5]],ncol=2)
+grid.arrange(plotnames[[1]],plotnames[[2]],plotnames[[3]],plotnames[[4]],plotnames[[5]],ncol=2) # arranged left to right
 dev.off()
 
