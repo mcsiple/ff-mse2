@@ -332,7 +332,7 @@ for(s in 1:nscenarios){  #
           }}
       }
       rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-      expt.c3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C3",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
+      expt.c3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C3",equilib = equilib,steepness=steepness,obs.type = obs.type,R0.traj = R0.sens, tim.params = tim.params,ac.params=ac.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])
       
       C3[["biomass.oneplus.true"]][sim,] <- expt.c3$biomass.oneplus.true
       C3[["total.catch"]][sim,] <- expt.c3$total.catch
@@ -482,23 +482,24 @@ head(overs)
 
 # Compare the performance metrics between exact and over- or under --------
 all.results <- rbind.fill(exacts,unders,overs)
-hcr.colors <- 
+palette <- brewer.pal(6,"Spectral")
+hcr.colors <- palette[c(6,5,4,1,3,2)]
 # Subset to the control rules that use metric m:
 if(metric == "B0"){plot.results <- subset(all.results, HCR %in% c("C1","C2","C3"))
                     col.to.use <- hcr.colors[1:3]}
 if(metric == "Fmsy"){plot.results <- subset(all.results, HCR %in% c("constF","constF_HI","cfp","C3"))
-                    col.to.use <- hcr.colors[c(3,6,4,5)]}
+                    col.to.use <- hcr.colors[c(3,6,5,4)]}
 
 # Recode performance measures for plotting and take out PMs that aren't used in the paper
 remove.these <- c("n.10yrclose","SDbiomass","meanDepl","LTnonzeromeancatch","good4preds","very.bad4preds","CV.Catch","overallMaxCollapseLength","overallMaxBonanzaLength","Bonafide.Collapse")
 plot.results <- plot.results %>% filter(!PM %in% remove.these) %>%
   mutate(HCR = recode(HCR, 'cfp' = 'Stability-favoring',
-             'constF' = 'Constant F',
+             'constF' = 'Low F',
              'C1' = 'Basichockey',
              'C2' = 'Low Blim',
              'C3' = 'High Fmax',
              'trend' = "Trend-based",
-             'constF_HI' = "Constant F - High"),
+             'constF_HI' = "High F"),
              PM = recode(PM, 'LTmeancatch' = "Mean catch", # These are slightly different than in the Summarize_MSE file, because these aren't re-scaled for "negative metrics" or scaled to max
                              "meanbiomass" = "Mean biomass",
                              "BonanzaLength" = "Bonanza length",
@@ -588,79 +589,3 @@ palette <- brewer.pal(6,"Spectral")
 hcr.colors <- palette[c(6,5,4,3,1,2)]
 combo$color <- rep(hcr.colors[1:3],each=length(unique(combo$B0.accuracy))) # colours for C1, C2, C3: hcr.colors[1:3]
 pairs(combo[4:ncol(combo)-1],pch=rep(c(21,24,25),times=3),bg=combo$color)
-
-
-
-
-
-
-# DEPRACATED: Test fitting a 1/x function to the exact estimates ---------------------
-
-test <- subset(combo,B0.accuracy=="exact") %>% arrange(nyrs0catch)
-x = test$nyrs0catch
-y = test$LTmeancatch
-fit <- lm(data = test,y~I(1/x))
-plot(x,y,xlim=c(0,1),ylim=c(0,1))
-newdata <- data.frame(x = seq(0.05,1,by=0.1))
-pt <- predict(fit,newdata=newdata)
-lines(newdata$x,pt,col="blue")
-
-
-# Try a new thing: quantify tradeoffs with 1/x fitting --------------------
-
-toplot.raw <- toplot %>% group_by(PM,B0.accuracy) %>% 
-  #mutate(scaled_med = med/max(med,na.rm=T))%>% 
-  select(c(PM,HCR,B0.accuracy,med)) %>% 
-  filter(!PM %in% remove.these) %>%
-  as.data.frame()
-
-test2 <- subset(toplot.raw,B0.accuracy=="under")
-x = subset(test2,PM=="BonanzaLength")$med
-y = subset(test2,PM=="LTmeancatch")$med
-fit <- lm(data = test2,y~I(1/x))
-plot(x,y,xlim=c(0,max(x)*2),ylim=c(0,max(y)*2))
-newdata <- data.frame(x = seq(0.05,max(x)*4,by=1))
-pt <- predict(fit,newdata=newdata)
-lines(newdata$x,pt,col="blue")
-fit$coefficients
-
-
-#  using raw outputs instead of tplot - think I will keep this one --------
-par(mfrow=c(1,1))
-raw <- B0.overs %>% group_by(PM,B0.accuracy) %>%
-  select(c(PM,HCR,B0.accuracy,med)) %>% 
-  filter(!PM %in% remove.these) %>%
-  as.data.frame()
-x = subset(raw,PM=="BonanzaLength")$med
-y = subset(raw,PM=="meanbiomass")$med
-fit <- lm(y~I(1/x))
-plot(x,y,xlim=c(0,max(x)*2),ylim=c(0,max(y)*2))
-newdata <- data.frame(x = seq(0.05,max(x)*4,by=1))
-pt <- predict(fit,newdata=newdata)
-lines(newdata$x,pt,col="blue")
-fit$coefficients
-
-
-# Maybe later transfer for summary code: quantify tradeoffs, redo tileplot --------
-# using B0.exacts as a test case for now
-totile <- B0.exacts %>% group_by(PM,B0.accuracy) %>%
-  select(c(PM,HCR,B0.accuracy,med)) %>% 
-  filter(!PM %in% remove.these) %>%
-  as.data.frame()
-totile <- dcast(totile,HCR~PM, value.var = "med")
-
-# Need to get inverse of "bad.pms"
-bi <- which(colnames(totile) %in% bad.pms)
-totile[,bi] <- 1/totile[,bi]
-
-
-to.mat <- matrix(NA,nrow=ncol(totile),ncol=ncol(totile))
-for(i in 2:ncol(totile)){
-  x <- totile[,i]
-  for(j in 2:ncol(totile)){
-  y <- totile[,j]
-  if(any(is.na(c(x,y)))){next}
-  fit <- lm(y~I(1/x))
-  to.mat[i,j] <- fit$coefficients[2]
-}}
-
