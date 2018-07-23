@@ -57,18 +57,19 @@ for(sim in 1:nsims){
   curly.phi.mat[sim,] <- rnorm(years.test,0,sig.s)
 }
 
-# Create list of matrices with error for the delayed detection scenario. Important bc of random seed issues.
+# Create errors for DD scenario
 set.seed(123)
-tim.rands.list.short <- list() #for all ensuring random values
-n.ages = 7
-error.inits <- rnorm(1,0,tim.params$sigma0)           # initial error values
-tim.inits.vec.short <- rep(error.inits,times=n.ages)  # just for initial values
+tim.rands.list <- list() 
+n.ages <- length(lh.test$ages)
+error.inits <- rnorm(1,0,tim.params$sigma0)     # initial error values
+tim.inits.vec <- rep(error.inits,times=n.ages)  # same error for each age
 for(sim in 1:nsims){
   tim.mat <- matrix(NA,nrow=n.ages,ncol=years.test)
   for(i in 1:years.test){
-    tim.mat[,i] <- rnorm(n.ages,0,tau1)
+    err <- rnorm(1,0,tau1)
+    tim.mat[,i] <- rep(err,times=n.ages)
   }
-  tim.rands.list.short[[sim]] <- tim.mat
+  tim.rands.list[[sim]] <- tim.mat
 }
 
 # another set of rands, for when there are older ages ---------------------
