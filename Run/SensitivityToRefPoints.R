@@ -26,7 +26,7 @@ subDir <- fftype
 #Set up other simulation params
 years.test = 250
 nsims = 500
-R0.sens = NA # NO DYNAMIC R0 anymore-- ignore
+R0.sens = NA  # depracated
 tim.params = list(sigma0 = 0.2,tau0 = 0.1)
 tau1 = (1/tim.params$tau0^2 + 1/tim.params$sigma0^2)^(-0.5)
 sig.s = 0.3 
@@ -56,26 +56,29 @@ if(subDir == "Anchovy"){
   recruit.rho <- 0.5
 }
 
-# Create list of matrices with error for the delayed detection scenario. This is important because the random seed will offset otherwise - this is new
-        set.seed(123)
-        tim.rands.list <- list() #for all ensuring random values
-        tim.inits.vec <- rnorm(n.ages,0,tim.params$sigma0)  # just for initial values
-        n.ages = length(lh.test$ages)
-        for(sim in 1:nsims){
-          tim.mat <- matrix(NA,nrow=n.ages,ncol=years.test)
-          for(i in 1:years.test){
-            tim.mat[,i] <- rnorm(n.ages,0,tau1)
-          }
-          tim.rands.list[[sim]] <- tim.mat
-        }
-        
-        # Create errors for AC scenario
-        set.seed(123)
-        curly.phi.mat <- matrix(NA, nrow = nsims,ncol = years.test)
-        for(sim in 1:nsims){
-          curly.phi.mat[sim,] <- rnorm(years.test,0,sig.s)
-        }
+# Create errors for DD scenario
+set.seed(123)
+tim.rands.list <- list() 
+n.ages <- length(lh.test$ages)
+error.inits <- rnorm(1,0,tim.params$sigma0)     # initial error values
+tim.inits.vec <- rep(error.inits,times=n.ages)  # same error for each age
+for(sim in 1:nsims){
+  tim.mat <- matrix(NA,nrow=n.ages,ncol=years.test)
+  for(i in 1:years.test){
+    err <- rnorm(1,0,tau1)
+    tim.mat[,i] <- rep(err,times=n.ages)
+  }
+  tim.rands.list[[sim]] <- tim.mat
+}
 
+        
+# Create errors for AC scenario
+set.seed(123)
+curly.phi.mat <- matrix(NA, nrow = nsims,ncol = years.test)
+for(sim in 1:nsims){
+  curly.phi.mat[sim,] <- rnorm(years.test,0,sig.s)
+}
+        
 # Load harvest rules
 source(file.path(basedir,"Control Rules/smith_oceana.R"))
 source(file.path(basedir,"Control Rules/cfp.R"))
@@ -175,7 +178,7 @@ for(s in 1:nscenarios){  #
   
   for (sim in 1:nsims){
     rec.dev.test  <-  generate.devs(N = years.test,rho = recruit.rho,sd.devs = recruit.sd) 
-    F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])$biomass.total.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
+    F0.Type <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "constF", const.f.rate = 0, steepness = steepness,obs.type = obs.type,equilib=equilib,R0.traj = R0.sens, tim.params = tim.params,ac.params = ac.params,time.var.m = time.var.m, sig.s = sig.s, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[sim]],curly.phi.vec = curly.phi.mat[sim,])$biomass.total.true # Only need to do this 1x for each simulation (not repeat for each CR) because the seed is the same and there is no fishing.
     no.fishing[sim,] <- F0.Type # This is the time series 
   }
   
