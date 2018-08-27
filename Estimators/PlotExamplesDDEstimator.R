@@ -1,24 +1,34 @@
+# This used to plot examples of delayed detection and autocorrelated error, it may now be depracated (August 2018)
+
 source("~/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Estimators/Estimators.R")
 par(mfrow=c(2,1))
 
 # Sine curve example ------------------------------------------------------
 tau0 <-  0.1
 sigma0 <- 0.2
-#tau1 <- (1/tau0^2+1/sigma0^2)^(-0.5)
+tau1 <- (1/tau0^2+1/sigma0^2)^(-0.5)
 amp <- 100
 freq <- 15
 # get a new random seed
 rm(.Random.seed)
 seed.index <- runif(1,1,100)
 set.seed(seed.index)
+
+
 timelist <- seq(1,60)
 B <- amp + amp/1.3 * sin(pi*timelist/freq)
 y <- rep(NA, length(timelist))
 E <- rep (NA, length(timelist))
 E[1]<-B[1]*exp(rnorm(1,0, sigma0))
 
+tim.vec <- vector(length=length(timelist))
+for(i in 1:length(timelist)){
+  err <- rnorm(1,0,tau1)
+  tim.vec[i] <- err
+}
+
 for(i in 2:length(B)){
-  E[i] <- tim.assessment(B = B[i],Eprev = E[i-1],sigma0 = sigma0,tau0 = tau0)
+  E[i] <- tim.assessment(B = B[i],Eprev = E[i-1],sigma0 = sigma0,tau0 = tau0,tau1 = tau1,err = tim.vec[i])
 }
 plot(B,type='l')
 lines(E,col='blue')
