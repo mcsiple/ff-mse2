@@ -128,5 +128,3 @@ setwd(figwd)
 pdf(file = "Figure5c.pdf",width=27,height=15,useDingbats = FALSE)
 Figure5a(obs = "Tim")
 dev.off()
-
-

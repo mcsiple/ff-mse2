@@ -73,7 +73,6 @@ for(t in 1:3){
          ylab="Biomass or B_est",
          main=paste(obs.type, subDir, sep = " - "))
     lines(testie$biomass.oneplus.obs[yrs],col='lightblue',lwd=1.8) #obs 1+ biomass
-    # lines(testie$total.catch,col='red')
     obs.type = "Tim"
     set.seed(123)
     #tim.params <- list(sigma=1.2,tau0=1.2/5)

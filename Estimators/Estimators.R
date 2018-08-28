@@ -24,7 +24,7 @@ add.wied.error <- function(biomass.true, epsilon.prev, sig.s, rho, curly.phi){
 
 # “Delay detection” model mimics delayed detection of big peaks --------
 tim.assessment.original <- function(B,Eprev,sigma0 = NA, tau0 = NA){
-  #' @description This function takes the previous year's biomass estimate (Eprev) and the current biomass (B) and returns an estimate for biomass in the present year. Observation error is described by sigma0, and is just random and lognormal.
+  #' @description Takes the previous year's biomass estimate (Eprev) and the current biomass (B) and returns an estimate for biomass in the present year. Observation error is described by sigma0, and is just random and lognormal.
   #' @details The goal of this type of observation error is to mimic what observations might be if we had some prior knowledge about the expected change in B. The level of confidence in our ability to detect change is set by tau0, with small tau0 indicating a case where the assessment or scientist is resistant to large changes in biomass, and large tau0 indicating a case where errors are random, i.e., a large change in biomass is plausible.
   #' @param B - biomass in the current year. 
   #' @param Eprev - biomass ESTIMATE in the previous year. 

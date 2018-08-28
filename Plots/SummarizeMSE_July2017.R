@@ -12,7 +12,7 @@ library(ggplot2)
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/Megsieggradar.R")
 source("/Users/mcsiple/Dropbox/Chapter4-HarvestControlRules/Code/ff-mse2/Plots/SummaryFxns.R")
 source("/Users/mcsiple/Dropbox/ChapterX-synthesis/Theme_Black.R")
-Type = "Menhaden" #FF type to summarize
+Type = "Sardine" #FF type to summarize
 Date <- "2018-07-16"
 
 # Set path to where the simulation results are:
@@ -196,7 +196,7 @@ lines(results[[16]]$total.catch[2,],col='red')
     #autcorrelated errors: 2,8,14,20,26,32
     #dd errors: 4,10,16,22,28,34
 plot.these <- subset(raw.table, h==0.9 & obs.error.type =="AC")$scenario
-calc.ind=1:250 #for when you want to look at the whole simulation!
+#calc.ind=1:250 #for when you want to look at the whole simulation!
 par(mfrow=c(2,2))
 for(sim in 21:24){
 plot(results[[plot.these[5]]]$biomass.oneplus.true[sim,calc.ind],type='n',lwd=1.5,ylab="True 1+ Biomass")
