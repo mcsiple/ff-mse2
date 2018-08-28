@@ -58,7 +58,7 @@ B.obs <- B.true
 B.obs[1] <- B.true[1]*exp(rnorm(1,0, sigma0))
 
 for(i in 2:length(B.obs)){
-  B.obs[i] <- tim.assessment(B = B.true[i],Eprev = B.obs[i-1],sigma0 = sigma0,tau0 = tau0)
+  B.obs[i] <- tim.assessment(B = B.true[i],Eprev = B.obs[i-1],sigma0 = sigma0,tau0 = tau0,tau1 = tau1,err = tim.vec[i])
 }
 
 lines(B.obs,col='blue')
