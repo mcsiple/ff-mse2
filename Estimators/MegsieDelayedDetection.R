@@ -44,7 +44,7 @@ par(mfrow=c(1,1))
 lotau.col <- "#bdbdbd"  
 hitau.col <-  "#636363"
 #par(bg = 'black', fg = 'white') # set background to black, foreground white - for presentations
-plot(timelist,B, type = "l", lwd = 3, col = "black", xlab = "", ylab = " ",ylim=range(c(B,E)), axes = F)
+plot(timelist,B, type = "l", lwd = 3, col = "black", xlab = "", ylab = " ",ylim=c(0,max(c(B,E)*1.1)), axes = F)
 box() #make col= "black" for plotting in paper (or other white bkd) 
 mtext(side = 2, text = "Population Size", line = 1)
 mtext(side = 1, text = "Time",line = 1)
@@ -72,9 +72,9 @@ for (t in 2:length(timelist)) {
 lines(timelist, E, lwd = 3, col = hitau.col)
 points(timelist, E, pch=21, bg = hitau.col,col = hitau.col)
 
-legend('topright',pch=rep(21,times=3),pt.bg=c('white',lotau.col,hitau.col), # put 'black' here for paper
-       col=c('white',lotau.col,hitau.col),
-       legend=c("Biomass",
+legend('topright',inset=0.01,pch=rep(21,times=3),pt.bg=c('black',lotau.col,hitau.col), # put 'black' here for paper
+       col=c('black',lotau.col,hitau.col),
+       legend=c("Biomass", 
                 expression(paste("Large changes not expected (",tau," = 0.1",")",sep="")),
                 expression(paste("Large changes expected (",tau," = 1000",")",sep=""))))
 
