@@ -249,16 +249,6 @@ calc.beta.fast<-function(ts.data){
   return(beta)
 }
 
-getcdf<-function(x,x.ints){
-  CDF<-rep(NA,length(x.ints))
-  n.x<-length(x)
-  CDF[1]<-0
-  for (i in 2:length(x.ints)){
-    CDF[i]<-length(which(x<=x.ints[i]))/n.x
-  }
-  return(CDF)
-}
-
 min.and.duration<-function(x,y){
   # function to return the minimum of time series x, and the number of years until time series increases by y units
   minB<-min(x)
@@ -307,19 +297,19 @@ addTrans <- function(color,trans)
 # initialize data
 
 # Load sardine/anchovy "data"
-basedir <- "C:/Users/Megsie Siple/Dropbox/Chapter4-HarvestControlRules/"
+basedir <- "~/Dropbox/Chapter4-HarvestControlRules/"
 workdir <- paste(basedir,"Datasets","/",sep="")
 setwd(workdir)
-load("allsardineanchovy.RData") #alldat - this includes RAM and Barange (FAO is only catches so it can't be used!)
-data <- alldat
-colnames(data)[4] <- "Year"
-
-
-# Change col names to match code, which is for RAM only
-head(dplyr::rename(data,stockname=stock,TB = ssb,R=rec,ER=fishing.mortality))
-colnames(data)[3] <- "stockname"
-colnames(data)[5:6] <- c("TB","R")
-colnames(data)[8] <- "ER"   # Fishing mortality in some datasets, "exploitation rate" in RAM
+# load("allsardineanchovy.RData") #alldat - this includes RAM and Barange (FAO is only catches so it can't be used!)
+# data <- alldat
+# colnames(data)[4] <- "Year"
+# 
+# 
+# # Change col names to match code, which is for RAM only
+# head(dplyr::rename(data,stockname=stock,TB = ssb,R=rec,ER=fishing.mortality))
+# colnames(data)[3] <- "stockname"
+# colnames(data)[5:6] <- c("TB","R")
+# colnames(data)[8] <- "ER"   # Fishing mortality in some datasets, "exploitation rate" in RAM
 
 # Have to get herring and menhaden data from the RAM database
 xxx <- read.csv(paste(basedir,"/Datasets/allforagedata.csv",sep=""))
@@ -328,9 +318,9 @@ xxx$datasource= "RAM"
 colnames(xxx)[3] <- "stockname"
 colnames(xxx)[5] <- "Year"
 colnames(xxx)[11] <- "landings"
-total.data <- rbind.fill(xxx,data)
-
-data <- total.data
+total.data <- xxx 
+# total.data <- rbind.fill(xxx,data)
+ data <- total.data
 
 # ***** NOTE: MODIFY THIS PART TO GET SPECTRA FOR SARDINE/HERRINGANCH/MENHADEN -------
 # Subset to sardines
@@ -347,10 +337,10 @@ data <- total.data
         
 
 # Subset to menhaden
-        men.toMatch = "menhaden"
-        menh.index <- grep(paste(men.toMatch,collapse="|"),
-                           data$stockname, ignore.case=TRUE)
-        data<- data[menh.index,]
+        # men.toMatch = "menhaden"
+        # menh.index <- grep(paste(men.toMatch,collapse="|"),
+        #                    data$stockname, ignore.case=TRUE)
+        # data<- data[menh.index,]
         
         
 # Initialize Data 
@@ -405,12 +395,7 @@ for (i in 1:n.stocks){
   }
   ER.tmp<-data$ER[stockindex]
   n.ER<-length(which(!is.na(ER.tmp)))
-                  #first.year.ER<-Year.tmp[which(!is.na(ER.tmp))[1]]
-                  #last.year<-max(Year.tmp)
-                            #last.year.listER[i]<-last.year
-                  #first.year<-min(Year.tmp)
-                  #ly.index<-which(year.list==last.year)
-                  #fy.index<-which(year.list==first.year)
+  
   if(n.ER>0){
     #  first.year.listER[i]<-first.year.ER
     outputF[paste(Year.tmp),i]<-ER.tmp
@@ -418,13 +403,6 @@ for (i in 1:n.stocks){
   R.tmp<-data$R[stockindex]
   Year.tmp<-data$Year[stockindex]
   n.R<-length(which(!is.na(R.tmp)))
-  
-            #first.year.TB<-Year.tmp[which(!is.na(TB.tmp))[1]]
-  #last.year<-max(Year.tmp)
-            # last.year.listB[i]<-last.year
-  #first.year<-min(Year.tmp)
-  #ly.index<-which(year.list==last.year)
-  #fy.index<-which(year.list==first.year)
   if(n.R>0){
     R.list<-R.tmp/mean(R.tmp,na.rm=TRUE)   # *** IMPORTANT! THIS STANDARDIZES THE RECRUITMENT, BETA AND SD ARE BASED ON STANDARDIZED VALUES
     outputR[paste(Year.tmp),i]<-R.list
@@ -503,7 +481,7 @@ menhaden.save <- R.data.mat[,c("Rec Length","SD.R","Beta.r","lowerCI","upperCI",
 write.csv(menhaden.save,file="Menhaden_Rec_Spectra.csv")
 
 
-#  Get kernel density smoothers of damn near everything
+#  Get kernel density smoothers
 estimated.beta <- R.data.mat[which(!is.na(R.data.mat[,3])),3]
 # set negative values to 0
 estimated.beta <- replace(estimated.beta,which(estimated.beta<0),0)     # BETA OF RECRUITMENT TS
@@ -517,8 +495,12 @@ sd.r.kernel <- bkde(estimated.sd.r,kernel="normal",range.x=c(0,1))
 # estimated.sd.B <- ((B.data.mat[which(!is.na(B.data.mat[,11])),11]))
 # sd.B.kernel <- bkde(estimated.sd.B,kernel="normal",range.x=c(0,2))
 
-estimated.beta.R <- R.data.mat[which(!is.na(R.data.mat[,7])),7]
-estimated.beta.R.weights <- 1/R.data.mat[which(!is.na(R.data.mat[,3])),10]
+# Remove stocks for which beta could not be estimated, get beta estimates
+R.data.mat <- R.data.mat[which(!is.na(R.data.mat[,'Beta.r'])),]
+estimated.beta.R <- R.data.mat[,'Beta.r']
+nstocks <- nrow(estimated.beta.R)
+# Weight beta values for recruitment ts by their standard error (MCS: I don't understand this step but I think the betas have to be weighted by something, and this is how E et al. 2015 did it)
+estimated.beta.R.weights <- 1/R.data.mat[which(!is.na(R.data.mat[,'Beta.r'])),'beta SE']
 beta.R.kernel <- density(estimated.beta.R,kernel="gaussian",weights=estimated.beta.R.weights/sum(estimated.beta.R.weights))
 
 # do a two dimensional KDE for beta and sd of r
@@ -535,8 +517,8 @@ sd.beta.kernel<-bkde2D(cbind(estimated.beta,estimated.sd.r),bandwidth=c(beta.bw,
 #########Begin Randomization Test ##############
 # setup information
 ts.lengths<-as.numeric(nyears.list[which(nyears.list>25)])
-n.stocks <- 55 # number of stocks with 25 or more years of data
-n.sims<-1000
+n.stocks <- 55 # number of stocks with 25 or more years of data - will vary by LH type
+n.sims<-1000 # adjust this as needed
 
 # tolerance on simulated B time series, in terms of beta and sd
 beta.B.tol<-c(0.5,4.0)
