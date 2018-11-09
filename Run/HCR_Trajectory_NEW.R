@@ -105,7 +105,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   #   break
   # }
   
-  n.ages<-length(lh$ages)
+  n.ages <- length(lh$ages)
   sizes <- list(length.at.age = matrix(nrow=n.ages,ncol=years),
                 weight.at.age = matrix(nrow=n.ages,ncol=years))  
   
