@@ -288,16 +288,15 @@ addTrans <- function(color,trans)
   res <- paste("#",apply(apply(rgb,2,num2hex),2,paste,collapse=""),sep="")
   return(res)
 }
-################ END of addTrans FUNCTION ####################
+################ END OF FUNCTIONS ####################
 
 
 ######## Load Data and Get Properties of Real Time series
-
-
 # initialize data
 
 # Load sardine/anchovy "data"
-basedir <- "~/Dropbox/Chapter4-HarvestControlRules/"
+
+basedir <- "C:/Users/Megsie Siple/Dropbox/Chapter4-HarvestControlRules/"
 workdir <- paste(basedir,"Datasets","/",sep="")
 setwd(workdir)
 # load("allsardineanchovy.RData") #alldat - this includes RAM and Barange (FAO is only catches so it can't be used!)
@@ -446,11 +445,8 @@ nyears.list<-apply(outputB.all,2,nyear.calc)
 # minimum number of years for calculating lambda properties
 min.years<-27     #originally this was 33, but it left only one stock, so I had to lower it TEMPORARILY!
 
-# Calculate properties of time series for which we have total biomass and exploitation rate
-for ( i in 1:ncol(outputR)){
-#   Bindex<-intersect(which(!is.na(outputB[,i])),which(!is.na(outputF[,i])))
-#   ts.data<-outputB[Bindex,i]
-#   ts.f.data<-outputF[Bindex,i]
+# Calculate properties of time series for which there are recruitment estimates
+for ( i in 1:ncol(outputR)){ #This loop can take a while
   Rindex <- which(!is.na(outputR[,i]))
   ts.data <- outputR[Rindex,i]
   R.data.mat[i,1]<-length(which(!is.na(outputR[,i])))
@@ -471,14 +467,15 @@ for ( i in 1:ncol(outputR)){
   }
 }
 
-sardine.save <- R.data.mat[,c("Rec Length","SD.R","Beta.r","lowerCI","upperCI","beta SE")]
-write.csv(sardine.save,"Sardine_Rec_Spectra.csv") 
-
-herring.anch.save <- R.data.mat[,c("Rec Length","SD.R","Beta.r","lowerCI","upperCI","beta SE")]
-write.csv(herring.anch.save,file="AnchHerring_Rec_Spectra.csv")
-
-menhaden.save <- R.data.mat[,c("Rec Length","SD.R","Beta.r","lowerCI","upperCI","beta SE")]
-write.csv(menhaden.save,file="Menhaden_Rec_Spectra.csv")
+# Save the tables of beta and SD if you want:
+# sardine.save <- R.data.mat[,c("Rec Length","SD.R","Beta.r","lowerCI","upperCI","beta SE")]
+# write.csv(sardine.save,"Sardine_Rec_Spectra.csv") 
+# 
+# herring.anch.save <- R.data.mat[,c("Rec Length","SD.R","Beta.r","lowerCI","upperCI","beta SE")]
+# write.csv(herring.anch.save,file="AnchHerring_Rec_Spectra.csv")
+# 
+# menhaden.save <- R.data.mat[,c("Rec Length","SD.R","Beta.r","lowerCI","upperCI","beta SE")]
+# write.csv(menhaden.save,file="Menhaden_Rec_Spectra.csv")
 
 
 #  Get kernel density smoothers
@@ -495,7 +492,7 @@ sd.r.kernel <- bkde(estimated.sd.r,kernel="normal",range.x=c(0,1))
 # estimated.sd.B <- ((B.data.mat[which(!is.na(B.data.mat[,11])),11]))
 # sd.B.kernel <- bkde(estimated.sd.B,kernel="normal",range.x=c(0,2))
 
-# Remove stocks for which beta could not be estimated, get beta estimates
+# Remove stocks for which beta could not be estimated
 R.data.mat <- R.data.mat[which(!is.na(R.data.mat[,'Beta.r'])),]
 estimated.beta.R <- R.data.mat[,'Beta.r']
 nstocks <- nrow(estimated.beta.R)
@@ -508,16 +505,16 @@ d<-2 # the bandwidth dimension
 sd.bw<-sqrt(var(estimated.sd.r))*(4/((d+2)*length(estimated.sd.r)))^(1/(d+4))
 beta.bw<-sqrt(var(estimated.beta))*(4/((d+2)*length(estimated.beta)))^(1/(d+4))
 
-
+# Generate 2D kernel to sample from
 sd.beta.kernel<-bkde2D(cbind(estimated.beta,estimated.sd.r),bandwidth=c(beta.bw,sd.bw),range.x=list(c(-1.0,6),c(0,1.5)),truncate=FALSE,gridsize=c(200,200))
 
 
-######## End of Loading Data  ###########
+######## End of estimating beta  ###########
 
 #########Begin Randomization Test ##############
 # setup information
-ts.lengths<-as.numeric(nyears.list[which(nyears.list>25)])
-n.stocks <- 55 # number of stocks with 25 or more years of data - will vary by LH type
+ts.lengths<-as.numeric(R.data.mat[,"Rec Length"])
+n.stocks <- length(which(ts.lengths>25)) # number of stocks with 25 or more years of data - will vary by LH type
 n.sims<-1000 # adjust this as needed
 
 # tolerance on simulated B time series, in terms of beta and sd
@@ -547,7 +544,7 @@ for (sim in 1:n.sims){
   ts.sim.lengths<-sample(ts.lengths,n.stocks,replace=TRUE)
   min.b<-matrix(NA,nrow=n.stocks,ncol=1)
   ts.sims<-matrix(NA,nrow=27,ncol=n.stocks)
-  for (i in 1:n.stocks){
+  for (i in 1:n.stocks){ 
     # Get t.series with specified beta within tolerance range (0.5, 3.0)
     flag=0
     # generate a large time series to get scale it down so that it has mean 1
@@ -594,7 +591,7 @@ for (sim in 1:n.sims){
           # save the output into matrix called ts.sims
           # different rules depending on the length of time series
           if (t.mean.calc>=27) {
-          ts.sims[,i]<-adj.sample[(t.mean.calc-27+1):t.mean.calc] # take the last 32 years
+          ts.sims[,i]<-adj.sample[(t.mean.calc-27+1):t.mean.calc] # take the last 32 (27?) years
           } else {
             ts.sims[(27-t.mean.calc+1):27,i]<-adj.sample
           }
@@ -615,14 +612,16 @@ for (sim in 1:n.sims){
   duration.output[sim]<-mean(ts.properties[,3],na.rm=T)
   # mean minimum biomass for those stocks that were below 0.25
   cond.minb.output[sim,]<-mean(ts.properties[which(ts.properties<=0.2)])
-  # figure out proportion of stocks collapsed by year.  Use only 52 stocks because there are 52 stocks in 2006, the year with the most observed tocks
-  n.stocks.year<-apply(ts.sims[,1:52],1,FUN=function(x) length(which(!is.na(x))))
-  n.stocks.collapse<-apply(ts.sims[,1:52],1,FUN=function(x) length(which(x<0.25)))
+  # figure out proportion of stocks collapsed by year.  Use only 52 stocks because there are 52 stocks in 2006, the year with the most observed stocks
+  n.stocks.year<-apply(ts.sims[,1:n.stocks],1,FUN=function(x) length(which(!is.na(x))))
+  n.stocks.collapse<-apply(ts.sims[,1:n.stocks],1,FUN=function(x) length(which(x<0.25)))
   collapse.bonanza<-cbind(n.stocks.collapse/n.stocks.year,n.stocks.collapse/n.stocks.year)
   p.collapse[sim,1:2]<-c(min(collapse.bonanza[,1]),max(collapse.bonanza[,1]))
-  uber.collapse<-apply(ts.sims[,1:52],1,FUN=function(x) length(which(x<0.2)))/n.stocks.year
+  uber.collapse<-apply(ts.sims[,1:n.stocks],1,FUN=function(x) length(which(x<0.2)))/n.stocks.year
   p.uber.collapse[sim,1:2]<-c(min(uber.collapse[1]),max(uber.collapse[1]))
-}
+} # what you get from this is ts.sims, a matrix of "similar" time series with similar sd and beta params.
+
+# Use random draws from ts.sims to get spectrally similar time series.
 
 
 
