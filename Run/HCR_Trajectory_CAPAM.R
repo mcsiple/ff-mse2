@@ -59,12 +59,12 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   #' @param equilib - list of equilibrium values for the HCR
   #' @param buffer - the buffer used in the 40-10 rule
   #' @param steepness - h parameter
-  #' @param R0.traj - time series of R0, if you are testing time-varying R0
+  #' @param R0.traj - time series of R0, if you are testing time-varying R0 (default NA)
   #' @param tim.params - list of parameters (sigma0, tau0) describing the level of belief that the assessment or surveyor has in the possibility of large peaks or collapses
   #' @param ac.params - list of parameters (sig.s,rho) describing autocorrelation and sd of observtion errors in AC scenarios
-  #' @param time.var.m - time series of natural mortality (M) values for cases where M is time-varying
+  #' @param time.var.m - time series of natural mortality (M) values for cases where M is time-varying (numeric vector)
   #' @param curly.phi.vec a vector of random errors for the autocorrelated error: rnorm(years,0,sig.s)
-  #' @return list: obs biomass, true biomass, catches, recruitment, and others
+  #' @return list: obs biomass, true biomass, catches, recruitment, and NOW biomass index of abundance!
   #' IMPORTANT: 
   #' biomass.true - vector of true biomass-at-age
   #' biomass - vector of observed biomass-at-age
@@ -100,11 +100,11 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     break
   }
   
-  # if(any(is.na(rec.dev))){
-  #   print("NAs in recruitment deviation time series")
-  #   break
-  # }
-  
+  if(any(is.na(rec.dev))){
+    print("NAs in recruitment deviation time series")
+    break
+  }
+
   n.ages <- length(lh$ages)
   sizes <- list(length.at.age = matrix(nrow=n.ages,ncol=years),
                 weight.at.age = matrix(nrow=n.ages,ncol=years))  
@@ -118,7 +118,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
   # Initiate population size and catch at age
   popn <- catch.at.age <- biomass <- biomass.true <- oneplus.biomass  <- matrix(nrow=n.ages,ncol=years+1)
   sp <- catch <- rep(NA, years)
-   spawners <- sp.true <- R <- fishing <- intended.f <-  rep(NA, years+1)
+  spawners <- sp.true <- R <- fishing <- intended.f <-  rep(NA, years+1)
   obs.err <- obs.epsR <- ac.obs <- rep(NA,years+1)
   
   # Initialize starting values
@@ -159,8 +159,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
           # sig.s = ifelse(steepness>0.5,0.30,0.38)
           # rho = ifelse(steepness>0.5,0.82,0.87)
         #}
-          
-          
+        
     if(obs.type == "AC"){
       eps.prev = ifelse(yr==1,1,eps.prev) # Initialize epsilon
       outs <-  add.wied.error(biomass.true = biomass.true[,yr],
@@ -173,19 +172,7 @@ calc.trajectory <- function(lh, obs.cv = NULL, init, rec.dev, rec.ram=NA, F0, cr
     if(obs.type == "Tim"){
       sigma0 = tim.params$sigma0
       tau0 = tim.params$tau0
-      # tau1 <- (1/tau0^2 + 1/sigma0^2)^(-0.5)
-      # OPTION 1 (depracated)
-      # Add random error to first year, bc no prior information 
-      # (i.e., in the first year, the "estimate" is just the biomass + some LN observation error):
-      # if(yr==1){biomass[,yr] <- biomass.true[,yr] * exp(tim.rands[,yr]) 
-      #           } else{
-      #   biomass[,yr] <- tim.assessment(Eprev = biomass[,yr-1],
-      #                                 B = biomass.true[,yr],
-      #                                 sigma0 = sigma0,
-      #                                 tau0 = tau0,
-      #                                 tau1 = tau1)
-      
-      # OPTION 2
+
       # Add random error to first year, bc no prior information 
         if(yr==1){biomass[,yr] <- biomass.true[,yr] * exp(tim.rand.inits) 
         } else{
@@ -324,10 +311,11 @@ return(list(popn=popn[,1:years],
 # The function for calculating MSY (uses getTrajectory, so has to be loaded last)
 source(here::here("Run/MSY_Fxns.R"))
 
-# Sardine
-# tim.inits.vec = c(0.12, 0.06, 0.1, -0.22, -0.03, 0.12, -0.06, 0.42, -0.23, 0.07, -0.02, 0.23, -0.02, -0.02, 0.06, 0.12)
-# tim.rands <- tim.rands.list[[1]]
-# testie2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[1]])
+
+# Test function with sardine
+ # tim.inits.vec = c(0.12, 0.06, 0.1, -0.22, -0.03, 0.12, -0.06, 0.42, -0.23, 0.07, -0.02, 0.23, -0.02, -0.02, 0.06, 0.12)
+ # tim.rands <- tim.rands.list[[1]]
+ # testie2 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "cfp",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA, tim.rand.inits = tim.inits.vec, tim.rands = tim.rands.list[[1]])
 # testie3 <- calc.trajectory(lh = lh.test,obs.cv = 1.2, init = init.test, rec.dev = rec.dev.test, F0 = F0.test, cr = cr.test, years = years.test,hcr.type = "C2",equilib = equilib,steepness=steepness,obs.type = "AC", tim.params = tim.params,const.f.rate=0.6, sig.s = .3,rec.ram=NA, curly.phi.vec = curly.phi.mat[1,])
 ###############################################################################################
 ###############################################################################################
